@@ -1,0 +1,184 @@
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <div class="header-left">
+      <h1>Admin Dashboard</h1>
+      <p>Manage Your Tournaments</p>
+    </div>
+    <div class="header-right">
+      <button class="btn-create" (click)="openCreateModal()">＋ Create Tournament</button>
+    </div>
+  </div>
+
+  <div class="tournaments-container">
+    <div class="tournaments-grid">
+      <div class="tournament-card" *ngFor="let tournament of tournaments">
+        <div class="card-header">
+          <div class="tournament-logo-wrap">
+            <img *ngIf="tournament.logo" [src]="tournament.logo" [alt]="tournament.name" class="tournament-logo" />
+            <div *ngIf="!tournament.logo" class="tournament-logo-placeholder">🏆</div>
+          </div>
+          <div class="tournament-name">{{ tournament.name }}</div>
+          <div class="tournament-date">{{ tournament.date | date: 'MMM dd, yyyy' }}</div>
+        </div>
+
+        <div class="card-body">
+          <div class="tournament-info">
+            <div class="info-grid">
+              <span class="info-item">
+                <strong>Teams:</strong> {{ tournament.totalTeams }}
+              </span>
+              <span class="info-item">
+                <strong>Players:</strong> {{ tournament.totalPlayers }}
+              </span>
+              <span class="info-item">
+                <strong>Purse / Team:</strong>
+                {{ tournament.purseAmount | currency:'INR':'symbol-narrow':'1.0-0' }}
+              </span>
+              <span class="info-item">
+                <strong>Players / Team:</strong> {{ tournament.playersPerTeam }}
+              </span>
+              <span class="info-item">
+                <strong>Base Price:</strong>
+                {{ tournament.basePrice | currency:'INR':'symbol-narrow':'1.0-0' }}
+              </span>
+              <span class="status-badge" [ngClass]="'status-' + tournament.status">
+                {{ tournament.status | titlecase }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <button class="action-btn" (click)="viewTeams(tournament.id)">
+            <span class="icon">👥</span>
+            <span class="tooltip">Teams</span>
+          </button>
+          <button class="action-btn" (click)="viewPlayers(tournament.id)">
+            <span class="icon">👤</span>
+            <span class="tooltip">Players</span>
+          </button>
+          <button class="action-btn" (click)="openRegisterLink(tournament.id)">
+            <span class="icon">🔗</span>
+            <span class="tooltip">Gen Link</span>
+          </button>
+          <button class="action-btn" (click)="startAuction(tournament.id)">
+            <span class="icon">▶️</span>
+            <span class="tooltip">Start</span>
+          </button>
+          <button class="action-btn" (click)="viewConditionalIncrements(tournament.id)">
+            <span class="icon">📈</span>
+            <span class="tooltip">Increments</span>
+          </button>
+          <button class="action-btn">
+            <span class="icon">📊</span>
+            <span class="tooltip">Results</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Tournament Modal -->
+  <div class="modal-overlay" *ngIf="showCreateModal" (click)="closeCreateModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="closeCreateModal()">✕</button>
+      <h2>Create Tournament</h2>
+
+      <form #createForm="ngForm" (ngSubmit)="createTournament(createForm)" class="create-form">
+
+        <!-- Logo upload -->
+        <div class="form-group logo-group">
+          <div class="logo-upload-area">
+            <div class="logo-preview-circle">
+              <img *ngIf="createLogoPreview" [src]="createLogoPreview" alt="Logo preview" class="logo-preview-img" />
+              <span *ngIf="!createLogoPreview" class="logo-placeholder-icon">🏆</span>
+            </div>
+            <div class="logo-upload-controls">
+              <label class="file-upload-label" for="createLogo">📁 Upload Logo</label>
+              <input type="file" id="createLogo" accept="image/*" (change)="onLogoSelected($event)" name="createLogo" />
+              <span class="logo-hint">PNG, JPG — shown in the card header</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Name -->
+        <div class="form-group full-width">
+          <label for="tName">Tournament Name *</label>
+          <input type="text" id="tName" #tName="ngModel" [(ngModel)]="newTournament.name" name="tName"
+                 placeholder="e.g. Cricket Premier League 2026" required />
+          <span class="error-msg" *ngIf="tName.invalid && (tName.dirty || tName.touched || createForm.submitted)">Tournament name is required.</span>
+        </div>
+
+        <!-- Sport / Date -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="tSport">Sport *</label>
+            <input type="text" id="tSport" #tSport="ngModel" [(ngModel)]="newTournament.sport" name="tSport"
+                   placeholder="e.g. Cricket" required />
+            <span class="error-msg" *ngIf="tSport.invalid && (tSport.dirty || tSport.touched || createForm.submitted)">Sport is required.</span>
+          </div>
+          <div class="form-group">
+            <label for="tDate">Date *</label>
+            <input type="date" id="tDate" #tDate="ngModel" [(ngModel)]="newTournament.date" name="tDate" required />
+            <span class="error-msg" *ngIf="tDate.invalid && (tDate.dirty || tDate.touched || createForm.submitted)">Date is required.</span>
+          </div>
+        </div>
+
+        <!-- Teams / Players -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="tTeams">Total Teams *</label>
+            <input type="number" id="tTeams" #tTeams="ngModel" [(ngModel)]="newTournament.totalTeams" name="tTeams"
+                   min="2" placeholder="8" required />
+            <span class="error-msg" *ngIf="tTeams.invalid && (tTeams.dirty || tTeams.touched || createForm.submitted)">Total teams is required (min 2).</span>
+          </div>
+          <div class="form-group">
+            <label for="tPlayers">Total Players *</label>
+            <input type="number" id="tPlayers" #tPlayers="ngModel" [(ngModel)]="newTournament.totalPlayers" name="tPlayers"
+                   min="1" placeholder="120" required />
+            <span class="error-msg" *ngIf="tPlayers.invalid && (tPlayers.dirty || tPlayers.touched || createForm.submitted)">Total players is required.</span>
+          </div>
+        </div>
+
+        <!-- Purse / Players per team -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="tPurse">Purse / Team (₹) *</label>
+            <input type="number" id="tPurse" #tPurse="ngModel" [(ngModel)]="newTournament.purseAmount" name="tPurse"
+                   min="0" placeholder="1000000" required />
+            <span class="error-msg" *ngIf="tPurse.invalid && (tPurse.dirty || tPurse.touched || createForm.submitted)">Purse amount is required.</span>
+          </div>
+          <div class="form-group">
+            <label for="tPPT">Players / Team *</label>
+            <input type="number" id="tPPT" #tPPT="ngModel" [(ngModel)]="newTournament.playersPerTeam" name="tPPT"
+                   min="1" placeholder="15" required />
+            <span class="error-msg" *ngIf="tPPT.invalid && (tPPT.dirty || tPPT.touched || createForm.submitted)">Players per team is required.</span>
+          </div>
+        </div>
+
+        <!-- Base Price / Status -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="tBase">Base Price (₹) *</label>
+            <input type="number" id="tBase" #tBase="ngModel" [(ngModel)]="newTournament.basePrice" name="tBase"
+                   min="0" placeholder="20000" required />
+            <span class="error-msg" *ngIf="tBase.invalid && (tBase.dirty || tBase.touched || createForm.submitted)">Base price is required.</span>
+          </div>
+          <div class="form-group">
+            <label for="tStatus">Status *</label>
+            <select id="tStatus" [(ngModel)]="newTournament.status" name="tStatus" required>
+              <option value="upcoming">Upcoming</option>
+              <option value="ongoing">Ongoing</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeCreateModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Tournament</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

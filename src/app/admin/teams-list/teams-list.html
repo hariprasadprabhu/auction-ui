@@ -1,0 +1,143 @@
+<div class="teams-container">
+  <div class="teams-header">
+    <div class="header-left">
+      <h1>{{ tournament?.name }}</h1>
+      <p class="teams-subtitle">Teams</p>
+    </div>
+    <div class="header-right">
+      <span class="team-date">{{ tournament?.date | date: 'MMM dd, yyyy' }}</span>
+    </div>
+  </div>
+
+  <div class="teams-content">
+    <button class="btn btn-back-light" (click)="goBack()" title="Back to Dashboard">← Back To Dashboard</button>
+    <div class="action-buttons">
+      <button class="btn btn-primary" (click)="openAddTeamModal()">+ Add Team</button>
+      <button class="btn btn-secondary">Clear All</button>
+      <button class="btn btn-secondary">Load from Excel</button>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="teams-table">
+        <thead>
+          <tr>
+            <th>Team #</th>
+            <th>Logo</th>
+            <th>Team Name</th>
+            <th>Owner Name</th>
+            <th>Mobile Number</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let team of teams">
+            <td class="team-number">{{ team.teamNumber }}</td>
+            <td class="logo-cell">
+              <img [src]="team.logo" [alt]="team.name" class="team-logo" />
+            </td>
+            <td class="team-name">{{ team.name }}</td>
+            <td class="owner-name">{{ team.ownerName }}</td>
+            <td class="mobile-number">{{ team.mobileNumber }}</td>
+            <td class="actions-cell">
+              <button class="btn-edit" (click)="openEditTeamModal(team)" title="Edit Team">✏️</button>
+              <button class="btn-delete" (click)="deleteTeam(team)" title="Delete Team">🗑️</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Edit Team Modal -->
+  <div class="modal-overlay" *ngIf="showEditTeamModal" (click)="closeEditTeamModal()">
+    <div class="modal-content form-modal" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="closeEditTeamModal()">✕</button>
+      <h2>Edit Team</h2>
+      <form (ngSubmit)="saveEditTeam()" class="add-team-form">
+        <div class="form-group">
+          <label for="editTeamNumber">Team Number</label>
+          <input type="text" id="editTeamNumber" [(ngModel)]="editTeam.teamNumber" name="editTeamNumber" readonly />
+        </div>
+
+        <div class="form-group">
+          <label for="editTeamLogo">Team Logo</label>
+          <div class="file-upload-wrapper">
+            <input type="file" id="editTeamLogo" accept="image/*" (change)="onEditLogoSelected($event)" name="editTeamLogo" />
+            <label for="editTeamLogo" class="file-upload-label">🎨 Change Logo</label>
+          </div>
+          <div *ngIf="editLogoPreview" class="logo-preview">
+            <img [src]="editLogoPreview" alt="Team logo preview" class="preview-img" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="editTeamName">Team Name *</label>
+          <input type="text" id="editTeamName" [(ngModel)]="editTeam.name" name="editName" placeholder="e.g., Mumbai Tigers" required />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editOwnerName">Owner Name *</label>
+            <input type="text" id="editOwnerName" [(ngModel)]="editTeam.ownerName" name="editOwnerName" placeholder="e.g., John Doe" required />
+          </div>
+          <div class="form-group">
+            <label for="editMobileNumber">Mobile Number *</label>
+            <input type="tel" id="editMobileNumber" [(ngModel)]="editTeam.mobileNumber" name="editMobileNumber" placeholder="+91 98765 43210" required />
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeEditTeamModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Team Modal -->
+  <div class="modal-overlay" *ngIf="showAddTeamModal" (click)="closeAddTeamModal()">
+    <div class="modal-content form-modal" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="closeAddTeamModal()">✕</button>
+      <h2>Add New Team</h2>
+      <form (ngSubmit)="addTeam()" class="add-team-form">
+        <div class="form-group">
+          <label for="teamNumber">Team Number (Auto-generated)</label>
+          <input type="text" id="teamNumber" [(ngModel)]="newTeam.teamNumber" name="teamNumber" readonly />
+        </div>
+
+        <div class="form-group">
+          <label for="teamLogo">Team Logo *</label>
+          <div class="file-upload-wrapper">
+            <input type="file" id="teamLogo" accept="image/*" (change)="onTeamLogoSelected($event)" name="teamLogo" required />
+            <label for="teamLogo" class="file-upload-label">🎨 Choose Logo</label>
+          </div>
+          <div *ngIf="teamLogoPreview" class="logo-preview">
+            <img [src]="teamLogoPreview" alt="Team logo preview" class="preview-img" />
+            <p>Logo selected ✓</p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="teamName">Team Name *</label>
+          <input type="text" id="teamName" [(ngModel)]="newTeam.name" name="name" placeholder="e.g., Mumbai Tigers" required />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="ownerName">Owner Name *</label>
+            <input type="text" id="ownerName" [(ngModel)]="newTeam.ownerName" name="ownerName" placeholder="e.g., John Doe" required />
+          </div>
+          <div class="form-group">
+            <label for="mobileNumber">Mobile Number *</label>
+            <input type="tel" id="mobileNumber" [(ngModel)]="newTeam.mobileNumber" name="mobileNumber" placeholder="+91 98765 43210" required />
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeAddTeamModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add Team</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

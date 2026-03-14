@@ -1,0 +1,37 @@
+<style>
+  :host {
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --text-primary: #333;
+    --text-secondary: #666;
+    --border-color: #e0e0e0;
+    --bg-light: #f8f9fa;
+
+    display: block;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  main {
+    width: 100%;
+    min-height: 100vh;
+    display: block;
+  }
+</style>
+
+<main>
+  <router-outlet></router-outlet>
+</main>

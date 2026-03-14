@@ -1,0 +1,209 @@
+<div class="teams-container">
+  <!-- Header -->
+  <div class="teams-header">
+    <div class="header-content">
+      <div class="tournament-info">
+        <h1>{{ tournament?.name }}</h1>
+        <p class="sub-header">Players</p>
+      </div>
+      <div class="tournament-date">{{ tournament?.date | date: 'MMM dd, yyyy' }}</div>
+    </div>
+  </div>
+
+  <!-- Actions Bar -->
+  <div class="actions-bar">
+    <div class="action-buttons">
+      <button class="btn btn-primary" title="Add Player" (click)="openAddPlayerModal()">
+        <span>➕</span> Add Player
+      </button>
+      <button class="btn btn-secondary" title="Clear All Players">
+        <span>🗑️</span> Clear All Players
+      </button>
+      <button class="btn btn-secondary" title="Load from Excel">
+        <span>📊</span> Load from Excel
+      </button>
+    </div>
+    <button class="btn btn-back-light" title="Back to Dashboard" (click)="goBack()">
+      ← Back To Dashboard
+    </button>
+  </div>
+
+  <!-- Players Grid Table -->
+  <div class="grid-container">
+    <table class="players-table">
+      <thead>
+        <tr>
+          <th>Player #</th>
+          <th>Photo</th>
+          <th>Name</th>
+          <th>Last Name</th>
+          <th>Age</th>
+          <th>Payment Proof</th>
+          <th>Action</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let player of players">
+          <td>{{ player.playerNumber }}</td>
+          <td class="photo-cell">
+            <img [src]="player.photo" [alt]="player.firstName" class="player-photo" />
+          </td>
+          <td>{{ player.firstName }}</td>
+          <td>{{ player.lastName || 'N/A' }}</td>
+          <td>{{ calculateAge(player.dob) }}</td>
+          <td class="proof-cell">
+            <img
+              [src]="player.paymentProof"
+              [alt]="'Payment Proof for ' + player.firstName"
+              class="payment-proof-thumbnail"
+              (click)="openImageModal(player.paymentProof, player.firstName)"
+            />
+          </td>
+          <td class="action-cell">
+            <button class="btn-approve" (click)="approvePlayer(player.id)" title="Approve">
+              ✓
+            </button>
+            <button class="btn-reject" (click)="rejectPlayer(player.id)" title="Reject">
+              ✕
+            </button>
+          </td>
+          <td>
+            <span class="status-badge" [ngClass]="'status-' + player.status">
+              {{ player.status | titlecase }}
+            </span>
+          </td>
+          <td class="delete-cell">
+            <button class="btn-edit" (click)="openEditPlayerModal(player)" title="Edit">✏️</button>
+            <button class="btn-delete" (click)="deletePlayer(player.id)" title="Delete">🗑️</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Image Modal -->
+  <div class="modal-overlay" *ngIf="selectedImage" (click)="closeImageModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="closeImageModal()">✕</button>
+      <img [src]="selectedImage" [alt]="selectedImageName" class="modal-image" />
+      <div class="modal-actions">
+        <button class="btn btn-approve-modal" (click)="approveFromModal()">✓ Approve</button>
+        <button class="btn btn-reject-modal" (click)="rejectFromModal()">✕ Reject</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Player Modal -->
+  <div class="modal-overlay" *ngIf="showEditPlayerModal" (click)="closeEditPlayerModal()">
+    <div class="modal-content form-modal" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="closeEditPlayerModal()">✕</button>
+      <h2>Edit Player</h2>
+      <form (ngSubmit)="saveEditPlayer()" class="add-player-form">
+        <div class="form-group">
+          <label for="editPlayerPhoto">Player Photo</label>
+          <div class="file-upload-wrapper">
+            <input type="file" id="editPlayerPhoto" accept="image/*" (change)="onEditPhotoSelected($event)" name="editPlayerPhoto" />
+            <label for="editPlayerPhoto" class="file-upload-label">📷 Change Photo</label>
+          </div>
+          <div *ngIf="editPhotoPreview" class="photo-preview">
+            <img [src]="editPhotoPreview" alt="Player preview" class="preview-img" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editFirstName">First Name *</label>
+            <input type="text" id="editFirstName" [(ngModel)]="editPlayerForm.firstName" name="editFirstName" placeholder="e.g., John" required />
+          </div>
+          <div class="form-group">
+            <label for="editLastName">Last Name</label>
+            <input type="text" id="editLastName" [(ngModel)]="editPlayerForm.lastName" name="editLastName" placeholder="e.g., Doe" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editDob">Date of Birth</label>
+            <input type="date" id="editDob" [(ngModel)]="editPlayerForm.dob" name="editDob" />
+          </div>
+          <div class="form-group">
+            <label for="editRole">Role *</label>
+            <select id="editRole" [(ngModel)]="editPlayerForm.role" name="editRole" required>
+              <option value="Batsman">Batsman</option>
+              <option value="Bowler">Bowler</option>
+              <option value="All-rounder">All-rounder</option>
+              <option value="Wicket Keeper">Wicket Keeper</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeEditPlayerModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Player Modal -->
+  <div class="modal-overlay" *ngIf="showAddPlayerModal" (click)="closeAddPlayerModal()">
+    <div class="modal-content form-modal" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="closeAddPlayerModal()">✕</button>
+      <h2>Add New Player</h2>
+      <form (ngSubmit)="addPlayer()" class="add-player-form">
+        <div class="form-group">
+          <label for="playerNumber">Player Number (Auto-generated)</label>
+          <input type="text" id="playerNumber" [(ngModel)]="newPlayer.playerNumber" name="playerNumber" readonly />
+        </div>
+
+        <div class="form-group">
+          <label for="playerPhoto">Player Photo *</label>
+          <div class="file-upload-wrapper">
+            <input type="file" id="playerPhoto" accept="image/*" (change)="onPlayerPhotoSelected($event)" name="playerPhoto" required />
+            <label for="playerPhoto" class="file-upload-label">📷 Choose Photo</label>
+          </div>
+          <div *ngIf="playerPhotoPreview" class="photo-preview">
+            <img [src]="playerPhotoPreview" alt="Player preview" class="preview-img" />
+            <p>Photo selected ✓</p>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName">First Name *</label>
+            <input type="text" id="firstName" [(ngModel)]="newPlayer.firstName" name="firstName" placeholder="e.g., John" required />
+          </div>
+          <div class="form-group">
+            <label for="lastName">Last Name</label>
+            <input type="text" id="lastName" [(ngModel)]="newPlayer.lastName" name="lastName" placeholder="e.g., Doe (optional)" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="dob">Date of Birth</label>
+            <input type="date" id="dob" [(ngModel)]="newPlayer.dob" name="dob" />
+          </div>
+          <div class="form-group">
+            <label for="role">Role *</label>
+            <select id="role" [(ngModel)]="newPlayer.role" name="role" required>
+              <option value="Batsman">Batsman</option>
+              <option value="Bowler">Bowler</option>
+              <option value="All-rounder">All-rounder</option>
+              <option value="Wicket Keeper">Wicket Keeper</option>
+            </select>
+          </div>
+        </div>
+
+        <p class="form-note">Note: Payment proof will be set to a default image, status will be 'Pending', Last Name is optional (defaults to N/A), Date of Birth is optional</p>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeAddPlayerModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add Player</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

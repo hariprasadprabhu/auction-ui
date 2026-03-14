@@ -1,0 +1,132 @@
+<div class="register-page">
+  <!-- Tournament Banner -->
+  <div class="tournament-banner" *ngIf="tournament">
+    <div class="banner-content">
+      <div class="banner-info">
+        <h1>{{ tournament.name }}</h1>
+        <p class="banner-sport">{{ tournament.sport }}</p>
+      </div>
+      <div class="banner-date">
+        <span class="date-label">Auction Date</span>
+        <span class="date-value">{{ tournament.date | date: 'MMM dd, yyyy' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Not Found -->
+  <div class="not-found" *ngIf="!tournament">
+    <h2>Tournament not found</h2>
+    <p>The tournament you are looking for does not exist.</p>
+  </div>
+
+  <!-- Registration Form -->
+  <div class="form-wrapper" *ngIf="tournament && !submitted">
+    <div class="form-card">
+      <h2>Player Registration</h2>
+      <p class="form-subtitle">Fill in your details below to register for this tournament</p>
+
+      <form (ngSubmit)="submitForm()" class="register-form" #registerForm="ngForm">
+
+        <!-- Photo Upload -->
+        <div class="form-section">
+          <h3 class="section-title">Profile Photo</h3>
+          <div class="photo-upload-area">
+            <div class="photo-preview-circle" *ngIf="photoPreview">
+              <img [src]="photoPreview" alt="Player photo" class="preview-circle-img" />
+              <button type="button" class="remove-photo" (click)="removePhoto()">✕</button>
+            </div>
+            <div class="upload-placeholder" *ngIf="!photoPreview">
+              <div class="placeholder-icon">📷</div>
+              <p>Upload your photo</p>
+            </div>
+            <div class="file-upload-wrapper">
+              <input type="file" id="playerPhoto" accept="image/*" (change)="onPhotoSelected($event)" name="playerPhoto" />
+              <label for="playerPhoto" class="file-upload-label">{{ photoPreview ? '🔄 Change Photo' : '📷 Choose Photo' }}</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Personal Details -->
+        <div class="form-section">
+          <h3 class="section-title">Personal Details</h3>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="firstName">First Name *</label>
+              <input
+                type="text"
+                id="firstName"
+                [(ngModel)]="form.firstName"
+                name="firstName"
+                placeholder="e.g., John"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="lastName">Last Name</label>
+              <input
+                type="text"
+                id="lastName"
+                [(ngModel)]="form.lastName"
+                name="lastName"
+                placeholder="e.g., Doe (optional)"
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="dob">Date of Birth</label>
+              <input
+                type="date"
+                id="dob"
+                [(ngModel)]="form.dob"
+                name="dob"
+              />
+            </div>
+            <div class="form-group">
+              <label for="role">Role *</label>
+              <select id="role" [(ngModel)]="form.role" name="role" required>
+                <option value="" disabled>Select role</option>
+                <option value="Batsman">Batsman</option>
+                <option value="Bowler">Bowler</option>
+                <option value="All-rounder">All-rounder</option>
+                <option value="Wicket Keeper">Wicket Keeper</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Proof -->
+        <div class="form-section">
+          <h3 class="section-title">Payment Proof *</h3>
+          <p class="section-hint">Upload a screenshot of your payment confirmation</p>
+          <div class="file-upload-wrapper">
+            <input type="file" id="paymentProof" accept="image/*" (change)="onPaymentProofSelected($event)" name="paymentProof" required />
+            <label for="paymentProof" class="file-upload-label proof-label">{{ paymentProofPreview ? '✅ Payment Proof Selected — Click to Change' : '📄 Upload Payment Screenshot' }}</label>
+          </div>
+          <div *ngIf="paymentProofPreview" class="proof-preview">
+            <img [src]="paymentProofPreview" alt="Payment proof preview" class="proof-img" />
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <div class="form-actions">
+          <button type="submit" class="btn-submit" [disabled]="!form.firstName || !form.role || !photoPreview || !paymentProofPreview">
+            Register Now
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- Success State -->
+  <div class="success-card" *ngIf="submitted">
+    <div class="success-icon">🎉</div>
+    <h2>Registration Submitted!</h2>
+    <p>Your registration for <strong>{{ tournament?.name }}</strong> has been received.</p>
+    <p class="success-sub">Your entry is pending admin approval. You will be notified once it's reviewed.</p>
+    <button class="btn-submit" (click)="registerAnother()">Register Another Player</button>
+  </div>
+</div>
