@@ -2,6 +2,8 @@ import { Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
+import { AuthService } from '../../core/services/auth.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-login',
@@ -10,19 +12,20 @@ import { Router, ActivatedRoute } from '@angular/router';
   styleUrls: ['./login.scss'],
 })
 export class Login implements OnInit {
-  username: string = '';
+  email: string = '';
   password: string = '';
   errorMsg: string = '';
   isLoading: boolean = false;
   registeredToast: boolean = false;
 
   private router = inject(Router);
-  private route  = inject(ActivatedRoute);
+  private route = inject(ActivatedRoute);
+  private authService = inject(AuthService);
 
   ngOnInit() {
     if (this.route.snapshot.queryParamMap.get('registered') === '1') {
       this.registeredToast = true;
-      setTimeout(() => this.registeredToast = false, 5000);
+      setTimeout(() => (this.registeredToast = false), 5000);
     }
   }
 
@@ -30,14 +33,20 @@ export class Login implements OnInit {
     this.errorMsg = '';
     this.isLoading = true;
 
-    setTimeout(() => {
-      this.isLoading = false;
-      if (this.username === 'admin' && this.password === 'admin') {
+    this.authService.login({ email: this.email, password: this.password }).subscribe({
+      next: () => {
+        this.isLoading = false;
         this.router.navigate(['/admin']);
-      } else {
-        this.errorMsg = 'Invalid credentials. Please try again.';
-      }
-    }, 600);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.isLoading = false;
+        if (err.status === 401) {
+          this.errorMsg = 'Invalid credentials. Please try again.';
+        } else {
+          this.errorMsg = 'Login failed. Please try again later.';
+        }
+      },
+    });
   }
 
   goHome() {

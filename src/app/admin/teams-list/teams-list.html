@@ -33,7 +33,7 @@
           <tr *ngFor="let team of teams">
             <td class="team-number">{{ team.teamNumber }}</td>
             <td class="logo-cell">
-              <img [src]="team.logo" [alt]="team.name" class="team-logo" />
+              <img [src]="team.logoUrl" [alt]="team.name" class="team-logo" />
             </td>
             <td class="team-name">{{ team.name }}</td>
             <td class="owner-name">{{ team.ownerName }}</td>
@@ -54,11 +54,6 @@
       <button class="modal-close" (click)="closeEditTeamModal()">✕</button>
       <h2>Edit Team</h2>
       <form (ngSubmit)="saveEditTeam()" class="add-team-form">
-        <div class="form-group">
-          <label for="editTeamNumber">Team Number</label>
-          <input type="text" id="editTeamNumber" [(ngModel)]="editTeam.teamNumber" name="editTeamNumber" readonly />
-        </div>
-
         <div class="form-group">
           <label for="editTeamLogo">Team Logo</label>
           <div class="file-upload-wrapper">
@@ -100,11 +95,6 @@
       <button class="modal-close" (click)="closeAddTeamModal()">✕</button>
       <h2>Add New Team</h2>
       <form (ngSubmit)="addTeam()" class="add-team-form">
-        <div class="form-group">
-          <label for="teamNumber">Team Number (Auto-generated)</label>
-          <input type="text" id="teamNumber" [(ngModel)]="newTeam.teamNumber" name="teamNumber" readonly />
-        </div>
-
         <div class="form-group">
           <label for="teamLogo">Team Logo *</label>
           <div class="file-upload-wrapper">

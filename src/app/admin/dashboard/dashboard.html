@@ -14,8 +14,8 @@
       <div class="tournament-card" *ngFor="let tournament of tournaments">
         <div class="card-header">
           <div class="tournament-logo-wrap">
-            <img *ngIf="tournament.logo" [src]="tournament.logo" [alt]="tournament.name" class="tournament-logo" />
-            <div *ngIf="!tournament.logo" class="tournament-logo-placeholder">🏆</div>
+            <img *ngIf="tournament.logoUrl" [src]="tournament.logoUrl" [alt]="tournament.name" class="tournament-logo" />
+            <div *ngIf="!tournament.logoUrl" class="tournament-logo-placeholder">🏆</div>
           </div>
           <div class="tournament-name">{{ tournament.name }}</div>
           <div class="tournament-date">{{ tournament.date | date: 'MMM dd, yyyy' }}</div>
@@ -41,7 +41,7 @@
                 <strong>Base Price:</strong>
                 {{ tournament.basePrice | currency:'INR':'symbol-narrow':'1.0-0' }}
               </span>
-              <span class="status-badge" [ngClass]="'status-' + tournament.status">
+              <span class="status-badge" [ngClass]="'status-' + (tournament.status | lowercase)">
                 {{ tournament.status | titlecase }}
               </span>
             </div>
@@ -76,6 +76,10 @@
           <button class="action-btn">
             <span class="icon">📊</span>
             <span class="tooltip">Results</span>
+          </button>
+          <button class="action-btn" (click)="deleteTournament(tournament.id)">
+            <span class="icon">🗑️</span>
+            <span class="tooltip">Delete</span>
           </button>
         </div>
       </div>
@@ -171,9 +175,9 @@
           <div class="form-group">
             <label for="tStatus">Status *</label>
             <select id="tStatus" [(ngModel)]="newTournament.status" name="tStatus" required>
-              <option value="upcoming">Upcoming</option>
-              <option value="ongoing">Ongoing</option>
-              <option value="completed">Completed</option>
+              <option value="UPCOMING">Upcoming</option>
+              <option value="ONGOING">Ongoing</option>
+              <option value="COMPLETED">Completed</option>
             </select>
           </div>
         </div>

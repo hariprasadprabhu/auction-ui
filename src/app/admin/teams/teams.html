@@ -48,17 +48,17 @@
         <tr *ngFor="let player of players">
           <td>{{ player.playerNumber }}</td>
           <td class="photo-cell">
-            <img [src]="player.photo" [alt]="player.firstName" class="player-photo" />
+            <img [src]="player.photoUrl" [alt]="player.firstName" class="player-photo" />
           </td>
           <td>{{ player.firstName }}</td>
           <td>{{ player.lastName || 'N/A' }}</td>
           <td>{{ calculateAge(player.dob) }}</td>
           <td class="proof-cell">
             <img
-              [src]="player.paymentProof"
+              [src]="player.paymentProofUrl | authImage | async"
               [alt]="'Payment Proof for ' + player.firstName"
               class="payment-proof-thumbnail"
-              (click)="openImageModal(player.paymentProof, player.firstName)"
+              (click)="openImageModal(player.paymentProofUrl, player.firstName, player.id)"
             />
           </td>
           <td class="action-cell">
@@ -70,7 +70,7 @@
             </button>
           </td>
           <td>
-            <span class="status-badge" [ngClass]="'status-' + player.status">
+            <span class="status-badge" [ngClass]="'status-' + (player.status | lowercase)">
               {{ player.status | titlecase }}
             </span>
           </td>
@@ -87,7 +87,7 @@
   <div class="modal-overlay" *ngIf="selectedImage" (click)="closeImageModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <button class="modal-close" (click)="closeImageModal()">✕</button>
-      <img [src]="selectedImage" [alt]="selectedImageName" class="modal-image" />
+      <img [src]="selectedImage | authImage | async" [alt]="selectedImageName" class="modal-image" />
       <div class="modal-actions">
         <button class="btn btn-approve-modal" (click)="approveFromModal()">✓ Approve</button>
         <button class="btn btn-reject-modal" (click)="rejectFromModal()">✕ Reject</button>
@@ -139,6 +139,17 @@
           </div>
         </div>
 
+        <div class="form-group">
+          <label for="editPaymentProof">Payment Proof Screenshot</label>
+          <div class="file-upload-wrapper">
+            <input type="file" id="editPaymentProof" accept="image/*" (change)="onEditPaymentProofSelected($event)" name="editPaymentProof" />
+            <label for="editPaymentProof" class="file-upload-label">📄 Upload Payment Screenshot</label>
+          </div>
+          <div *ngIf="editPlayerForm.paymentProofFile" class="proof-selected">
+            <span>✅ Payment proof selected: {{ editPlayerForm.paymentProofFile.name }}</span>
+          </div>
+        </div>
+
         <div class="form-actions">
           <button type="button" class="btn btn-secondary" (click)="closeEditPlayerModal()">Cancel</button>
           <button type="submit" class="btn btn-primary">Save Changes</button>
@@ -153,11 +164,6 @@
       <button class="modal-close" (click)="closeAddPlayerModal()">✕</button>
       <h2>Add New Player</h2>
       <form (ngSubmit)="addPlayer()" class="add-player-form">
-        <div class="form-group">
-          <label for="playerNumber">Player Number (Auto-generated)</label>
-          <input type="text" id="playerNumber" [(ngModel)]="newPlayer.playerNumber" name="playerNumber" readonly />
-        </div>
-
         <div class="form-group">
           <label for="playerPhoto">Player Photo *</label>
           <div class="file-upload-wrapper">
@@ -197,7 +203,18 @@
           </div>
         </div>
 
-        <p class="form-note">Note: Payment proof will be set to a default image, status will be 'Pending', Last Name is optional (defaults to N/A), Date of Birth is optional</p>
+        <div class="form-group">
+          <label for="paymentProof">Payment Proof Screenshot</label>
+          <div class="file-upload-wrapper">
+            <input type="file" id="paymentProof" accept="image/*" (change)="onPaymentProofSelected($event)" name="paymentProof" />
+            <label for="paymentProof" class="file-upload-label">📄 Upload Payment Screenshot</label>
+          </div>
+          <div *ngIf="newPlayer.paymentProofFile" class="proof-selected">
+            <span>✅ Payment proof selected: {{ newPlayer.paymentProofFile.name }}</span>
+          </div>
+        </div>
+
+        <p class="form-note">Status will be 'Pending'. Last Name and Date of Birth are optional.</p>
 
         <div class="form-actions">
           <button type="button" class="btn btn-secondary" (click)="closeAddPlayerModal()">Cancel</button>

@@ -32,16 +32,16 @@
     <form (ngSubmit)="login()" class="login-form">
 
       <div class="field">
-        <label for="username">Username</label>
+        <label for="username">Email</label>
         <div class="input-wrap">
-          <span class="input-icon">👤</span>
+          <span class="input-icon">📧</span>
           <input
             id="username"
-            type="text"
-            [(ngModel)]="username"
-            name="username"
-            placeholder="Enter your username"
-            autocomplete="username"
+            type="email"
+            [(ngModel)]="email"
+            name="email"
+            placeholder="Enter your email"
+            autocomplete="email"
           />
         </div>
       </div>

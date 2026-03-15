@@ -7,7 +7,7 @@
       <p class="ov-subtitle">Owner View — Team Purse &amp; Player Status</p>
     </div>
     <div class="header-right">
-      <span class="tournament-date">{{ tournament?.date | date: 'MMM dd, yyyy' }}</span>
+      <span class="tournament-date">{{ tournament?.name }}</span>
     </div>
   </div>
 
@@ -54,18 +54,18 @@
       </div>
 
       <div class="players-grid">
-        <div class="player-card" *ngFor="let player of filteredPlayers" [ngClass]="'card-' + player.auctionStatus">
-          <img [src]="player.photo" [alt]="player.firstName" class="player-photo" />
+        <div class="player-card" *ngFor="let player of filteredPlayers" [ngClass]="'card-' + (player.auctionStatus | lowercase)">
+          <img [src]="player.photoUrl" [alt]="player.firstName" class="player-photo" />
           <div class="player-card-body">
             <p class="player-name">{{ player.firstName }} {{ player.lastName }}</p>
             <p class="player-meta">{{ player.role }} · {{ player.city }}</p>
             <p class="player-base">Base: {{ formatAmount(player.basePrice) }}</p>
           </div>
           <div class="player-card-footer">
-            <span class="status-badge badge-{{ player.auctionStatus }}">
+            <span class="status-badge badge-{{ player.auctionStatus | lowercase }}">
               {{ playerStatusLabel(player.auctionStatus) }}
             </span>
-            <span class="sold-price" *ngIf="player.auctionStatus === 'sold'">
+            <span class="sold-price" *ngIf="player.auctionStatus === 'SOLD'">
               {{ formatAmount(player.soldPrice || player.basePrice) }}
             </span>
           </div>
@@ -83,7 +83,6 @@
       <div class="teams-grid">
         <div class="team-purse-card" *ngFor="let stats of teamStats" (click)="openTeamDetail(stats)">
           <div class="tpc-header">
-            <img [src]="stats.team.logo" [alt]="stats.team.name" class="tpc-logo" />
             <div class="tpc-info">
               <h3 class="tpc-name">{{ stats.team.name }}</h3>
               <p class="tpc-owner">👤 {{ stats.team.ownerName }}</p>
@@ -109,20 +108,16 @@
 
           <div class="tpc-stats">
             <div class="tpc-stat">
-              <span class="tpc-stat-val">{{ stats.playersBought }}<span class="tpc-stat-sep">/</span>{{ tournament?.playersPerTeam }}</span>
+              <span class="tpc-stat-val">{{ stats.playersCount }}<span class="tpc-stat-sep">/</span>{{ tournament?.playersPerTeam }}</span>
               <span class="tpc-stat-lbl">Players Bought</span>
             </div>
             <div class="tpc-stat tpc-stat-spent">
-              <span class="tpc-stat-val">{{ formatAmount(stats.purseUsed) }}</span>
+              <span class="tpc-stat-val">{{ formatAmount(stats.purseSpent) }}</span>
               <span class="tpc-stat-lbl">Purse Spent</span>
             </div>
-            <div class="tpc-stat tpc-stat-max">
-              <span class="tpc-stat-val">{{ formatAmount(stats.maxBid) }}</span>
-              <span class="tpc-stat-lbl">Max Bid</span>
-            </div>
-            <div class="tpc-stat tpc-stat-min">
-              <span class="tpc-stat-val">{{ formatAmount(stats.minPurseToKeep) }}</span>
-              <span class="tpc-stat-lbl">Min to Retain</span>
+            <div class="tpc-stat">
+              <span class="tpc-stat-val">{{ formatAmount(stats.purseAllocated) }}</span>
+              <span class="tpc-stat-lbl">Total Purse</span>
             </div>
           </div>
         </div>
@@ -140,7 +135,6 @@
       <button class="modal-close" (click)="closeTeamDetail()">✕</button>
 
       <div class="modal-team-header" *ngIf="selectedTeam">
-        <img [src]="selectedTeam.team.logo" [alt]="selectedTeam.team.name" class="modal-logo" />
         <div class="modal-team-meta">
           <h2>{{ selectedTeam.team.name }}</h2>
           <p class="modal-owner-name">Owner: {{ selectedTeam.team.ownerName }}</p>
@@ -150,41 +144,36 @@
 
       <div class="modal-stats-row" *ngIf="selectedTeam">
         <div class="modal-stat-item">
-          <span class="modal-stat-val">{{ selectedTeam.playersBought }}<span class="modal-sep">/</span>{{ tournament?.playersPerTeam }}</span>
+          <span class="modal-stat-val">{{ selectedTeam.playersCount }}<span class="modal-sep">/</span>{{ tournament?.playersPerTeam }}</span>
           <span class="modal-stat-lbl">Players Bought</span>
         </div>
         <div class="modal-stat-item ms-remaining">
           <span class="modal-stat-val">{{ formatAmount(selectedTeam.purseRemaining) }}</span>
           <span class="modal-stat-lbl">Purse Left</span>
         </div>
-        <div class="modal-stat-item ms-max">
-          <span class="modal-stat-val">{{ formatAmount(selectedTeam.maxBid) }}</span>
-          <span class="modal-stat-lbl">Max Bid</span>
-        </div>
-        <div class="modal-stat-item ms-min">
-          <span class="modal-stat-val">{{ formatAmount(selectedTeam.minPurseToKeep) }}</span>
-          <span class="modal-stat-lbl">Min to Keep</span>
+        <div class="modal-stat-item ms-spent">
+          <span class="modal-stat-val">{{ formatAmount(selectedTeam.purseSpent) }}</span>
+          <span class="modal-stat-lbl">Purse Spent</span>
         </div>
       </div>
 
       <div class="modal-squad-title">
         Squad
-        <span class="squad-count">({{ selectedTeam?.soldPlayers?.length }} players)</span>
+        <span class="squad-count">({{ selectedTeam?.playerDetails?.length }} players)</span>
       </div>
 
-      <div class="squad-list" *ngIf="selectedTeam?.soldPlayers?.length">
-        <div class="squad-row" *ngFor="let p of selectedTeam!.soldPlayers; let i = index">
+      <div class="squad-list" *ngIf="selectedTeam?.playerDetails?.length">
+        <div class="squad-row" *ngFor="let p of selectedTeam!.playerDetails; let i = index">
           <span class="squad-idx">{{ i + 1 }}</span>
-          <img [src]="p.photo" [alt]="p.firstName" class="squad-photo" />
           <div class="squad-info">
             <span class="squad-name">{{ p.firstName }} {{ p.lastName }}</span>
-            <span class="squad-role">{{ p.role }}</span>
+            <span class="squad-role">{{ p.role }} · #{{ p.playerNumber }}</span>
           </div>
-          <span class="squad-price">{{ formatAmount(p.soldPrice || p.basePrice) }}</span>
+          <span class="squad-price">{{ formatAmount(p.soldPrice) }}</span>
         </div>
       </div>
 
-      <div class="squad-empty" *ngIf="!selectedTeam?.soldPlayers?.length">
+      <div class="squad-empty" *ngIf="!selectedTeam?.playerDetails?.length">
         No players bought yet.
       </div>
     </div>

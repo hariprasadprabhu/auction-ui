@@ -1,7 +1,9 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
+import { AuthService } from '../../core/services/auth.service';
 
 export interface Country {
   name: string;
@@ -133,14 +135,40 @@ export class Signup {
     if (!this.isFormValid) return;
 
     this.isLoading = true;
-    setTimeout(() => {
-      this.isLoading = false;
-      this.router.navigate(['/login'], { queryParams: { registered: '1' } });
-    }, 800);
+    this.authService
+      .register({
+        name: this.form.name.trim(),
+        email: this.form.email.trim(),
+        password: this.form.password,
+        phoneCountryCode: this.selectedCountry.code,
+        phoneNumber: this.form.phoneNumber.trim(),
+        organisation: this.form.organisation.trim() || undefined,
+        sport: this.form.sport,
+        numberOfTeams: this.form.teams ? Number(this.form.teams) : undefined,
+      })
+      .subscribe({
+        next: () => {
+          this.isLoading = false;
+          this.router.navigate(['/login'], { queryParams: { registered: '1' } });
+        },
+        error: (err: HttpErrorResponse) => {
+          this.isLoading = false;
+          if (err.status === 400 && err.error?.errors?.email) {
+            this.serverEmailError = err.error.errors.email;
+          } else if (err.status === 400 && err.error?.email) {
+            this.serverEmailError = err.error.email;
+          } else {
+            this.serverEmailError = 'Registration failed. Please try again.';
+          }
+        },
+      });
   }
 
   goHome() { this.router.navigate(['/']); }
   goToLogin() { this.router.navigate(['/login']); }
 
+  private readonly authService = inject(AuthService);
   constructor(private router: Router) {}
+
+  serverEmailError = '';
 }

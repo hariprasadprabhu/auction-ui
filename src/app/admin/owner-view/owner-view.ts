@@ -1,18 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MOCK_TOURNAMENTS, MOCK_TEAMS, MOCK_AUCTION_PLAYERS } from '../../mock-tournaments';
-import { Tournament, Team, AuctionPlayer } from '../../models';
-
-interface TeamStats {
-  team: Team;
-  playersBought: number;
-  purseUsed: number;
-  purseRemaining: number;
-  maxBid: number;
-  minPurseToKeep: number;
-  soldPlayers: AuctionPlayer[];
-}
+import { OwnerViewService } from '../../core/services/owner-view.service';
+import { AuctionPlayerService } from '../../core/services/auction-player.service';
+import { AuctionPlayer, OwnerViewResponse, OwnerViewTeamStats } from '../../models';
 
 @Component({
   selector: 'app-owner-view',
@@ -22,70 +13,60 @@ interface TeamStats {
   styleUrls: ['./owner-view.scss'],
 })
 export class OwnerView implements OnInit {
-  tournament: Tournament | undefined;
-  teams: Team[] = [];
+  data: OwnerViewResponse | null = null;
   auctionPlayers: AuctionPlayer[] = [];
-  teamStats: TeamStats[] = [];
 
   mainTab: 'players' | 'owners' = 'players';
   playerFilter: 'all' | 'sold' | 'unsold' | 'available' = 'all';
 
-  selectedTeam: TeamStats | null = null;
+  selectedTeam: OwnerViewTeamStats | null = null;
   showTeamDetail = false;
 
-  constructor(private route: ActivatedRoute, private router: Router) {}
+  // Expose tournament from data
+  get tournament() { return this.data?.tournament; }
+  get teamStats()   { return this.data?.teamStats ?? []; }
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private ownerViewService: OwnerViewService,
+    private auctionPlayerService: AuctionPlayerService,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit() {
-    const tournamentId = this.route.snapshot.paramMap.get('tournamentId');
-    if (tournamentId) {
-      this.tournament = MOCK_TOURNAMENTS.find(t => t.id === tournamentId);
-      this.teams = MOCK_TEAMS.filter(t => t.tournamentId === tournamentId);
-      this.auctionPlayers = MOCK_AUCTION_PLAYERS;
-      this.computeTeamStats();
+    const id = Number(this.route.snapshot.paramMap.get('tournamentId'));
+    if (id) {
+      this.ownerViewService.get(id).subscribe({
+        next: (d) => {
+          this.data = d;
+          this.cdr.markForCheck();
+        },
+        error: () => alert('Failed to load owner view.'),
+      });
+      this.auctionPlayerService.getByTournament(id).subscribe({
+        next: (players) => {
+          this.auctionPlayers = players;
+          this.cdr.markForCheck();
+        },
+      });
     }
-  }
-
-  private computeTeamStats() {
-    if (!this.tournament) return;
-    this.teamStats = this.teams.map(team => {
-      const soldPlayers = this.auctionPlayers.filter(
-        p => p.auctionStatus === 'sold' && p.soldToTeamId === team.id
-      );
-      const purseUsed = soldPlayers.reduce((sum, p) => sum + (p.soldPrice ?? p.basePrice), 0);
-      const purseRemaining = this.tournament!.purseAmount - purseUsed;
-      const playersBought = soldPlayers.length;
-      const remainingSlots = this.tournament!.playersPerTeam - playersBought;
-      const minPurseToKeep = remainingSlots > 0 ? remainingSlots * this.tournament!.basePrice : 0;
-      const maxBid =
-        remainingSlots > 1
-          ? purseRemaining - (remainingSlots - 1) * this.tournament!.basePrice
-          : purseRemaining;
-      return {
-        team,
-        playersBought,
-        purseUsed,
-        purseRemaining,
-        maxBid: Math.max(0, maxBid),
-        minPurseToKeep,
-        soldPlayers,
-      };
-    });
   }
 
   get filteredPlayers(): AuctionPlayer[] {
     switch (this.playerFilter) {
-      case 'sold':      return this.auctionPlayers.filter(p => p.auctionStatus === 'sold');
-      case 'unsold':    return this.auctionPlayers.filter(p => p.auctionStatus === 'unsold');
-      case 'available': return this.auctionPlayers.filter(p => p.auctionStatus === 'upcoming');
+      case 'sold':      return this.auctionPlayers.filter(p => p.auctionStatus === 'SOLD');
+      case 'unsold':    return this.auctionPlayers.filter(p => p.auctionStatus === 'UNSOLD');
+      case 'available': return this.auctionPlayers.filter(p => p.auctionStatus === 'AVAILABLE');
       default:          return this.auctionPlayers;
     }
   }
 
-  get soldCount()      { return this.auctionPlayers.filter(p => p.auctionStatus === 'sold').length; }
-  get unsoldCount()    { return this.auctionPlayers.filter(p => p.auctionStatus === 'unsold').length; }
-  get availableCount() { return this.auctionPlayers.filter(p => p.auctionStatus === 'upcoming').length; }
+  get soldCount()      { return this.data?.playerStats.sold ?? 0; }
+  get unsoldCount()    { return this.data?.playerStats.unsold ?? 0; }
+  get availableCount() { return this.data?.playerStats.available ?? 0; }
 
-  openTeamDetail(stats: TeamStats) {
+  openTeamDetail(stats: OwnerViewTeamStats) {
     this.selectedTeam = stats;
     this.showTeamDetail = true;
   }
@@ -103,12 +84,12 @@ export class OwnerView implements OnInit {
     return '₹' + amount.toLocaleString('en-IN');
   }
 
-  getPursePercent(stats: TeamStats): number {
+  getPursePercent(stats: OwnerViewTeamStats): number {
     if (!this.tournament) return 0;
     return Math.round((stats.purseRemaining / this.tournament.purseAmount) * 100);
   }
 
-  getPurseClass(stats: TeamStats): string {
+  getPurseClass(stats: OwnerViewTeamStats): string {
     const pct = this.getPursePercent(stats);
     if (pct > 60) return 'purse-high';
     if (pct > 30) return 'purse-medium';
@@ -116,7 +97,7 @@ export class OwnerView implements OnInit {
   }
 
   playerStatusLabel(status: string): string {
-    if (status === 'upcoming') return 'Available';
-    return status.charAt(0).toUpperCase() + status.slice(1);
+    if (status === 'AVAILABLE') return 'Available';
+    return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
   }
 }
