@@ -1,0 +1,193 @@
+<div class="ov-container">
+
+  <!-- Page Header -->
+  <div class="ov-header">
+    <div class="header-left">
+      <h1>{{ tournament?.name }}</h1>
+      <p class="ov-subtitle">Owner View — Team Purse &amp; Player Status</p>
+    </div>
+    <div class="header-right">
+      <span class="tournament-date">{{ tournament?.date | date: 'MMM dd, yyyy' }}</span>
+    </div>
+  </div>
+
+  <div class="ov-content">
+    <button class="btn btn-back-light" (click)="goBack()">← Back To Dashboard</button>
+
+    <!-- Summary Chips Row -->
+    <div class="summary-row">
+      <div class="summary-chip chip-total">
+        <span class="chip-val">{{ auctionPlayers.length }}</span>
+        <span class="chip-lbl">Total Players</span>
+      </div>
+      <div class="summary-chip chip-available">
+        <span class="chip-val">{{ availableCount }}</span>
+        <span class="chip-lbl">Available for Auction</span>
+      </div>
+      <div class="summary-chip chip-sold">
+        <span class="chip-val">{{ soldCount }}</span>
+        <span class="chip-lbl">Sold</span>
+      </div>
+      <div class="summary-chip chip-unsold">
+        <span class="chip-val">{{ unsoldCount }}</span>
+        <span class="chip-lbl">Unsold</span>
+      </div>
+    </div>
+
+    <!-- Primary Tabs -->
+    <div class="primary-tabs">
+      <button class="primary-tab" [class.active]="mainTab === 'players'" (click)="mainTab = 'players'">
+        🏏 Players
+      </button>
+      <button class="primary-tab" [class.active]="mainTab === 'owners'" (click)="mainTab = 'owners'">
+        👑 Owner View
+      </button>
+    </div>
+
+    <!-- ── Players Tab ── -->
+    <section class="tab-panel players-section" *ngIf="mainTab === 'players'">
+      <div class="filter-tabs">
+        <button class="tab-btn"              [class.active]="playerFilter === 'all'"       (click)="playerFilter = 'all'">All</button>
+        <button class="tab-btn tab-available" [class.active]="playerFilter === 'available'" (click)="playerFilter = 'available'">Available for Auction</button>
+        <button class="tab-btn tab-sold"      [class.active]="playerFilter === 'sold'"      (click)="playerFilter = 'sold'">Sold</button>
+        <button class="tab-btn tab-unsold"    [class.active]="playerFilter === 'unsold'"    (click)="playerFilter = 'unsold'">Unsold</button>
+      </div>
+
+      <div class="players-grid">
+        <div class="player-card" *ngFor="let player of filteredPlayers" [ngClass]="'card-' + player.auctionStatus">
+          <img [src]="player.photo" [alt]="player.firstName" class="player-photo" />
+          <div class="player-card-body">
+            <p class="player-name">{{ player.firstName }} {{ player.lastName }}</p>
+            <p class="player-meta">{{ player.role }} · {{ player.city }}</p>
+            <p class="player-base">Base: {{ formatAmount(player.basePrice) }}</p>
+          </div>
+          <div class="player-card-footer">
+            <span class="status-badge badge-{{ player.auctionStatus }}">
+              {{ playerStatusLabel(player.auctionStatus) }}
+            </span>
+            <span class="sold-price" *ngIf="player.auctionStatus === 'sold'">
+              {{ formatAmount(player.soldPrice || player.basePrice) }}
+            </span>
+          </div>
+        </div>
+        <div class="empty-state" *ngIf="filteredPlayers.length === 0">
+          No players in this category.
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Owner View Tab ── -->
+    <section class="tab-panel teams-section" *ngIf="mainTab === 'owners'">
+      <p class="section-hint-inline">Click on a team card to view their full squad</p>
+
+      <div class="teams-grid">
+        <div class="team-purse-card" *ngFor="let stats of teamStats" (click)="openTeamDetail(stats)">
+          <div class="tpc-header">
+            <img [src]="stats.team.logo" [alt]="stats.team.name" class="tpc-logo" />
+            <div class="tpc-info">
+              <h3 class="tpc-name">{{ stats.team.name }}</h3>
+              <p class="tpc-owner">👤 {{ stats.team.ownerName }}</p>
+              <p class="tpc-number">{{ stats.team.teamNumber }}</p>
+            </div>
+            <span class="view-squad-cta">View Squad →</span>
+          </div>
+
+          <div class="purse-block">
+            <div class="purse-label-row">
+              <span class="purse-label-text">Purse Remaining</span>
+              <span class="purse-value">{{ formatAmount(stats.purseRemaining) }}</span>
+            </div>
+            <div class="purse-track">
+              <div
+                class="purse-fill"
+                [style.width.%]="getPursePercent(stats)"
+                [ngClass]="getPurseClass(stats)"
+              ></div>
+            </div>
+            <span class="purse-pct">{{ getPursePercent(stats) }}% of total purse remaining</span>
+          </div>
+
+          <div class="tpc-stats">
+            <div class="tpc-stat">
+              <span class="tpc-stat-val">{{ stats.playersBought }}<span class="tpc-stat-sep">/</span>{{ tournament?.playersPerTeam }}</span>
+              <span class="tpc-stat-lbl">Players Bought</span>
+            </div>
+            <div class="tpc-stat tpc-stat-spent">
+              <span class="tpc-stat-val">{{ formatAmount(stats.purseUsed) }}</span>
+              <span class="tpc-stat-lbl">Purse Spent</span>
+            </div>
+            <div class="tpc-stat tpc-stat-max">
+              <span class="tpc-stat-val">{{ formatAmount(stats.maxBid) }}</span>
+              <span class="tpc-stat-lbl">Max Bid</span>
+            </div>
+            <div class="tpc-stat tpc-stat-min">
+              <span class="tpc-stat-val">{{ formatAmount(stats.minPurseToKeep) }}</span>
+              <span class="tpc-stat-lbl">Min to Retain</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="teamStats.length === 0">
+        No teams registered for this tournament yet.
+      </div>
+    </section>
+  </div>
+
+  <!-- Team Detail Modal -->
+  <div class="modal-overlay" *ngIf="showTeamDetail" (click)="closeTeamDetail()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="closeTeamDetail()">✕</button>
+
+      <div class="modal-team-header" *ngIf="selectedTeam">
+        <img [src]="selectedTeam.team.logo" [alt]="selectedTeam.team.name" class="modal-logo" />
+        <div class="modal-team-meta">
+          <h2>{{ selectedTeam.team.name }}</h2>
+          <p class="modal-owner-name">Owner: {{ selectedTeam.team.ownerName }}</p>
+          <p class="modal-number">{{ selectedTeam.team.teamNumber }}</p>
+        </div>
+      </div>
+
+      <div class="modal-stats-row" *ngIf="selectedTeam">
+        <div class="modal-stat-item">
+          <span class="modal-stat-val">{{ selectedTeam.playersBought }}<span class="modal-sep">/</span>{{ tournament?.playersPerTeam }}</span>
+          <span class="modal-stat-lbl">Players Bought</span>
+        </div>
+        <div class="modal-stat-item ms-remaining">
+          <span class="modal-stat-val">{{ formatAmount(selectedTeam.purseRemaining) }}</span>
+          <span class="modal-stat-lbl">Purse Left</span>
+        </div>
+        <div class="modal-stat-item ms-max">
+          <span class="modal-stat-val">{{ formatAmount(selectedTeam.maxBid) }}</span>
+          <span class="modal-stat-lbl">Max Bid</span>
+        </div>
+        <div class="modal-stat-item ms-min">
+          <span class="modal-stat-val">{{ formatAmount(selectedTeam.minPurseToKeep) }}</span>
+          <span class="modal-stat-lbl">Min to Keep</span>
+        </div>
+      </div>
+
+      <div class="modal-squad-title">
+        Squad
+        <span class="squad-count">({{ selectedTeam?.soldPlayers?.length }} players)</span>
+      </div>
+
+      <div class="squad-list" *ngIf="selectedTeam?.soldPlayers?.length">
+        <div class="squad-row" *ngFor="let p of selectedTeam!.soldPlayers; let i = index">
+          <span class="squad-idx">{{ i + 1 }}</span>
+          <img [src]="p.photo" [alt]="p.firstName" class="squad-photo" />
+          <div class="squad-info">
+            <span class="squad-name">{{ p.firstName }} {{ p.lastName }}</span>
+            <span class="squad-role">{{ p.role }}</span>
+          </div>
+          <span class="squad-price">{{ formatAmount(p.soldPrice || p.basePrice) }}</span>
+        </div>
+      </div>
+
+      <div class="squad-empty" *ngIf="!selectedTeam?.soldPlayers?.length">
+        No players bought yet.
+      </div>
+    </div>
+  </div>
+
+</div>

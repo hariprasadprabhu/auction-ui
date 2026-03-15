@@ -108,5 +108,9 @@ export class Dashboard {
   viewConditionalIncrements(tournamentId: string) {
     this.router.navigate(['/admin/increments', tournamentId]);
   }
+
+  viewOwnerView(tournamentId: string) {
+    this.router.navigate(['/admin/owner-view', tournamentId]);
+  }
 }
 
