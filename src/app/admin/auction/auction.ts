@@ -1,7 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MOCK_TOURNAMENTS, MOCK_TEAMS, MOCK_AUCTION_PLAYERS } from '../../mock-tournaments';
+import { AuctionPlayerService } from '../../core/services/auction-player.service';
+import { TeamService } from '../../core/services/team.service';
+import { TournamentService } from '../../core/services/tournament.service';
 import { Tournament, Team, AuctionPlayer } from '../../models';
 
 @Component({
@@ -29,16 +31,38 @@ export class Auction implements OnInit {
 
   confirmDialog: { message: string; action: () => void } | null = null;
 
-  constructor(private route: ActivatedRoute, private router: Router) {}
+  private tournamentId!: number;
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private auctionPlayerService: AuctionPlayerService,
+    private teamService: TeamService,
+    private tournamentService: TournamentService,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit() {
-    const tournamentId = this.route.snapshot.paramMap.get('tournamentId');
-    if (tournamentId) {
-      this.tournament = MOCK_TOURNAMENTS.find(t => t.id === tournamentId) ?? null;
-      this.teams = MOCK_TEAMS.filter(t => t.tournamentId === tournamentId);
-      this.players = MOCK_AUCTION_PLAYERS.map(p => ({ ...p }));
+    const id = Number(this.route.snapshot.paramMap.get('tournamentId'));
+    if (id) {
+      this.tournamentId = id;
+      this.tournamentService.getById(id).subscribe((t) => {
+        this.tournament = t;
+        this.cdr.markForCheck();
+      });
+      this.teamService.getByTournament(id).subscribe((t) => {
+        this.teams = t;
+        this.cdr.markForCheck();
+      });
+      this.auctionPlayerService.getByTournament(id).subscribe({
+        next: (data) => {
+          this.players = data;
+          this.currentIndex = 0;
+          this.initBid();
+          this.cdr.markForCheck();
+        },
+      });
     }
-    this.initBid();
   }
 
   get currentPlayer(): AuctionPlayer | null {
@@ -67,18 +91,33 @@ export class Auction implements OnInit {
 
   markSold() {
     if (!this.currentBiddingTeam || !this.currentPlayer || this.showSoldOverlay || this.showUnsoldOverlay) return;
-    this.currentPlayer.auctionStatus = 'sold';
-    this.currentPlayer.soldToTeamId = this.currentBiddingTeam.id;
-    this.currentPlayer.soldPrice = this.currentBid;
-    this.showSoldOverlay = true;
-    this.overlayInteractive = false;
+    const player = this.currentPlayer;
+    this.auctionPlayerService
+      .sell(player.id, { teamId: this.currentBiddingTeam.id, soldPrice: this.currentBid })
+      .subscribe({
+        next: (updated) => {
+          player.auctionStatus = updated.auctionStatus;
+          player.soldToTeamId = updated.soldToTeamId;
+          player.soldToTeamName = updated.soldToTeamName;
+          player.soldPrice = updated.soldPrice;
+          this.showSoldOverlay = true;
+          this.overlayInteractive = false;
+          this.cdr.markForCheck();
+        },
+        error: () => alert('Failed to sell player.'),
+      });
   }
 
   markUnsold() {
     if (!this.currentPlayer || this.showSoldOverlay || this.showUnsoldOverlay) return;
-    this.currentPlayer.auctionStatus = 'unsold';
-    this.showUnsoldOverlay = true;
-    this.overlayInteractive = false;
+    const player = this.currentPlayer;
+    this.auctionPlayerService.markUnsold(player.id).subscribe({
+      next: () => {
+        player.auctionStatus = 'UNSOLD';
+        this.showUnsoldOverlay = true;
+        this.overlayInteractive = false;        this.cdr.markForCheck();      },
+      error: () => alert('Failed to mark player as unsold.'),
+    });
   }
 
   onOverlayAnimationDone() {
@@ -93,7 +132,7 @@ export class Auction implements OnInit {
   }
 
   advanceToNextPlayer() {
-    const nextIndex = this.players.findIndex((p, i) => i > this.currentIndex && p.auctionStatus === 'upcoming');
+    const nextIndex = this.players.findIndex((p, i) => i > this.currentIndex && p.auctionStatus === 'AVAILABLE');
     if (nextIndex !== -1) {
       this.currentIndex = nextIndex;
       this.initBid();
@@ -107,14 +146,14 @@ export class Auction implements OnInit {
   }
 
   getSoldCount(): number {
-    return this.players.filter(p => p.auctionStatus !== 'upcoming').length;
+    return this.players.filter(p => p.auctionStatus !== 'AVAILABLE').length;
   }
 
   getProgressPercent(): number {
     return this.players.length ? (this.getSoldCount() / this.players.length) * 100 : 0;
   }
 
-  getSoldTeamName(teamId: string | undefined): string {
+  getSoldTeamName(teamId: number | undefined): string {
     if (!teamId) return '';
     return this.teams.find(t => t.id === teamId)?.name ?? 'Unknown Team';
   }
@@ -122,7 +161,7 @@ export class Auction implements OnInit {
   goBack() {
     this.confirmDialog = {
       message: 'Are you sure you want to exit the auction?',
-      action: () => this.router.navigate(['/admin'])
+      action: () => this.router.navigate(['/admin']),
     };
   }
 
@@ -130,20 +169,26 @@ export class Auction implements OnInit {
     this.confirmDialog = {
       message: 'Mark all UNSOLD players as available for auction again?',
       action: () => {
-        this.players.forEach(p => {
-          if (p.auctionStatus === 'unsold') {
-            p.auctionStatus = 'upcoming';
-            p.soldToTeamId = undefined;
-            p.soldPrice = undefined;
-          }
+        this.auctionPlayerService.requeueUnsold(this.tournamentId).subscribe({
+          next: () => {
+            this.players.forEach(p => {
+              if (p.auctionStatus === 'UNSOLD') {
+                p.auctionStatus = 'AVAILABLE';
+                p.soldToTeamId = undefined;
+                p.soldPrice = undefined;
+              }
+            });
+            this.showConfigModal = false;
+            if (this.auctionComplete) {
+              this.auctionComplete = false;
+              const first = this.players.findIndex(p => p.auctionStatus === 'AVAILABLE');
+              if (first !== -1) { this.currentIndex = first; this.initBid(); }
+            }
+            this.cdr.markForCheck();
+          },
+          error: () => alert('Failed to requeue unsold players.'),
         });
-        this.showConfigModal = false;
-        if (this.auctionComplete) {
-          this.auctionComplete = false;
-          const first = this.players.findIndex(p => p.auctionStatus === 'upcoming');
-          if (first !== -1) { this.currentIndex = first; this.initBid(); }
-        }
-      }
+      },
     };
   }
 
@@ -156,3 +201,4 @@ export class Auction implements OnInit {
     this.confirmDialog = null;
   }
 }
+

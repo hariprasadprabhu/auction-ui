@@ -1,0 +1,76 @@
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
+import { Tournament, CreateTournamentRequest, UpdateTournamentRequest } from '../../models';
+
+@Injectable({ providedIn: 'root' })
+export class TournamentService {
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = environment.apiUrl;
+
+  getAll(): Observable<Tournament[]> {
+    return this.http
+      .get<Tournament[]>(`${this.apiUrl}/api/tournaments`)
+      .pipe(map((list) => list.map((t) => this.mapTournament(t))));
+  }
+
+  getById(id: number): Observable<Tournament> {
+    return this.http
+      .get<Tournament>(`${this.apiUrl}/api/tournaments/${id}`)
+      .pipe(map((t) => this.mapTournament(t)));
+  }
+
+  create(request: CreateTournamentRequest): Observable<Tournament> {
+    const formData = this.buildFormData(request);
+    return this.http
+      .post<Tournament>(`${this.apiUrl}/api/tournaments`, formData)
+      .pipe(map((t) => this.mapTournament(t)));
+  }
+
+  update(id: number, request: UpdateTournamentRequest): Observable<Tournament> {
+    const formData = this.buildFormData(request);
+    return this.http
+      .put<Tournament>(`${this.apiUrl}/api/tournaments/${id}`, formData)
+      .pipe(map((t) => this.mapTournament(t)));
+  }
+
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/api/tournaments/${id}`);
+  }
+
+  getLogoUrl(id: number): string {
+    return `${this.apiUrl}/api/tournaments/${id}/logo`;
+  }
+
+  private buildFormData(
+    request: CreateTournamentRequest | UpdateTournamentRequest,
+  ): FormData {
+    const fd = new FormData();
+    if (request.name !== undefined) fd.append('name', request.name);
+    if (request.date !== undefined) fd.append('date', request.date);
+    if (request.sport !== undefined) fd.append('sport', request.sport);
+    if (request.totalTeams !== undefined)
+      fd.append('totalTeams', String(request.totalTeams));
+    if (request.totalPlayers !== undefined)
+      fd.append('totalPlayers', String(request.totalPlayers));
+    if (request.purseAmount !== undefined)
+      fd.append('purseAmount', String(request.purseAmount));
+    if (request.playersPerTeam !== undefined)
+      fd.append('playersPerTeam', String(request.playersPerTeam));
+    if (request.basePrice !== undefined)
+      fd.append('basePrice', String(request.basePrice));
+    if (request.status !== undefined) fd.append('status', request.status);
+    if (request.logo) fd.append('logo', request.logo);
+    return fd;
+  }
+
+  /** Resolve relative logoUrl to full URL */
+  private mapTournament(t: Tournament): Tournament {
+    return {
+      ...t,
+      logoUrl: t.logoUrl ? `${this.apiUrl}${t.logoUrl}` : undefined,
+    };
+  }
+}

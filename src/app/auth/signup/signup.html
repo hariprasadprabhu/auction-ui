@@ -1,0 +1,236 @@
+<!-- Floating background orbs -->
+<div class="orb orb-1">🏏</div>
+<div class="orb orb-2">⚽</div>
+<div class="orb orb-3">🏆</div>
+<div class="orb orb-4">🎯</div>
+<div class="orb orb-5">🏅</div>
+
+<div class="signup-page">
+
+  <!-- Back to Home -->
+  <button class="back-btn" (click)="goHome()">
+    <span class="back-arrow">←</span> Back to Home
+  </button>
+
+  <!-- Brand -->
+  <div class="brand">
+    <span class="brand-icon">🏆</span>
+    <span class="brand-name">Auction<span class="brand-accent">Deck</span></span>
+  </div>
+
+  <!-- Signup Card -->
+  <div class="signup-card">
+    <div class="card-header">
+      <div class="header-icon">🚀</div>
+      <h2>Create Your Account</h2>
+      <p>Start hosting auctions in minutes — free for up to 2 teams</p>
+    </div>
+
+    <form (ngSubmit)="submit()" class="signup-form" #signupForm="ngForm" novalidate>
+
+      <!-- Full Name -->
+      <div class="field" [class.has-error]="formTouched && nameError">
+        <label for="name">Full Name <span class="req">*</span></label>
+        <div class="input-wrap" [class.invalid]="formTouched && nameError">
+          <span class="input-icon">👤</span>
+          <input
+            id="name"
+            type="text"
+            [(ngModel)]="form.name"
+            name="name"
+            placeholder="e.g., Ravi Kumar"
+            autocomplete="name"
+            (blur)="formTouched = formTouched"
+          />
+        </div>
+        <span class="field-error" *ngIf="formTouched && nameError">⚠ {{ nameError }}</span>
+      </div>
+
+      <!-- Email -->
+      <div class="field" [class.has-error]="formTouched && emailError">
+        <label for="email">Email Address <span class="req">*</span></label>
+        <div class="input-wrap" [class.invalid]="formTouched && emailError">
+          <span class="input-icon">✉️</span>
+          <input
+            id="email"
+            type="email"
+            [(ngModel)]="form.email"
+            name="email"
+            placeholder="you@example.com"
+            autocomplete="email"
+          />
+        </div>
+        <span class="field-error" *ngIf="formTouched && emailError">⚠ {{ emailError }}</span>
+      </div>
+
+      <!-- Phone — country picker + number -->
+      <div class="field" [class.has-error]="formTouched && phoneError">
+        <label>Phone Number <span class="req">*</span></label>
+        <div class="phone-row">
+          <!-- Country selector -->
+          <div class="country-wrap select-wrap">
+            <select
+              [(ngModel)]="selectedCountry"
+              name="countryCode"
+              class="country-select"
+              [compareWith]="compareCountry"
+              aria-label="Country code"
+            >
+              <option *ngFor="let c of countries" [ngValue]="c">
+                {{ c.flag }} {{ c.code }}
+              </option>
+            </select>
+            <span class="country-name-hint">{{ selectedCountry.name }}</span>
+          </div>
+          <!-- Number input -->
+          <div class="input-wrap phone-input-wrap" [class.invalid]="formTouched && phoneError">
+            <span class="input-icon">📱</span>
+            <input
+              id="phoneNumber"
+              type="tel"
+              [(ngModel)]="form.phoneNumber"
+              name="phoneNumber"
+              placeholder="98765 43210"
+              autocomplete="tel-national"
+              inputmode="numeric"
+              maxlength="15"
+            />
+          </div>
+        </div>
+        <span class="field-error" *ngIf="formTouched && phoneError">⚠ {{ phoneError }}</span>
+      </div>
+
+      <!-- Organisation / Club Name (optional) -->
+      <div class="field">
+        <label for="organisation">Organisation / Club Name <span class="optional">(optional)</span></label>
+        <div class="input-wrap">
+          <span class="input-icon">🏟️</span>
+          <input
+            id="organisation"
+            type="text"
+            [(ngModel)]="form.organisation"
+            name="organisation"
+            placeholder="e.g., Chennai Premier League"
+          />
+        </div>
+      </div>
+
+      <!-- Primary Sport -->
+      <div class="field" [class.has-error]="formTouched && sportError">
+        <label for="sport">Primary Sport <span class="req">*</span></label>
+        <div class="input-wrap select-wrap" [class.invalid]="formTouched && sportError">
+          <span class="input-icon">🎽</span>
+          <select
+            id="sport"
+            [(ngModel)]="form.sport"
+            name="sport"
+          >
+            <option value="" disabled>Select your sport</option>
+            <option value="Cricket">🏏 Cricket</option>
+            <option value="Football">⚽ Football</option>
+            <option value="Kabaddi">🤼 Kabaddi</option>
+            <option value="Basketball">🏀 Basketball</option>
+            <option value="Volleyball">🏐 Volleyball</option>
+            <option value="Other">🎯 Other</option>
+          </select>
+        </div>
+        <span class="field-error" *ngIf="formTouched && sportError">⚠ {{ sportError }}</span>
+      </div>
+
+      <!-- Expected Teams (optional) -->
+      <div class="field">
+        <label for="teams">Expected Number of Teams <span class="optional">(optional)</span></label>
+        <div class="input-wrap select-wrap">
+          <span class="input-icon">👥</span>
+          <select id="teams" [(ngModel)]="form.teams" name="teams">
+            <option value="">Select range</option>
+            <option value="2">2 teams (Free)</option>
+            <option value="3-6">3 – 6 teams</option>
+            <option value="7-12">7 – 12 teams</option>
+            <option value="13+">13+ teams</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="field" [class.has-error]="formTouched && passwordError">
+        <label for="password">Password <span class="req">*</span></label>
+        <div class="input-wrap" [class.invalid]="formTouched && passwordError">
+          <span class="input-icon">🔒</span>
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            id="password"
+            [(ngModel)]="form.password"
+            name="password"
+            placeholder="Min 8 chars, 1 uppercase, 1 number, 1 symbol"
+            autocomplete="new-password"
+          />
+          <button type="button" class="toggle-pwd" (click)="showPassword = !showPassword" [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'">
+            {{ showPassword ? '🙈' : '👁️' }}
+          </button>
+        </div>
+        <!-- Strength meter (shown once typing starts) -->
+        <div class="strength-meter" *ngIf="form.password">
+          <div class="strength-bar">
+            <div
+              class="strength-fill"
+              [class]="passwordStrengthClass"
+              [style.width.%]="passwordStrength * 25"
+            ></div>
+          </div>
+          <span class="strength-label" [class]="passwordStrengthClass">
+            {{ passwordStrengthLabel }}
+          </span>
+        </div>
+        <span class="field-error" *ngIf="formTouched && passwordError">⚠ {{ passwordError }}</span>
+      </div>
+
+      <!-- Confirm Password -->
+      <div class="field" [class.has-error]="formTouched && confirmPasswordError">
+        <label for="confirmPassword">Confirm Password <span class="req">*</span></label>
+        <div class="input-wrap" [class.invalid]="formTouched && confirmPasswordError">
+          <span class="input-icon">🔐</span>
+          <input
+            [type]="showConfirmPassword ? 'text' : 'password'"
+            id="confirmPassword"
+            [(ngModel)]="form.confirmPassword"
+            name="confirmPassword"
+            placeholder="Re-enter your password"
+            autocomplete="new-password"
+          />
+          <button type="button" class="toggle-pwd" (click)="showConfirmPassword = !showConfirmPassword" [attr.aria-label]="showConfirmPassword ? 'Hide password' : 'Show password'">
+            {{ showConfirmPassword ? '🙈' : '👁️' }}
+          </button>
+        </div>
+        <span class="field-error" *ngIf="formTouched && confirmPasswordError">⚠ {{ confirmPasswordError }}</span>
+      </div>
+
+      <!-- Required note -->
+      <p class="required-note"><span class="req">*</span> Required fields</p>
+
+      <!-- Submit -->
+      <button
+        type="submit"
+        class="btn-submit"
+        [disabled]="isLoading"
+        [class.loading]="isLoading"
+      >
+        <span *ngIf="!isLoading">🚀 Register</span>
+        <span *ngIf="isLoading" class="spinner"></span>
+      </button>
+
+      <!-- Inline summary error shown only after first submit attempt -->
+      <div class="error-msg" *ngIf="formTouched && !isFormValid">
+        ⚠️ Please fix the highlighted fields above.
+      </div>
+
+    </form>
+
+    <div class="card-footer">
+      <p>Already have an account? <a (click)="goToLogin()">Sign In</a></p>
+    </div>
+  </div>
+
+  <p class="tagline">Trusted by 120+ auction organisers · 24×7 Support · Free to start</p>
+
+</div>

@@ -12,17 +12,38 @@
 
 .register-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   padding-bottom: 60px;
 }
 
+/* Brand Bar */
+.brand-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 28px;
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+  .brand-icon { font-size: 1.5rem; }
+
+  .brand-name {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.3px;
+  }
+
+  .brand-accent { color: #f5a623; }
+}
+
 /* Tournament Banner */
 .tournament-banner {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 30px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 36px 28px;
 }
 
 .banner-content {
@@ -36,17 +57,33 @@
 }
 
 .banner-info {
-  h1 {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: white;
-    margin-bottom: 4px;
+  .banner-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #f5a623;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
   }
 
-  .banner-sport {
-    font-size: 0.95rem;
-    color: rgba(255, 255, 255, 0.8);
-    font-weight: 500;
+  h1 {
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+
+  .sport-badge {
+    display: inline-block;
+    background: rgba(102, 126, 234, 0.35);
+    border: 1px solid rgba(102, 126, 234, 0.5);
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.3px;
   }
 }
 
@@ -369,6 +406,13 @@
   margin: 80px auto;
   text-align: center;
   color: white;
+  padding: 0 20px;
+
+  .not-found-icon {
+    font-size: 3.5rem;
+    margin-bottom: 18px;
+    opacity: 0.7;
+  }
 
   h2 {
     font-size: 1.6rem;
@@ -378,26 +422,160 @@
 
   p {
     opacity: 0.8;
+    font-size: 0.95rem;
+    margin-bottom: 6px;
+  }
+
+  .not-found-hint {
+    opacity: 0.55;
+    font-size: 0.85rem;
+    margin-top: 12px;
   }
 }
 
-/* Responsive */
-@media (max-width: 600px) {
+/* ── Responsive — Tablet (≤ 768px) ────────────────────────────────────── */
+@media (max-width: 768px) {
+  .form-wrapper {
+    margin-top: 28px;
+  }
+
   .form-card {
-    padding: 24px 20px;
+    padding: 28px 24px;
+  }
+
+  .banner-info h1 { font-size: 1.5rem; }
+}
+
+/* ── Responsive — Mobile (≤ 480px) ─────────────────────────────────────── */
+@media (max-width: 480px) {
+  // ── Page chrome ──
+  .register-page {
+    padding-bottom: calc(30px + env(safe-area-inset-bottom));
+  }
+
+  // ── Banner ──
+  .tournament-banner {
+    padding: 18px 16px;
   }
 
   .banner-content {
     flex-direction: column;
     align-items: flex-start;
-  }
-
-  .banner-date {
-    align-items: flex-start;
-    width: 100%;
+    gap: 12px;
   }
 
   .banner-info h1 {
-    font-size: 1.4rem;
+    font-size: 1.15rem;
+    line-height: 1.3;
+  }
+
+  .banner-info .banner-sport { font-size: 0.85rem; }
+
+  .banner-date {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 8px;
+
+    .date-label { font-size: 0.7rem; }
+    .date-value { font-size: 0.9rem; }
+  }
+
+  // ── Form wrapper & card ──
+  .form-wrapper {
+    margin-top: 0;
+    padding: 0;
+  }
+
+  .form-card {
+    border-radius: 20px 20px 0 0;
+    padding: 24px 16px calc(16px + env(safe-area-inset-bottom));
+    box-shadow: none;
+    min-height: calc(100vh - 100px); // fill the rest of the screen
+
+    h2 { font-size: 1.2rem; }
+
+    .form-subtitle {
+      font-size: 0.82rem;
+      margin-bottom: 22px;
+    }
+  }
+
+  // ── Form sections ──
+  .form-section {
+    margin-bottom: 22px;
+    padding-bottom: 22px;
+  }
+
+  // ── Photo upload — stack vertically ──
+  .photo-upload-area {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .photo-preview-circle {
+    width: 72px;
+    height: 72px;
+
+    .preview-circle-img {
+      width: 72px;
+      height: 72px;
+    }
+  }
+
+  .upload-placeholder {
+    width: 72px;
+    height: 72px;
+  }
+
+  // ── File upload button — full width ──
+  .file-upload-wrapper .file-upload-label {
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-size: 0.875rem;
+    padding: 12px 16px;
+  }
+
+  // ── Payment proof preview — constrain width ──
+  .proof-preview .proof-img {
+    max-width: 100%;
+  }
+
+  // ── Inputs: 16px stops iOS Safari auto-zoom ──
+  .form-group {
+    label { font-size: 0.8rem; }
+
+    input,
+    select {
+      font-size: 16px;
+      padding: 13px 14px;
+    }
+  }
+
+  // ── form-row already stacks via its own @media; tighten gap ──
+  .form-row { gap: 0; }
+
+  // ── Submit — full width, easy thumb tap ──
+  .form-actions {
+    margin-top: 6px;
+  }
+
+  .btn-submit {
+    width: 100%;
+    padding: 16px;
+    font-size: 1rem;
+    border-radius: 12px;
+  }
+
+  // ── Success card ──
+  .success-card {
+    margin-top: 24px;
+    padding: 0 16px;
+
+    h2 { font-size: 1.4rem; }
   }
 }

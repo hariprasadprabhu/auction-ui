@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { MOCK_TOURNAMENTS, MOCK_TEAMS } from '../../mock-tournaments';
+import { TeamService } from '../../core/services/team.service';
+import { TournamentService } from '../../core/services/tournament.service';
 import { Tournament, Team } from '../../models';
 
 @Component({
@@ -19,11 +20,10 @@ export class TeamsListComponent implements OnInit {
   // Add Team Form
   showAddTeamModal = false;
   newTeam = {
-    teamNumber: '',
     name: '',
     ownerName: '',
     mobileNumber: '',
-    logoFile: null as File | null
+    logoFile: null as File | null,
   };
   teamLogoPreview: string | null = null;
 
@@ -31,43 +31,48 @@ export class TeamsListComponent implements OnInit {
   showEditTeamModal = false;
   editingTeam: Team | null = null;
   editTeam = {
-    teamNumber: '',
     name: '',
     ownerName: '',
     mobileNumber: '',
-    logo: ''
   };
   editLogoPreview: string | null = null;
+  editLogoFile: File | null = null;
+
+  private tournamentId!: number;
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private teamService: TeamService,
+    private tournamentService: TournamentService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
-    const tournamentId = this.route.snapshot.paramMap.get('tournamentId');
-    if (tournamentId) {
-      this.tournament = MOCK_TOURNAMENTS.find((t) => t.id === tournamentId);
-      this.teams = MOCK_TEAMS.filter((t) => t.tournamentId === tournamentId);
+    const id = Number(this.route.snapshot.paramMap.get('tournamentId'));
+    if (id) {
+      this.tournamentId = id;
+      this.tournamentService.getById(id).subscribe((t) => {
+        this.tournament = t;
+        this.cdr.markForCheck();
+      });
+      this.loadTeams();
     }
+  }
+
+  private loadTeams() {
+    this.teamService.getByTournament(this.tournamentId).subscribe({
+      next: (data) => {
+        this.teams = data;
+        this.cdr.markForCheck();
+      },
+      error: () => alert('Failed to load teams.'),
+    });
   }
 
   openAddTeamModal() {
     this.showAddTeamModal = true;
     this.resetTeamForm();
-    // Auto-generate next team number
-    this.generateNextTeamNumber();
-  }
-
-  generateNextTeamNumber() {
-    if (this.teams.length === 0) {
-      this.newTeam.teamNumber = 'T001';
-    } else {
-      const lastTeam = this.teams[this.teams.length - 1];
-      const lastNumber = parseInt(lastTeam.teamNumber.substring(1));
-      const nextNumber = lastNumber + 1;
-      this.newTeam.teamNumber = 'T' + String(nextNumber).padStart(3, '0');
-    }
   }
 
   closeAddTeamModal() {
@@ -77,11 +82,10 @@ export class TeamsListComponent implements OnInit {
 
   resetTeamForm() {
     this.newTeam = {
-      teamNumber: '',
       name: '',
       ownerName: '',
       mobileNumber: '',
-      logoFile: null
+      logoFile: null,
     };
     this.teamLogoPreview = null;
   }
@@ -99,40 +103,36 @@ export class TeamsListComponent implements OnInit {
   }
 
   addTeam() {
-    if (!this.newTeam.teamNumber || !this.newTeam.name || !this.newTeam.ownerName || !this.newTeam.mobileNumber) {
+    if (!this.newTeam.name || !this.newTeam.ownerName || !this.newTeam.mobileNumber) {
       alert('Please fill in all required fields');
       return;
     }
-
-    if (!this.teamLogoPreview) {
-      alert('Please select a team logo');
-      return;
-    }
-
-    const team: Team = {
-      id: Date.now().toString(),
-      teamNumber: this.newTeam.teamNumber,
-      logo: this.teamLogoPreview,
-      name: this.newTeam.name,
-      ownerName: this.newTeam.ownerName,
-      mobileNumber: this.newTeam.mobileNumber,
-      tournamentId: this.tournament?.id || '',
-    };
-
-    this.teams.push(team);
-    this.closeAddTeamModal();
+    this.teamService
+      .create(this.tournamentId, {
+        name: this.newTeam.name,
+        ownerName: this.newTeam.ownerName,
+        mobileNumber: this.newTeam.mobileNumber,
+        logo: this.newTeam.logoFile ?? undefined,
+      })
+      .subscribe({
+        next: (t) => {
+          this.teams.push(t);
+          this.closeAddTeamModal();
+          this.cdr.markForCheck();
+        },
+        error: () => alert('Failed to add team.'),
+      });
   }
 
   openEditTeamModal(team: Team) {
     this.editingTeam = team;
     this.editTeam = {
-      teamNumber: team.teamNumber,
       name: team.name,
       ownerName: team.ownerName,
       mobileNumber: team.mobileNumber,
-      logo: team.logo
     };
-    this.editLogoPreview = team.logo;
+    this.editLogoPreview = team.logoUrl ?? null;
+    this.editLogoFile = null;
     this.showEditTeamModal = true;
   }
 
@@ -140,11 +140,13 @@ export class TeamsListComponent implements OnInit {
     this.showEditTeamModal = false;
     this.editingTeam = null;
     this.editLogoPreview = null;
+    this.editLogoFile = null;
   }
 
   onEditLogoSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
+      this.editLogoFile = file;
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.editLogoPreview = e.target.result;
@@ -159,23 +161,33 @@ export class TeamsListComponent implements OnInit {
       alert('Please fill in all required fields');
       return;
     }
-
-    const index = this.teams.findIndex(t => t.id === this.editingTeam!.id);
-    if (index !== -1) {
-      this.teams[index] = {
-        ...this.teams[index],
+    this.teamService
+      .update(this.editingTeam.id, {
         name: this.editTeam.name,
         ownerName: this.editTeam.ownerName,
         mobileNumber: this.editTeam.mobileNumber,
-        logo: this.editLogoPreview || this.teams[index].logo
-      };
-    }
-    this.closeEditTeamModal();
+        logo: this.editLogoFile ?? undefined,
+      })
+      .subscribe({
+        next: (updated) => {
+          const index = this.teams.findIndex((t) => t.id === this.editingTeam!.id);
+          if (index !== -1) this.teams[index] = updated;
+          this.closeEditTeamModal();
+          this.cdr.markForCheck();
+        },
+        error: () => alert('Failed to update team.'),
+      });
   }
 
   deleteTeam(team: Team) {
     if (confirm(`Are you sure you want to delete "${team.name}"?`)) {
-      this.teams = this.teams.filter(t => t.id !== team.id);
+      this.teamService.delete(team.id).subscribe({
+        next: () => {
+          this.teams = this.teams.filter((t) => t.id !== team.id);
+          this.cdr.markForCheck();
+        },
+        error: () => alert('Failed to delete team.'),
+      });
     }
   }
 

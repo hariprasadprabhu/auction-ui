@@ -45,7 +45,7 @@
       <div class="player-card">
         <div class="player-photo-col">
           <div class="photo-glow-ring">
-            <img [src]="currentPlayer.photo" [alt]="currentPlayer.firstName" class="player-big-photo" />
+            <img [src]="currentPlayer.photoUrl" [alt]="currentPlayer.firstName" class="player-big-photo" />
           </div>
           <div class="role-badge">{{ currentPlayer.role }}</div>
         </div>
@@ -92,7 +92,7 @@
       <ng-container *ngIf="currentBiddingTeam; else noBidder">
         <div class="bid-team-display">
           <div class="bid-team-logo-ring">
-            <img [src]="currentBiddingTeam.logo" [alt]="currentBiddingTeam.name" class="bid-team-logo-img" />
+            <img [src]="currentBiddingTeam.logoUrl" [alt]="currentBiddingTeam.name" class="bid-team-logo-img" />
           </div>
           <div class="bid-team-label">{{ currentBiddingTeam.name }}</div>
         </div>
@@ -130,7 +130,7 @@
         [class.team-btn-active]="currentBiddingTeam?.id === team.id"
         [disabled]="showSoldOverlay || showUnsoldOverlay"
       >
-        <img [src]="team.logo" [alt]="team.name" class="team-btn-logo" />
+        <img [src]="team.logoUrl" [alt]="team.name" class="team-btn-logo" />
         <span class="team-btn-abbr">{{ getAbbr(team.name) }}</span>
         <span class="team-tooltip">{{ team.name }}</span>
       </button>

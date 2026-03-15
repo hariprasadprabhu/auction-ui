@@ -1,0 +1,344 @@
+<!-- ═══════════ NAVBAR ═══════════ -->
+<nav class="navbar">
+  <div class="nav-inner">
+    <div class="brand" (click)="scrollTo('hero')">
+      <span class="brand-icon">🏆</span>
+      <span class="brand-name">Auction<span class="brand-accent">Deck</span></span>
+    </div>
+
+    <div class="nav-links" [class.open]="mobileMenuOpen">
+      <a (click)="scrollTo('features')">Features</a>
+      <a (click)="scrollTo('packages')">Packages</a>
+      <a (click)="scrollTo('support')">Support</a>
+      <a (click)="scrollTo('contact')">Contact</a>
+      <div class="nav-cta">
+        <button class="btn-outline" (click)="goToLogin()">Login</button>
+        <button class="btn-primary" (click)="goToSignup()">Register</button>
+      </div>
+    </div>
+
+    <button class="hamburger" [class.menu-open]="mobileMenuOpen" (click)="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- ═══════════ HERO ═══════════ -->
+<section class="hero" id="hero">
+  <!-- Animated sports orbs -->
+  <div class="orb orb-1">⚽</div>
+  <div class="orb orb-2">🏏</div>
+  <div class="orb orb-3">🏆</div>
+  <div class="orb orb-4">🎯</div>
+  <div class="orb orb-5">🏅</div>
+  <div class="orb orb-6">⚡</div>
+
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span>✅ Tested &amp; Trusted in 120+ Auctions</span>
+    </div>
+    <h1 class="hero-title">
+      Run Your Dream<br />
+      <span class="gradient-text">Cricket Auction</span><br />
+      Like a Pro.
+    </h1>
+    <p class="hero-subtitle">
+      AuctionDeck brings stadium-level excitement to your local auction.
+      From 2-team friendlies to full-scale events — we've got every match covered.
+    </p>
+    <div class="hero-actions">
+      <button class="btn-hero-primary" (click)="scrollTo('packages')">
+        🚀 Explore Packages
+      </button>
+      <button class="btn-hero-outline" (click)="goToLogin()">
+        🔑 Admin Login
+      </button>
+    </div>
+  </div>
+
+  <div class="hero-visual">
+    <div class="auction-card-demo">
+      <div class="demo-header">LIVE AUCTION</div>
+      <div class="demo-player">
+        <div class="demo-avatar">🧑‍🤝‍🧑</div>
+        <div class="demo-info">
+          <div class="demo-name">Rahul Sharma</div>
+          <div class="demo-role">All-Rounder · Age 24</div>
+        </div>
+      </div>
+      <div class="demo-bid">
+        <span class="bid-label">Current Bid</span>
+        <span class="bid-amount">₹ 8,50,000</span>
+      </div>
+      <div class="demo-teams">
+        <div class="demo-team t1">🔵 Royal XI</div>
+        <div class="demo-vs">VS</div>
+        <div class="demo-team t2">🔴 Thunder FC</div>
+      </div>
+      <div class="demo-pulse">BIDDING IN PROGRESS…</div>
+    </div>
+  </div>
+
+  <div class="hero-scroll-hint" (click)="scrollTo('stats')">
+    <span>Scroll</span>
+    <div class="scroll-arrow">↓</div>
+  </div>
+</section>
+
+<!-- ═══════════ STATS ═══════════ -->
+<section class="stats-section" id="stats">
+  <div class="stats-grid">
+    @for (stat of stats; track stat.label) {
+      <div class="stat-card reveal">
+        <div class="stat-number">{{ Math.floor(stat.current) }}{{ stat.suffix }}</div>
+        <div class="stat-label">{{ stat.label }}</div>
+      </div>
+    }
+  </div>
+</section>
+
+<!-- ═══════════ FEATURES ═══════════ -->
+<section class="features-section" id="features">
+  <div class="section-container">
+    <div class="section-header reveal">
+      <h2>Everything You Need for a Flawless Auction</h2>
+      <p>AuctionDeck handles the tech so you enjoy the game.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <div class="feature-icon">🔗</div>
+        <h3>Player Registration Links</h3>
+        <p>Generate a unique registration link and share it with players. They fill in their details — you get a clean list, instantly.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">🎙️</div>
+        <h3>Live Auction Engine</h3>
+        <p>Real-time bidding board with team budgets, player cards, and live updates. Just like watching it on TV — only it's yours.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">📊</div>
+        <h3>Team &amp; Budget Tracker</h3>
+        <p>Track every team's spending, squad composition, and remaining purse at a glance throughout the auction.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">⚙️</div>
+        <h3>Flexible Bid Increments</h3>
+        <p>Set custom conditional bid increments at different price brackets — full control over how the auction escalates.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">👁️</div>
+        <h3>Owner View</h3>
+        <p>A dedicated read-only view for team owners to follow along with their squad and budget in real time.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">📱</div>
+        <h3>Works on Any Device</h3>
+        <p>Run the auction on a laptop while owners follow on their phones. Fully responsive across all screens.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ PACKAGES ═══════════ -->
+<section class="packages-section" id="packages">
+  <div class="section-container">
+    <div class="section-header reveal">
+      <h2>Pick the Right Package for Your Auction</h2>
+      <p>Start free. Scale as you grow. We're with you every step.</p>
+    </div>
+    <div class="packages-grid">
+
+      <!-- STARTER -->
+      <div class="package-card reveal">
+        <div class="pkg-badge free">FREE</div>
+        <div class="pkg-icon">🌱</div>
+        <h3>Starter</h3>
+        <div class="pkg-tagline">Perfect for small, friendly auctions</div>
+        <div class="pkg-price">
+          <span class="price-amount">₹0</span>
+          <span class="price-label">forever</span>
+        </div>
+        <ul class="pkg-features">
+          <li>✅ Up to 2 Teams</li>
+          <li>✅ Full Auction Engine</li>
+          <li>✅ Player Registration Links</li>
+          <li>✅ Team Budget Tracker</li>
+          <li>✅ 24x7 Customer Support</li>
+          <li>✅ Representative During Auction</li>
+          <li>❌ Unlimited Teams</li>
+          <li>❌ Custom Branding</li>
+        </ul>
+        <button class="btn-pkg-outline" (click)="goToLogin()">Get Started Free</button>
+      </div>
+
+      <!-- PRO — highlighted -->
+      <div class="package-card featured reveal">
+        <div class="pkg-badge popular">MOST POPULAR</div>
+        <div class="pkg-icon">🚀</div>
+        <h3>Pro</h3>
+        <div class="pkg-tagline">As your league grows, so do we</div>
+        <div class="pkg-price">
+          <span class="price-amount">Minimal Fee</span>
+          <span class="price-label">per auction</span>
+        </div>
+        <ul class="pkg-features">
+          <li>✅ Unlimited Teams</li>
+          <li>✅ Full Auction Engine</li>
+          <li>✅ Player Registration Links</li>
+          <li>✅ Team Budget Tracker</li>
+          <li>✅ 24x7 Customer Support</li>
+          <li>✅ Representative During Auction</li>
+          <li>✅ Advanced Bid Increments</li>
+          <li>✅ Custom Branding</li>
+        </ul>
+        <button class="btn-pkg-primary" (click)="scrollTo('contact')">Contact Us</button>
+      </div>
+
+      <!-- FULL EVENT -->
+      <div class="package-card reveal">
+        <div class="pkg-badge event">FULL SERVICE</div>
+        <div class="pkg-icon">🏟️</div>
+        <h3>Complete Event</h3>
+        <div class="pkg-tagline">We handle everything, soup to nuts</div>
+        <div class="pkg-price">
+          <span class="price-amount">Custom</span>
+          <span class="price-label">quote</span>
+        </div>
+        <ul class="pkg-features">
+          <li>✅ Everything in Pro</li>
+          <li>✅ Registration Link Setup</li>
+          <li>✅ Player Verification Support</li>
+          <li>✅ Auction Day Management</li>
+          <li>✅ On-site / Remote Rep</li>
+          <li>✅ Post-Auction Summary Report</li>
+          <li>✅ Dedicated Account Manager</li>
+          <li>✅ Priority 24x7 Support</li>
+        </ul>
+        <button class="btn-pkg-outline" (click)="scrollTo('contact')">Request a Quote</button>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ SUPPORT ═══════════ -->
+<section class="support-section" id="support">
+  <div class="section-container">
+    <div class="section-header reveal">
+      <h2>We're With You Every Moment</h2>
+      <p>From setup to the final bid — our team never leaves your side.</p>
+    </div>
+    <div class="support-grid">
+      <div class="support-card reveal">
+        <div class="support-icon">🕐</div>
+        <h3>24 × 7 Support</h3>
+        <p>
+          Got a question at midnight before your big auction day? Reach us on WhatsApp, email, or call — we respond fast, always.
+        </p>
+      </div>
+      <div class="support-card reveal">
+        <div class="support-icon">🤝</div>
+        <h3>Personal Representative</h3>
+        <p>
+          A dedicated AuctionDeck representative will be available during your auction to ensure everything runs without a hitch.
+        </p>
+      </div>
+      <div class="support-card reveal">
+        <div class="support-icon">🛡️</div>
+        <h3>Battle-Tested Platform</h3>
+        <p>
+          Our app has been used in 120+ auctions across different formats and situations. It's stable, reliable, and built for pressure.
+        </p>
+      </div>
+    </div>
+
+    <div class="trust-banner reveal">
+      <div class="trust-item">
+        <span class="trust-icon">✅</span>
+        <span>Tested in 120+ Real Auctions</span>
+      </div>
+      <div class="trust-divider"></div>
+      <div class="trust-item">
+        <span class="trust-icon">🔒</span>
+        <span>Secure &amp; Verified Platform</span>
+      </div>
+      <div class="trust-divider"></div>
+      <div class="trust-item">
+        <span class="trust-icon">⭐</span>
+        <span>98% Organiser Satisfaction</span>
+      </div>
+      <div class="trust-divider"></div>
+      <div class="trust-item">
+        <span class="trust-icon">📞</span>
+        <span>Always Available Support</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ FOOTER / CONTACT ═══════════ -->
+<footer class="footer" id="contact">
+  <div class="footer-inner">
+
+    <div class="footer-brand">
+      <div class="brand footer-brand-logo">
+        <span class="brand-icon">🏆</span>
+        <span class="brand-name">Auction<span class="brand-accent">Deck</span></span>
+      </div>
+      <p class="footer-tagline">
+        Bringing stadium-level excitement to every cricket auction — big or small.
+      </p>
+      <div class="footer-social">
+        <a class="social-btn" href="mailto:auction.deck&#64;gmail.com" title="Email">✉️</a>
+        <a class="social-btn" href="https://wa.me/919999999999" target="_blank" rel="noopener" title="WhatsApp">💬</a>
+      </div>
+    </div>
+
+    <div class="footer-col">
+      <h4>Quick Links</h4>
+      <ul>
+        <li><a (click)="scrollTo('features')">Features</a></li>
+        <li><a (click)="scrollTo('packages')">Packages</a></li>
+        <li><a (click)="scrollTo('support')">Support</a></li>
+        <li><a (click)="goToLogin()">Admin Login</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h4>Packages</h4>
+      <ul>
+        <li><a (click)="scrollTo('packages')">Starter — Free</a></li>
+        <li><a (click)="scrollTo('packages')">Pro — Minimal Fee</a></li>
+        <li><a (click)="scrollTo('packages')">Complete Event</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col contact-col">
+      <h4>Contact Us</h4>
+      <ul>
+        <li>
+          <span class="contact-icon">📧</span>
+          <a href="mailto:auction.deck&#64;gmail.com">auction.deck&#64;gmail.com</a>
+        </li>
+        <li>
+          <span class="contact-icon">📞</span>
+          <a href="tel:+919999999999">+91 99999 99999</a>
+        </li>
+        <li>
+          <span class="contact-icon">💬</span>
+          <a href="https://wa.me/919999999999" target="_blank" rel="noopener">WhatsApp Us</a>
+        </li>
+        <li>
+          <span class="contact-icon">⏰</span>
+          <span>Mon – Sun, 24 × 7</span>
+        </li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class="footer-bottom">
+    <span>© 2026 AuctionDeck. All rights reserved.</span>
+    <span>Made with ❤️ for cricket lovers</span>
+  </div>
+</footer>

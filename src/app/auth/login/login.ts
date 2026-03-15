@@ -1,24 +1,59 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { Router, ActivatedRoute } from '@angular/router';
+import { AuthService } from '../../core/services/auth.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-login',
-  imports: [FormsModule],
+  imports: [FormsModule, CommonModule],
   templateUrl: './login.html',
   styleUrls: ['./login.scss'],
 })
-export class Login {
-  username: string = '';
+export class Login implements OnInit {
+  email: string = '';
   password: string = '';
+  errorMsg: string = '';
+  isLoading: boolean = false;
+  registeredToast: boolean = false;
 
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private authService = inject(AuthService);
+
+  ngOnInit() {
+    if (this.route.snapshot.queryParamMap.get('registered') === '1') {
+      this.registeredToast = true;
+      setTimeout(() => (this.registeredToast = false), 5000);
+    }
+  }
 
   login() {
-    if (this.username === 'admin' && this.password === 'admin') {
-      this.router.navigate(['/admin']);
-    } else {
-      alert('Invalid credentials. Please try again.');
-    }
+    this.errorMsg = '';
+    this.isLoading = true;
+
+    this.authService.login({ email: this.email, password: this.password }).subscribe({
+      next: () => {
+        this.isLoading = false;
+        this.router.navigate(['/admin']);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.isLoading = false;
+        if (err.status === 401) {
+          this.errorMsg = 'Invalid credentials. Please try again.';
+        } else {
+          this.errorMsg = 'Login failed. Please try again later.';
+        }
+      },
+    });
+  }
+
+  goHome() {
+    this.router.navigate(['/']);
+  }
+
+  goToSignup() {
+    this.router.navigate(['/signup']);
   }
 }

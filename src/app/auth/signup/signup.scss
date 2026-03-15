@@ -1,0 +1,574 @@
+/* ══════════════════════════════════════
+   AUCTION DECK – SIGNUP PAGE
+   Matches Login dark theme
+══════════════════════════════════════ */
+
+$primary:      #667eea;
+$primary-dark: #764ba2;
+$gold:         #f5a623;
+$white:        #ffffff;
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:host {
+  display: block;
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow-x: hidden;
+}
+
+/* ─── FLOATING ORBS ────────────────── */
+@keyframes drift {
+  0%   { transform: translateY(0px) rotate(0deg); }
+  33%  { transform: translateY(-28px) rotate(8deg); }
+  66%  { transform: translateY(14px) rotate(-5deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+.orb {
+  position: fixed;
+  font-size: 2.2rem;
+  opacity: 0.1;
+  animation: drift linear infinite;
+  pointer-events: none;
+  z-index: 0;
+  user-select: none;
+
+  &.orb-1 { top: 8%;  left: 6%;  animation-duration: 9s;  font-size: 3rem; }
+  &.orb-2 { top: 70%; left: 4%;  animation-duration: 12s; font-size: 2.5rem; animation-delay: -3s; }
+  &.orb-3 { top: 20%; right: 7%; animation-duration: 10s; font-size: 3.5rem; animation-delay: -5s; }
+  &.orb-4 { top: 60%; right: 5%; animation-duration: 8s;  font-size: 2rem;  animation-delay: -2s; }
+  &.orb-5 { top: 42%; left: 48%; animation-duration: 14s; font-size: 2rem;  animation-delay: -7s; }
+}
+
+/* ─── PAGE WRAPPER ─────────────────── */
+.signup-page {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 100px 16px 60px;
+  gap: 20px;
+}
+
+/* ─── BACK BUTTON ──────────────────── */
+.back-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.85);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 50px;
+  padding: 8px 18px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.25s, color 0.25s;
+  font-family: inherit;
+  z-index: 10;
+
+  &:hover {
+    background: rgba(255,255,255,0.2);
+    color: $white;
+  }
+
+  .back-arrow { font-size: 1.1rem; line-height: 1; }
+}
+
+/* ─── BRAND ────────────────────────── */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: $white;
+  position: fixed;
+  top: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+
+  .brand-icon { font-size: 1.6rem; }
+  .brand-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .brand-accent { color: $gold; }
+}
+
+/* ─── CARD ─────────────────────────── */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.signup-card {
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 40px 36px;
+  width: 100%;
+  max-width: 520px;
+  animation: slideUp 0.55s ease;
+}
+
+.card-header {
+  text-align: center;
+  margin-bottom: 28px;
+
+  .header-icon { font-size: 2.5rem; margin-bottom: 10px; }
+
+  h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: $white;
+    margin-bottom: 6px;
+  }
+
+  p {
+    color: rgba(255,255,255,0.55);
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+}
+
+/* ─── FORM ─────────────────────────── */
+.signup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+
+  label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: rgba(255,255,255,0.7);
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  /* red asterisk */
+  .req { color: #ff6b6b; font-size: 0.9rem; }
+
+  /* grey "(optional)" tag */
+  .optional {
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.35);
+    text-transform: none;
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+}
+
+/* ─── FIELD ERROR STATE ─────────────── */
+.field-error {
+  font-size: 0.78rem;
+  color: #ff9999;
+  padding: 0 2px;
+  animation: errSlide 0.2s ease;
+}
+
+@keyframes errSlide {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.input-wrap.invalid input,
+.input-wrap.invalid select {
+  border-color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.08);
+}
+
+/* ─── REQUIRED NOTE ─────────────────── */
+.required-note {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.35);
+  margin-top: -4px;
+
+  .req { color: #ff6b6b; margin-right: 2px; }
+}
+
+.input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .input-icon {
+    position: absolute;
+    left: 14px;
+    font-size: 1rem;
+    opacity: 0.55;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  input,
+  select {
+    width: 100%;
+    padding: 12px 16px 12px 44px;
+    background: rgba(255,255,255,0.09);
+    border: 1.5px solid rgba(255,255,255,0.14);
+    border-radius: 10px;
+    color: $white;
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: border-color 0.25s, background 0.25s;
+    appearance: none;
+    -webkit-appearance: none;
+
+    &::placeholder { color: rgba(255,255,255,0.3); }
+
+    &:focus {
+      outline: none;
+      border-color: $primary;
+      background: rgba(102,126,234,0.15);
+    }
+
+    option {
+      background: #302b63;
+      color: $white;
+    }
+
+    &:-webkit-autofill {
+      -webkit-box-shadow: 0 0 0 100px #302b63 inset;
+      -webkit-text-fill-color: $white;
+    }
+  }
+}
+
+.select-wrap::after {
+  content: '▾';
+  position: absolute;
+  right: 14px;
+  color: rgba(255,255,255,0.45);
+  pointer-events: none;
+  font-size: 0.85rem;
+}
+
+/* ─── PHONE ROW ─────────────────────── */
+.phone-row {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+
+/* Country code dropdown */
+.country-wrap {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+
+  .country-select {
+    width: 100%;
+    padding: 12px 32px 12px 12px;
+    background: rgba(255,255,255,0.09);
+    border: 1.5px solid rgba(255,255,255,0.14);
+    border-radius: 10px;
+    color: $white;
+    font-size: 0.95rem;
+    font-family: inherit;
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    transition: border-color 0.25s, background 0.25s;
+    min-width: 100px;
+
+    &:focus {
+      outline: none;
+      border-color: $primary;
+      background: rgba(102,126,234,0.15);
+    }
+
+    option {
+      background: #302b63;
+      color: $white;
+    }
+  }
+
+  &.select-wrap::after { right: 10px; }
+
+  .country-name-hint {
+    font-size: 0.66rem;
+    color: rgba(255,255,255,0.35);
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100px;
+    padding: 0 2px;
+  }
+}
+
+.phone-input-wrap {
+  flex: 1 1 auto;
+}
+/* ─── PASSWORD TOGGLE BUTTON ────────── */
+.toggle-pwd {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  opacity: 0.6;
+  padding: 4px;
+  transition: opacity 0.2s;
+  z-index: 1;
+  line-height: 1;
+
+  &:hover { opacity: 1; }
+}
+
+/* Give password inputs room for the toggle button */
+.input-wrap input[type='password'],
+.input-wrap input[type='text'] {
+  &[id='password'],
+  &[id='confirmPassword'] {
+    padding-right: 44px;
+  }
+}
+
+/* ─── STRENGTH METER ───────────────── */
+.strength-meter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.strength-bar {
+  flex: 1;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.strength-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.35s ease, background 0.35s ease;
+
+  &.strength-weak   { background: #ff6b6b; }
+  &.strength-fair   { background: #ffa94d; }
+  &.strength-good   { background: #f5a623; }
+  &.strength-strong { background: #51cf66; }
+}
+
+.strength-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  min-width: 44px;
+  text-align: right;
+
+  &.strength-weak   { color: #ff6b6b; }
+  &.strength-fair   { color: #ffa94d; }
+  &.strength-good   { color: #f5a623; }
+  &.strength-strong { color: #51cf66; }
+}
+/* ─── SUBMIT ───────────────────────── */
+.btn-submit {
+  margin-top: 8px;
+  padding: 14px;
+  background: linear-gradient(135deg, $primary 0%, $primary-dark 100%);
+  color: $white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.3px;
+  transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba($primary, 0.5);
+  }
+
+  &:active:not(:disabled) { transform: translateY(0); }
+
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  &.loading { opacity: 0.8; pointer-events: none; }
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255,255,255,0.3);
+  border-top-color: $white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── ERROR ────────────────────────── */
+.error-msg {
+  background: rgba(240, 80, 80, 0.15);
+  border: 1px solid rgba(240, 80, 80, 0.4);
+  border-radius: 8px;
+  color: #ffaaaa;
+  font-size: 0.88rem;
+  padding: 10px 14px;
+  text-align: center;
+}
+
+/* ─── CARD FOOTER ──────────────────── */
+.card-footer {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  text-align: center;
+
+  p { color: rgba(255,255,255,0.5); font-size: 0.88rem; }
+
+  a {
+    color: $gold;
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover { text-decoration: underline; }
+  }
+}
+
+/* ─── SUCCESS CARD ─────────────────── */
+.success-card {
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 48px 36px;
+  width: 100%;
+  max-width: 480px;
+  text-align: center;
+  animation: slideUp 0.55s ease;
+
+  .success-icon { font-size: 3.5rem; margin-bottom: 18px; }
+
+  h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: $white;
+    margin-bottom: 12px;
+  }
+
+  p {
+    color: rgba(255,255,255,0.8);
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+    line-height: 1.5;
+
+    strong { color: $white; }
+  }
+
+  .success-sub {
+    color: rgba(255,255,255,0.65);
+    font-size: 0.88rem;
+    margin-bottom: 20px;
+  }
+
+  .success-note {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: rgba(245, 166, 35, 0.12);
+    border: 1px solid rgba(245, 166, 35, 0.3);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin: 20px 0 28px;
+    font-size: 0.88rem;
+    color: rgba(255,255,255,0.75);
+
+    strong { color: $gold; }
+  }
+}
+
+/* ─── TAGLINE ──────────────────────── */
+.tagline {
+  color: rgba(255,255,255,0.35);
+  font-size: 0.8rem;
+  text-align: center;
+  letter-spacing: 0.3px;
+}
+
+/* ─── RESPONSIVE ───────────────────── */
+@media (max-width: 560px) {
+  .signup-page { padding: 88px 14px 50px; }
+
+  .signup-card,
+  .success-card { padding: 28px 20px; }
+
+  .brand { display: none; }
+
+  .back-btn {
+    top: 14px;
+    left: 14px;
+    font-size: 0.82rem;
+    padding: 7px 14px;
+  }
+
+  /* Prevent iOS zoom on input/select focus */
+  .input-wrap input,
+  .input-wrap select,
+  .country-select {
+    font-size: 16px;
+  }
+
+  .btn-submit { min-height: 48px; }
+
+  .signup-form { gap: 14px; }
+
+  .card-header h2 { font-size: 1.5rem; }
+  .card-header p  { font-size: 0.85rem; }
+
+  /* Phone row stacks on very small screens */
+  .country-wrap .country-name-hint { display: none; }
+}
+
+/* ─── SMALL PHONE (≤ 360px) ──────── */
+@media (max-width: 360px) {
+  .signup-page  { padding: 72px 12px 44px; }
+
+  .signup-card,
+  .success-card { padding: 22px 14px; }
+
+  .card-header .header-icon { font-size: 2rem; }
+  .card-header h2 { font-size: 1.3rem; }
+
+  .input-wrap input,
+  .input-wrap select { padding: 11px 14px 11px 40px; font-size: 16px; }
+  .input-wrap .input-icon { left: 12px; font-size: 0.92rem; }
+
+  .btn-submit { font-size: 0.92rem; padding: 12px; }
+
+  .tagline { font-size: 0.72rem; }
+}
