@@ -41,6 +41,10 @@
                 <strong>Base Price:</strong>
                 {{ tournament.basePrice | currency:'INR':'symbol-narrow':'1.0-0' }}
               </span>
+              <span class="info-item">
+                <strong>Initial Increment:</strong>
+                {{ tournament.initialIncrementAmount | currency:'INR':'symbol-narrow':'1.0-0' }}
+              </span>
               <span class="status-badge" [ngClass]="'status-' + (tournament.status | lowercase)">
                 {{ tournament.status | titlecase }}
               </span>
@@ -76,6 +80,10 @@
           <button class="action-btn">
             <span class="icon">📊</span>
             <span class="tooltip">Results</span>
+          </button>
+          <button class="action-btn" (click)="openEditModal(tournament)">
+            <span class="icon">✏️</span>
+            <span class="tooltip">Edit</span>
           </button>
           <button class="action-btn" (click)="deleteTournament(tournament.id)">
             <span class="icon">🗑️</span>
@@ -164,7 +172,7 @@
           </div>
         </div>
 
-        <!-- Base Price / Status -->
+        <!-- Base Price / Initial Increment -->
         <div class="form-row">
           <div class="form-group">
             <label for="tBase">Base Price (₹) *</label>
@@ -172,6 +180,16 @@
                    min="0" placeholder="20000" required />
             <span class="error-msg" *ngIf="tBase.invalid && (tBase.dirty || tBase.touched || createForm.submitted)">Base price is required.</span>
           </div>
+          <div class="form-group">
+            <label for="tInitialIncrement">Initial Increment (₹) *</label>
+            <input type="number" id="tInitialIncrement" #tInitialIncrement="ngModel" [(ngModel)]="newTournament.initialIncrementAmount" name="tInitialIncrement"
+                   min="1" placeholder="5" required />
+            <span class="error-msg" *ngIf="tInitialIncrement.invalid && (tInitialIncrement.dirty || tInitialIncrement.touched || createForm.submitted)">Initial increment is required.</span>
+          </div>
+        </div>
+
+        <!-- Status -->
+        <div class="form-row">
           <div class="form-group">
             <label for="tStatus">Status *</label>
             <select id="tStatus" [(ngModel)]="newTournament.status" name="tStatus" required>
@@ -185,6 +203,120 @@
         <div class="form-actions">
           <button type="button" class="btn btn-secondary" (click)="closeCreateModal()">Cancel</button>
           <button type="submit" class="btn btn-primary">Create Tournament</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Tournament Modal -->
+  <div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="closeEditModal()">✕</button>
+      <h2>Edit Tournament</h2>
+
+      <form #editForm="ngForm" (ngSubmit)="saveTournament(editForm)" class="create-form">
+
+        <!-- Logo upload -->
+        <div class="form-group logo-group">
+          <div class="logo-upload-area">
+            <div class="logo-preview-circle">
+              <img *ngIf="editLogoPreview" [src]="editLogoPreview" alt="Logo preview" class="logo-preview-img" />
+              <span *ngIf="!editLogoPreview" class="logo-placeholder-icon">🏆</span>
+            </div>
+            <div class="logo-upload-controls">
+              <label class="file-upload-label" for="editLogo">📁 Upload Logo</label>
+              <input type="file" id="editLogo" accept="image/*" (change)="onEditLogoSelected($event)" name="editLogo" />
+              <span class="logo-hint">PNG, JPG — shown in the card header</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Name -->
+        <div class="form-group full-width">
+          <label for="eName">Tournament Name *</label>
+          <input type="text" id="eName" #eName="ngModel" [(ngModel)]="editTournament.name" name="eName"
+                 placeholder="e.g. Cricket Premier League 2026" required />
+          <span class="error-msg" *ngIf="eName.invalid && (eName.dirty || eName.touched || editForm.submitted)">Tournament name is required.</span>
+        </div>
+
+        <!-- Sport / Date -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="eSport">Sport *</label>
+            <input type="text" id="eSport" #eSport="ngModel" [(ngModel)]="editTournament.sport" name="eSport"
+                   placeholder="e.g. Cricket" required />
+            <span class="error-msg" *ngIf="eSport.invalid && (eSport.dirty || eSport.touched || editForm.submitted)">Sport is required.</span>
+          </div>
+          <div class="form-group">
+            <label for="eDate">Date *</label>
+            <input type="date" id="eDate" #eDate="ngModel" [(ngModel)]="editTournament.date" name="eDate" required />
+            <span class="error-msg" *ngIf="eDate.invalid && (eDate.dirty || eDate.touched || editForm.submitted)">Date is required.</span>
+          </div>
+        </div>
+
+        <!-- Teams / Players -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="eTeams">Total Teams *</label>
+            <input type="number" id="eTeams" #eTeams="ngModel" [(ngModel)]="editTournament.totalTeams" name="eTeams"
+                   min="2" placeholder="8" required />
+            <span class="error-msg" *ngIf="eTeams.invalid && (eTeams.dirty || eTeams.touched || editForm.submitted)">Total teams is required (min 2).</span>
+          </div>
+          <div class="form-group">
+            <label for="ePlayers">Total Players *</label>
+            <input type="number" id="ePlayers" #ePlayers="ngModel" [(ngModel)]="editTournament.totalPlayers" name="ePlayers"
+                   min="1" placeholder="120" required />
+            <span class="error-msg" *ngIf="ePlayers.invalid && (ePlayers.dirty || ePlayers.touched || editForm.submitted)">Total players is required.</span>
+          </div>
+        </div>
+
+        <!-- Purse / Players per team -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="ePurse">Purse / Team (₹) *</label>
+            <input type="number" id="ePurse" #ePurse="ngModel" [(ngModel)]="editTournament.purseAmount" name="ePurse"
+                   min="0" placeholder="1000000" required />
+            <span class="error-msg" *ngIf="ePurse.invalid && (ePurse.dirty || ePurse.touched || editForm.submitted)">Purse amount is required.</span>
+          </div>
+          <div class="form-group">
+            <label for="ePPT">Players / Team *</label>
+            <input type="number" id="ePPT" #ePPT="ngModel" [(ngModel)]="editTournament.playersPerTeam" name="ePPT"
+                   min="1" placeholder="15" required />
+            <span class="error-msg" *ngIf="ePPT.invalid && (ePPT.dirty || ePPT.touched || editForm.submitted)">Players per team is required.</span>
+          </div>
+        </div>
+
+        <!-- Base Price / Initial Increment -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="eBase">Base Price (₹) *</label>
+            <input type="number" id="eBase" #eBase="ngModel" [(ngModel)]="editTournament.basePrice" name="eBase"
+                   min="0" placeholder="20000" required />
+            <span class="error-msg" *ngIf="eBase.invalid && (eBase.dirty || eBase.touched || editForm.submitted)">Base price is required.</span>
+          </div>
+          <div class="form-group">
+            <label for="eInitialIncrement">Initial Increment (₹) *</label>
+            <input type="number" id="eInitialIncrement" #eInitialIncrement="ngModel" [(ngModel)]="editTournament.initialIncrementAmount" name="eInitialIncrement"
+                   min="1" placeholder="5" required />
+            <span class="error-msg" *ngIf="eInitialIncrement.invalid && (eInitialIncrement.dirty || eInitialIncrement.touched || editForm.submitted)">Initial increment is required.</span>
+          </div>
+        </div>
+
+        <!-- Status -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="eStatus">Status *</label>
+            <select id="eStatus" [(ngModel)]="editTournament.status" name="eStatus" required>
+              <option value="UPCOMING">Upcoming</option>
+              <option value="ONGOING">Ongoing</option>
+              <option value="COMPLETED">Completed</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeEditModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
         </div>
       </form>
     </div>

@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
+import { timeout } from 'rxjs';
 import { TournamentService } from '../../core/services/tournament.service';
 import { PlayerService } from '../../core/services/player.service';
 import { Tournament } from '../../models';
@@ -17,8 +18,11 @@ export class Register implements OnInit {
   tournament: Tournament | undefined;
   submitted = false;
   serverError = '';
+  isCheckingTournament = true;
+  hasValidTournamentLink = false;
+  tournamentLookupFailed = false;
 
-  tournamentId!: number;
+  tournamentId = '';
 
   form = {
     firstName: '',
@@ -36,16 +40,36 @@ export class Register implements OnInit {
     private route: ActivatedRoute,
     private tournamentService: TournamentService,
     private playerService: PlayerService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
-    this.tournamentId = Number(this.route.snapshot.paramMap.get('tournamentId'));
-    if (this.tournamentId) {
-      this.tournamentService.getById(this.tournamentId).subscribe({
-        next: (t) => (this.tournament = t),
-        error: () => (this.serverError = 'Tournament not found.'),
-      });
+    const routeTournamentId =
+      this.route.snapshot.paramMap.get('tournamentId') ??
+      this.route.snapshot.queryParamMap.get('tournamentId');
+
+    if (!routeTournamentId?.trim()) {
+      this.serverError = 'Tournament not found.';
+      this.isCheckingTournament = false;
+      return;
     }
+
+    this.tournamentId = routeTournamentId.trim();
+    this.hasValidTournamentLink = true;
+    this.tournamentService.getById(this.tournamentId).pipe(timeout(8000)).subscribe({
+      next: (t) => {
+        console.log('Tournament loaded:', t);
+        this.tournament = t;
+        this.isCheckingTournament = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Tournament fetch error:', err);
+        this.tournamentLookupFailed = true;
+        this.isCheckingTournament = false;
+        this.cdr.detectChanges();
+      },
+    });
   }
 
   onPhotoSelected(event: any) {
@@ -74,7 +98,7 @@ export class Register implements OnInit {
   }
 
   submitForm() {
-    if (!this.form.firstName || !this.form.role || !this.photoFile || !this.paymentProofFile) {
+    if (!this.form.firstName || !this.form.role || !this.photoFile || !this.paymentProofFile || !this.tournamentId) {
       return;
     }
     this.serverError = '';

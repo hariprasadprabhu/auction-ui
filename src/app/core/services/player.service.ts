@@ -47,7 +47,7 @@ export class PlayerService {
 
   /** Public self-registration — no auth required */
   register(
-    tournamentId: number,
+    tournamentId: number | string,
     request: PlayerRegistrationRequest,
   ): Observable<Player> {
     const formData = this.buildFormData(request);

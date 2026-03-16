@@ -5,6 +5,7 @@ import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import {
   AuctionPlayer,
+  AuctionStatus,
   CreateAuctionPlayerRequest,
   SellPlayerRequest,
   RequeueResponse,
@@ -110,9 +111,15 @@ export class AuctionPlayerService {
     return fd;
   }
 
-  private mapPlayer(p: AuctionPlayer): AuctionPlayer {
+  private mapPlayer(p: any): AuctionPlayer {
+    const rawStatus = (p.auctionStatus || p.auction_status || 'AVAILABLE').toString().toUpperCase();
+    const auctionStatus: AuctionStatus =
+      rawStatus === 'SOLD' ? 'SOLD' :
+      rawStatus === 'UNSOLD' ? 'UNSOLD' :
+      'AVAILABLE';
     return {
       ...p,
+      auctionStatus,
       photoUrl: p.photoUrl ? `${this.apiUrl}${p.photoUrl}` : undefined,
     };
   }

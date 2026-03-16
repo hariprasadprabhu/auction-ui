@@ -231,9 +231,10 @@
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
   }
 
-  &.card-sold     { border-color: #bbdefb; }
-  &.card-unsold   { border-color: #ffcdd2; }
-  &.card-upcoming { border-color: #c8e6c9; }
+  &.card-sold      { border-color: #bbdefb; }
+  &.card-unsold    { border-color: #ffcdd2; }
+  &.card-available { border-color: #c8e6c9; }
+  &.card-upcoming  { border-color: #c8e6c9; }
 }
 
 .player-photo {
@@ -286,9 +287,10 @@
   text-transform: uppercase;
   letter-spacing: 0.4px;
 
-  &.badge-sold     { background: #e3f2fd; color: #1565c0; }
-  &.badge-unsold   { background: #ffebee; color: #c62828; }
-  &.badge-upcoming { background: #e8f5e9; color: #2e7d32; }
+  &.badge-sold      { background: #e3f2fd; color: #1565c0; }
+  &.badge-unsold    { background: #ffebee; color: #c62828; }
+  &.badge-available { background: #e8f5e9; color: #2e7d32; }
+  &.badge-upcoming  { background: #e8f5e9; color: #2e7d32; }
 }
 
 .sold-price {
@@ -592,6 +594,69 @@
   &.ms-remaining { background: #e8f5e9; .modal-stat-val { color: #2e7d32; } }
   &.ms-max       { background: #e3f2fd; .modal-stat-val { color: #1565c0; } }
   &.ms-min       { background: #fff8e1; .modal-stat-val { color: #f57f17; } }
+  &.ms-free      { background: #e3f2fd; .modal-stat-val { color: #1565c0; } }
+  &.ms-spent     { background: #fce4ec; .modal-stat-val { color: #ad1457; } }
+}
+
+.portfolio-block {
+  margin-bottom: 20px;
+}
+
+.portfolio-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.portfolio-error,
+.portfolio-empty {
+  font-size: 0.8rem;
+  color: #c62828;
+}
+
+.portfolio-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.portfolio-row {
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 10px;
+  background: #fafbff;
+}
+
+.portfolio-main {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.portfolio-tournament {
+  font-size: 0.78rem;
+  color: #333;
+  font-weight: 700;
+}
+
+.portfolio-team {
+  font-size: 0.75rem;
+  color: #777;
+}
+
+.portfolio-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 10px;
+  font-size: 0.72rem;
+  color: #555;
+}
+
+.portfolio-available {
+  color: #2e7d32;
+  font-weight: 700;
 }
 
 // ── Squad List ────────────────────────────────────────────────────────────────
@@ -984,6 +1049,15 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
     margin-bottom: 18px;
+  }
+
+  .portfolio-main {
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .portfolio-metrics {
+    grid-template-columns: 1fr;
   }
 
   .modal-stat-item {

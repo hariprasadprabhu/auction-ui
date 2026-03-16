@@ -23,8 +23,14 @@
     </div>
   </div>
 
+  <div class="not-found" *ngIf="isCheckingTournament">
+    <div class="not-found-icon">⏳</div>
+    <h2>Checking registration link...</h2>
+    <p>Please wait while we load your tournament details.</p>
+  </div>
+
   <!-- Not Found -->
-  <div class="not-found" *ngIf="!tournament">
+  <div class="not-found" *ngIf="!isCheckingTournament && !hasValidTournamentLink">
     <div class="not-found-icon">🔍</div>
     <h2>Tournament not found</h2>
     <p>This registration link is invalid or has expired.</p>
@@ -32,10 +38,11 @@
   </div>
 
   <!-- Registration Form -->
-  <div class="form-wrapper" *ngIf="tournament && !submitted">
+  <div class="form-wrapper" *ngIf="!isCheckingTournament && hasValidTournamentLink && !submitted">
     <div class="form-card">
       <h2>Player Registration</h2>
-      <p class="form-subtitle">Fill in your details below to register for this tournament</p>
+      <p class="form-subtitle" *ngIf="!tournamentLookupFailed">Fill in your details below to register for this tournament</p>
+      <p class="form-subtitle" *ngIf="tournamentLookupFailed">Tournament details are temporarily unavailable. You can still complete registration.</p>
 
       <form (ngSubmit)="submitForm()" class="register-form" #registerForm="ngForm">
 
