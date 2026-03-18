@@ -53,7 +53,7 @@
       <div class="player-card">
         <div class="player-photo-col">
           <div class="photo-glow-ring">
-            <img [src]="currentPlayer.photoUrl" [alt]="currentPlayer.firstName" class="player-big-photo" />
+            <img [src]="currentPlayer.photoUrl | normalizePhotoUrl" [alt]="currentPlayer.firstName" class="player-big-photo" />
           </div>
           <div class="role-badge">{{ currentPlayer.role }}</div>
         </div>

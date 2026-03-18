@@ -8,6 +8,7 @@ import { OwnerViewService } from '../../core/services/owner-view.service';
 import { AuctionPlayerService } from '../../core/services/auction-player.service';
 import { AuctionEventService } from '../../core/services/auction-event.service';
 import { TeamService } from '../../core/services/team.service';
+import { NormalizePhotoUrlPipe } from '../../core/pipes/normalize-photo-url.pipe';
 import {
   AuctionPlayer,
   OwnerViewResponse,
@@ -18,7 +19,7 @@ import {
 @Component({
   selector: 'app-owner-view',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, NormalizePhotoUrlPipe],
   templateUrl: './owner-view.html',
   styleUrls: ['./owner-view.scss'],
 })

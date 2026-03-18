@@ -6,10 +6,11 @@ import { PlayerService } from '../../core/services/player.service';
 import { TournamentService } from '../../core/services/tournament.service';
 import { Tournament, Player } from '../../models';
 import { AuthImagePipe } from '../../core/pipes/auth-image.pipe';
+import { NormalizePhotoUrlPipe } from '../../core/pipes/normalize-photo-url.pipe';
 
 @Component({
   selector: 'app-players',
-  imports: [CommonModule, FormsModule, AuthImagePipe],
+  imports: [CommonModule, FormsModule, AuthImagePipe, NormalizePhotoUrlPipe],
   templateUrl: './teams.html',
   styleUrls: ['./teams.scss'],
 })

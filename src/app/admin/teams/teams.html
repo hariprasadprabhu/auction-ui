@@ -48,7 +48,7 @@
         <tr *ngFor="let player of players">
           <td>{{ player.playerNumber }}</td>
           <td class="photo-cell">
-            <img [src]="player.photoUrl" [alt]="player.firstName" class="player-photo" />
+            <img [src]="player.photoUrl | normalizePhotoUrl" [alt]="player.firstName" class="player-photo" />
           </td>
           <td>{{ player.firstName }}</td>
           <td>{{ player.lastName || 'N/A' }}</td>
