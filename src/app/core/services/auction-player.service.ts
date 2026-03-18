@@ -86,7 +86,8 @@ export class AuctionPlayerService {
   }
 
   getPhotoUrl(id: number): string {
-    return `${this.apiUrl}/auction-players/${id}/photo`;
+    const baseUrl = this.apiUrl.replace(/\/api\/?$/, '');
+    return `${baseUrl}/api/auction-players/${id}/photo`;
   }
 
   private buildFormData(

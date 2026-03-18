@@ -96,11 +96,13 @@ export class PlayerService {
   }
 
   getPhotoUrl(id: number): string {
-    return `${this.apiUrl}/players/${id}/photo`;
+    const baseUrl = this.apiUrl.replace(/\/api\/?$/, '');
+    return `${baseUrl}/api/players/${id}/photo`;
   }
 
   getPaymentProofUrl(id: number): string {
-    return `${this.apiUrl}/players/${id}/payment-proof`;
+    const baseUrl = this.apiUrl.replace(/\/api\/?$/, '');
+    return `${baseUrl}/api/players/${id}/payment-proof`;
   }
 
   private buildFormData(
