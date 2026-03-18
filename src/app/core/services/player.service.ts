@@ -120,12 +120,24 @@ export class PlayerService {
   private mapPlayer(p: Player): Player {
     const normalizeUrl = (url: string | undefined): string | undefined => {
       if (!url) return undefined;
-      // If already absolute URL, fix any double /api/api and return
-      if (url.startsWith('http')) {
-        return url.replace(/\/api\/api\//g, '/api/');
+      
+      // Fix double /api/api in the path first
+      let normalized = url.replace(/\/api\/api\//g, '/api/');
+      
+      // If already absolute URL, return normalized version
+      if (normalized.startsWith('http')) {
+        return normalized;
       }
-      // If relative path, prepend apiUrl
-      return `${this.apiUrl}${url}`;
+      
+      // If starts with /api, the backend already includes /api
+      // But our apiUrl also has /api, so we need the base URL without /api
+      if (normalized.startsWith('/api')) {
+        const baseUrl = this.apiUrl.replace(/\/api\/?$/, '');
+        return `${baseUrl}${normalized}`;
+      }
+      
+      // For other relative paths, prepend full apiUrl
+      return `${this.apiUrl}${normalized}`;
     };
     return {
       ...p,
