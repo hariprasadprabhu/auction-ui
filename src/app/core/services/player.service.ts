@@ -118,18 +118,19 @@ export class PlayerService {
   }
 
   private mapPlayer(p: Player): Player {
+    const normalizeUrl = (url: string | undefined): string | undefined => {
+      if (!url) return undefined;
+      // If already absolute URL, fix any double /api/api and return
+      if (url.startsWith('http')) {
+        return url.replace(/\/api\/api\//g, '/api/');
+      }
+      // If relative path, prepend apiUrl
+      return `${this.apiUrl}${url}`;
+    };
     return {
       ...p,
-      photoUrl: p.photoUrl
-        ? p.photoUrl.startsWith('http')
-          ? p.photoUrl
-          : `${this.apiUrl}${p.photoUrl}`
-        : undefined,
-      paymentProofUrl: p.paymentProofUrl
-        ? p.paymentProofUrl.startsWith('http')
-          ? p.paymentProofUrl
-          : `${this.apiUrl}${p.paymentProofUrl}`
-        : undefined,
+      photoUrl: normalizeUrl(p.photoUrl),
+      paymentProofUrl: normalizeUrl(p.paymentProofUrl),
     };
   }
 }
