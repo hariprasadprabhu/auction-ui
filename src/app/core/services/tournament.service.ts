@@ -16,7 +16,7 @@ export class TournamentService {
       .pipe(map((list) => list.map((t) => this.mapTournament(t))));
   }
 
-  getById(id: number): Observable<Tournament> {
+  getById(id: number | string): Observable<Tournament> {
     return this.http
       .get<Tournament>(`${this.apiUrl}/api/tournaments/${id}`)
       .pipe(map((t) => this.mapTournament(t)));
@@ -61,15 +61,20 @@ export class TournamentService {
       fd.append('playersPerTeam', String(request.playersPerTeam));
     if (request.basePrice !== undefined)
       fd.append('basePrice', String(request.basePrice));
+    if (request.initialIncrementAmount !== undefined)
+      fd.append('initialIncrement', String(request.initialIncrementAmount));
     if (request.status !== undefined) fd.append('status', request.status);
     if (request.logo) fd.append('logo', request.logo);
     return fd;
   }
 
   /** Resolve relative logoUrl to full URL */
-  private mapTournament(t: Tournament): Tournament {
+  private mapTournament(t: any): Tournament {
     return {
       ...t,
+      initialIncrementAmount: t.initialIncrementAmount !== undefined && t.initialIncrementAmount !== null
+        ? t.initialIncrementAmount
+        : (t.initialIncrement !== undefined && t.initialIncrement !== null ? t.initialIncrement : 0),
       logoUrl: t.logoUrl ? `${this.apiUrl}${t.logoUrl}` : undefined,
     };
   }

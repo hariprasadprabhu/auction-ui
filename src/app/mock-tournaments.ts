@@ -86,6 +86,8 @@ export const MOCK_TOURNAMENTS: Tournament[] = [
     purseAmount: 1000000,
     playersPerTeam: 15,
     basePrice: 20000,
+    incrementAmount: 5,
+    initialIncrementAmount: 5,
   },
   {
     id: 2,
@@ -98,6 +100,8 @@ export const MOCK_TOURNAMENTS: Tournament[] = [
     purseAmount: 750000,
     playersPerTeam: 15,
     basePrice: 15000,
+    incrementAmount: 5,
+    initialIncrementAmount: 5,
   },
   {
     id: 3,
@@ -110,6 +114,8 @@ export const MOCK_TOURNAMENTS: Tournament[] = [
     purseAmount: 500000,
     playersPerTeam: 15,
     basePrice: 10000,
+    incrementAmount: 5,
+    initialIncrementAmount: 5,
   },
   {
     id: 4,
@@ -122,6 +128,8 @@ export const MOCK_TOURNAMENTS: Tournament[] = [
     purseAmount: 1200000,
     playersPerTeam: 15,
     basePrice: 25000,
+    incrementAmount: 5,
+    initialIncrementAmount: 5,
   },
   {
     id: 5,
@@ -134,6 +142,8 @@ export const MOCK_TOURNAMENTS: Tournament[] = [
     purseAmount: 400000,
     playersPerTeam: 15,
     basePrice: 5000,
+    incrementAmount: 5,
+    initialIncrementAmount: 5,
   },
 ];
 

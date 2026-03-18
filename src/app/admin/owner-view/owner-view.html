@@ -7,13 +7,11 @@
       <p class="ov-subtitle">Owner View — Team Purse &amp; Player Status</p>
     </div>
     <div class="header-right">
-      <span class="tournament-date">{{ tournament?.name }}</span>
+      <span class="tournament-date" *ngIf="tournament">Purse: {{ formatAmount(tournament.purseAmount) }}</span>
     </div>
   </div>
 
   <div class="ov-content">
-    <button class="btn btn-back-light" (click)="goBack()">← Back To Dashboard</button>
-
     <!-- Summary Chips Row -->
     <div class="summary-row">
       <div class="summary-chip chip-total">
@@ -58,7 +56,7 @@
           <img [src]="player.photoUrl" [alt]="player.firstName" class="player-photo" />
           <div class="player-card-body">
             <p class="player-name">{{ player.firstName }} {{ player.lastName }}</p>
-            <p class="player-meta">{{ player.role }} · {{ player.city }}</p>
+            <p class="player-meta">{{ player.role }} · {{ player.age || 'N/A' }} yrs · India</p>
             <p class="player-base">Base: {{ formatAmount(player.basePrice) }}</p>
           </div>
           <div class="player-card-footer">
@@ -83,10 +81,11 @@
       <div class="teams-grid">
         <div class="team-purse-card" *ngFor="let stats of teamStats" (click)="openTeamDetail(stats)">
           <div class="tpc-header">
+            <img [src]="getTeamLogoUrl(stats.team.id)" [alt]="stats.team.name" class="tpc-logo" />
             <div class="tpc-info">
               <h3 class="tpc-name">{{ stats.team.name }}</h3>
               <p class="tpc-owner">👤 {{ stats.team.ownerName }}</p>
-              <p class="tpc-number">{{ stats.team.teamNumber }}</p>
+              <p class="tpc-number">#{{ stats.team.teamNumber }}</p>
             </div>
             <span class="view-squad-cta">View Squad →</span>
           </div>
@@ -115,9 +114,13 @@
               <span class="tpc-stat-val">{{ formatAmount(stats.purseSpent) }}</span>
               <span class="tpc-stat-lbl">Purse Spent</span>
             </div>
-            <div class="tpc-stat">
-              <span class="tpc-stat-val">{{ formatAmount(stats.purseAllocated) }}</span>
-              <span class="tpc-stat-lbl">Total Purse</span>
+            <div class="tpc-stat tpc-stat-max">
+              <span class="tpc-stat-val">{{ formatAmount(stats.availableForBidding) }}</span>
+              <span class="tpc-stat-lbl">Free to Bid</span>
+            </div>
+            <div class="tpc-stat tpc-stat-min">
+              <span class="tpc-stat-val">{{ formatAmount(stats.reservedFund) }}</span>
+              <span class="tpc-stat-lbl">Reserved · {{ getRemainingSlots(stats) }} slot{{ getRemainingSlots(stats) !== 1 ? 's' : '' }}</span>
             </div>
           </div>
         </div>
@@ -135,10 +138,11 @@
       <button class="modal-close" (click)="closeTeamDetail()">✕</button>
 
       <div class="modal-team-header" *ngIf="selectedTeam">
+        <img [src]="getTeamLogoUrl(selectedTeam.team.id)" [alt]="selectedTeam.team.name" class="modal-logo" />
         <div class="modal-team-meta">
           <h2>{{ selectedTeam.team.name }}</h2>
-          <p class="modal-owner-name">Owner: {{ selectedTeam.team.ownerName }}</p>
-          <p class="modal-number">{{ selectedTeam.team.teamNumber }}</p>
+          <p class="modal-owner-name">👤 {{ selectedTeam.team.ownerName }}</p>
+          <p class="modal-number">#{{ selectedTeam.team.teamNumber }}</p>
         </div>
       </div>
 
@@ -151,10 +155,39 @@
           <span class="modal-stat-val">{{ formatAmount(selectedTeam.purseRemaining) }}</span>
           <span class="modal-stat-lbl">Purse Left</span>
         </div>
+        <div class="modal-stat-item ms-free">
+          <span class="modal-stat-val">{{ formatAmount(selectedTeam.availableForBidding) }}</span>
+          <span class="modal-stat-lbl">Free to Bid</span>
+        </div>
         <div class="modal-stat-item ms-spent">
           <span class="modal-stat-val">{{ formatAmount(selectedTeam.purseSpent) }}</span>
           <span class="modal-stat-lbl">Purse Spent</span>
         </div>
+      </div>
+
+      <div class="portfolio-block" *ngIf="selectedTeam">
+        <div class="portfolio-title">Portfolio Across Tournaments</div>
+
+        <p class="portfolio-error" *ngIf="portfolioError">{{ portfolioError }}</p>
+
+        <div class="portfolio-list" *ngIf="!portfolioError && selectedTeamPortfolio.length">
+          <div class="portfolio-row" *ngFor="let purse of selectedTeamPortfolio">
+            <div class="portfolio-main">
+              <span class="portfolio-tournament">Tournament #{{ purse.tournamentId }}</span>
+              <span class="portfolio-team">{{ purse.teamName }} ({{ purse.teamNumber }})</span>
+            </div>
+            <div class="portfolio-metrics">
+              <span>Initial: {{ formatAmount(purse.initialPurse) }}</span>
+              <span>Used: {{ formatAmount(purse.purseUsed) }}</span>
+              <span>Current: {{ formatAmount(purse.currentPurse) }}</span>
+              <span class="portfolio-available">Available: {{ formatAmount(purse.availableForBidding) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <p class="portfolio-empty" *ngIf="!portfolioError && !selectedTeamPortfolio.length">
+          No cross-tournament purse entries available.
+        </p>
       </div>
 
       <div class="modal-squad-title">
@@ -165,6 +198,12 @@
       <div class="squad-list" *ngIf="selectedTeam?.playerDetails?.length">
         <div class="squad-row" *ngFor="let p of selectedTeam!.playerDetails; let i = index">
           <span class="squad-idx">{{ i + 1 }}</span>
+          <img
+            *ngIf="getPlayerPhoto(p.auctionPlayerId)"
+            [src]="getPlayerPhoto(p.auctionPlayerId)"
+            [alt]="p.firstName"
+            class="squad-photo"
+          />
           <div class="squad-info">
             <span class="squad-name">{{ p.firstName }} {{ p.lastName }}</span>
             <span class="squad-role">{{ p.role }} · #{{ p.playerNumber }}</span>

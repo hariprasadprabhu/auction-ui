@@ -58,6 +58,8 @@ export interface Tournament {
   purseAmount: number;
   playersPerTeam: number;
   basePrice: number;
+  incrementAmount?: number;
+  initialIncrementAmount: number;
   logoUrl?: string;
 }
 
@@ -70,6 +72,7 @@ export interface CreateTournamentRequest {
   purseAmount: number;
   playersPerTeam: number;
   basePrice: number;
+  initialIncrementAmount: number;
   status?: TournamentStatus;
   logo?: File;
 }
@@ -98,6 +101,22 @@ export interface CreateTeamRequest {
 
 export type UpdateTeamRequest = Partial<CreateTeamRequest>;
 
+export interface TeamPurse {
+  id: number;
+  teamId: number;
+  teamNumber: string;
+  teamName: string;
+  tournamentId: number;
+  initialPurse: number;
+  currentPurse: number;
+  purseUsed: number;
+  maxBidPerPlayer: number;
+  reservedFund: number;
+  availableForBidding: number;
+  playersBought: number;
+  remainingSlots: number;
+}
+
 // ── Player ───────────────────────────────────────────────────────────────────
 
 export interface Player {
@@ -125,8 +144,8 @@ export interface PlayerRegistrationRequest {
   lastName?: string;
   dob?: string;
   role: string;
-  photo?: File;
-  paymentProof?: File;
+  photo?: File | undefined;
+  paymentProof?: File | undefined;
 }
 
 export interface AddToAuctionRequest {
@@ -232,6 +251,9 @@ export interface OwnerViewTeamStats {
   purseSpent: number;
   purseRemaining: number;
   playersCount: number;
+  maxBidPerPlayer: number;
+  availableForBidding: number;
+  reservedFund: number;
   playerDetails: {
     auctionPlayerId: number;
     playerNumber: string;

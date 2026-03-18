@@ -35,8 +35,16 @@
     <button class="btn-back-home" (click)="goBack()">← Back to Dashboard</button>
   </div>
 
+  <!-- ═══ NO UNSOLD PLAYERS ═══ -->
+  <div class="auction-complete-screen" *ngIf="noUnsoldAvailable">
+    <div class="complete-trophy">⚠️</div>
+    <h2>No Unsold Players Available</h2>
+    <p>All players have already been sold. There are no unsold players to requeue.</p>
+    <button class="btn-back-home" (click)="goBack()">← Back to Dashboard</button>
+  </div>
+
   <!-- ═══ MAIN ═══ -->
-  <main class="auction-main" *ngIf="!auctionComplete && currentPlayer">
+  <main class="auction-main" *ngIf="!auctionComplete && !noUnsoldAvailable && currentPlayer">
 
     <!-- Left: Player Spotlight -->
     <section class="player-panel">
@@ -59,14 +67,18 @@
           <div class="stats-list">
             <div class="stat-row">
               <span class="stat-icon">🎂</span>
-              <span class="stat-val">{{ currentPlayer.age }} yrs</span>
-            </div>
-            <div class="stat-row">
-              <span class="stat-icon">📍</span>
-              <span class="stat-val">{{ currentPlayer.city }}</span>
+              <span class="stat-val">{{ currentPlayer.age || 'N/A' }} yrs</span>
             </div>
             <div class="stat-row">
               <span class="stat-icon">🏏</span>
+              <span class="stat-val">{{ currentPlayer.role }}</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-icon">📍</span>
+              <span class="stat-val">India</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-icon">🎯</span>
               <span class="stat-val">{{ currentPlayer.battingStyle }}</span>
             </div>
             <div class="stat-row">
@@ -112,23 +124,27 @@
       </div>
 
       <div class="raise-bid-group">
-        <button class="raise-btn" (click)="raiseBid(5)" [disabled]="!currentBiddingTeam || showSoldOverlay || showUnsoldOverlay">+₹5L</button>
-        <button class="raise-btn" (click)="raiseBid(10)" [disabled]="!currentBiddingTeam || showSoldOverlay || showUnsoldOverlay">+₹10L</button>
-        <button class="raise-btn raise-btn-lg" (click)="raiseBid(25)" [disabled]="!currentBiddingTeam || showSoldOverlay || showUnsoldOverlay">+₹25L</button>
+        <button class="raise-btn" (click)="raiseBid(nextIncrement)" [disabled]="!currentBiddingTeam || showSoldOverlay || showUnsoldOverlay || isValidatingBid || !canTeamPlaceNextBid(currentBiddingTeam!)">+₹{{ nextIncrement }}L</button>
+        <button class="raise-btn" (click)="raiseBid(nextIncrement * 2)" [disabled]="!currentBiddingTeam || showSoldOverlay || showUnsoldOverlay || isValidatingBid || !canTeamPlaceNextBid(currentBiddingTeam!)">+₹{{ nextIncrement * 2 }}L</button>
+        <button class="raise-btn raise-btn-lg" (click)="raiseBid(nextIncrement * 5)" [disabled]="!currentBiddingTeam || showSoldOverlay || showUnsoldOverlay || isValidatingBid || !canTeamPlaceNextBid(currentBiddingTeam!)">+₹{{ nextIncrement * 5 }}L</button>
       </div>
+
+      <p class="bid-validation-error" *ngIf="validationError">{{ validationError }}</p>
+      <p class="budget-notice" *ngIf="budgetNotification">{{ budgetNotification }}</p>
     </section>
 
   </main>
 
   <!-- ═══ FOOTER ═══ -->
   <footer class="auction-footer">
-    <div class="team-buttons-row" *ngIf="!auctionComplete">
+    <div class="team-buttons-row" *ngIf="!auctionComplete && !noUnsoldAvailable">
       <button
         *ngFor="let team of teams"
         class="team-btn"
         (click)="placeBidForTeam(team)"
         [class.team-btn-active]="currentBiddingTeam?.id === team.id"
-        [disabled]="showSoldOverlay || showUnsoldOverlay"
+        [class.team-btn-out-of-budget]="isTeamOutOfBudget(team)"
+        [disabled]="showSoldOverlay || showUnsoldOverlay || isTeamOutOfBudget(team) || !canTeamPlaceNextBid(team) || isValidatingBid"
       >
         <img [src]="team.logoUrl" [alt]="team.name" class="team-btn-logo" />
         <span class="team-btn-abbr">{{ getAbbr(team.name) }}</span>
@@ -143,7 +159,7 @@
       <button class="ctrl-btn ctrl-config" (click)="showConfigModal = true">
         ⚙ CONFIG
       </button>
-      <ng-container *ngIf="!auctionComplete">
+      <ng-container *ngIf="!auctionComplete && !noUnsoldAvailable">
         <button class="ctrl-btn ctrl-sold" (click)="markSold()"
           [disabled]="!currentBiddingTeam || showSoldOverlay || showUnsoldOverlay">
           ✓ SOLD
