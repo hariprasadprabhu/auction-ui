@@ -1,49 +1,15 @@
-// ═══════════════════════════════════════════════
-// Animations
-// ═══════════════════════════════════════════════
-@keyframes live-blink {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.15; }
-}
-
-@keyframes pulse-green {
-  0%, 100% { text-shadow: 0 0 20px rgba(0, 230, 118, 0.8), 0 0 50px rgba(0, 230, 118, 0.3); }
-  50%       { text-shadow: 0 0 60px rgba(0, 230, 118, 1),   0 0 100px rgba(0, 230, 118, 0.5); }
-}
-
-@keyframes stamp-in {
-  0%   { transform: rotate(-10deg) scale(2.2); opacity: 0; }
-  100% { transform: rotate(-10deg) scale(1);   opacity: 1; }
-}
-
-@keyframes fade-overlay {
-  0%   { opacity: 0; }
-  100% { opacity: 1; }
-}
-
-@keyframes glow-ring-pulse {
-  0%, 100% { box-shadow: 0 0 25px rgba(0, 230, 118, 0.4), 0 0 50px rgba(0, 230, 118, 0.15); }
-  50%       { box-shadow: 0 0 40px rgba(0, 230, 118, 0.7), 0 0 80px rgba(0, 230, 118, 0.3); }
-}
-
-@keyframes spin {
-  0%   { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-@keyframes slide-progress {
-  0%   { width: 0%; }
-  50%  { width: 70%; }
-  100% { width: 100%; }
-}
-
-// ═══════════════════════════════════════════════
-// Base
-// ═══════════════════════════════════════════════
+@keyframes live-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.15; } }
+@keyframes pulse-green { 0%, 100% { text-shadow: 0 0 20px rgba(0, 230, 118, 0.8), 0 0 50px rgba(0, 230, 118, 0.3); } 50% { text-shadow: 0 0 60px rgba(0, 230, 118, 1), 0 0 100px rgba(0, 230, 118, 0.5); } }
+@keyframes stamp-in { 0% { transform: rotate(-10deg) scale(2.2); opacity: 0; } 100% { transform: rotate(-10deg) scale(1); opacity: 1; } }
+@keyframes fade-overlay { 0% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes glow-ring-pulse { 0%, 100% { box-shadow: 0 0 25px rgba(0, 230, 118, 0.4), 0 0 50px rgba(0, 230, 118, 0.15); } 50% { box-shadow: 0 0 40px rgba(0, 230, 118, 0.7), 0 0 80px rgba(0, 230, 118, 0.3); } }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes slide-progress { 0% { width: 0%; } 50% { width: 70%; } 100% { width: 100%; } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
 * { margin: 0; padding: 0; box-sizing: border-box; }
-
 :host { display: block; width: 100%; height: 100%; }
-
 .auction-screen {
   width: 100vw;
   height: 100vh;
@@ -55,23 +21,10 @@
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   position: relative;
 
-  // Subtle dot grid pattern
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image: radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px);
-    background-size: 32px 32px;
-    pointer-events: none;
-    z-index: 0;
-  }
+  &::before { display: none; }
 
   > * { position: relative; z-index: 1; }
 }
-
-// ═══════════════════════════════════════════════
-// Loading Screen
-// ═══════════════════════════════════════════════
 .auction-loading-screen {
   position: fixed;
   top: 0;
@@ -87,13 +40,7 @@
   z-index: 100;
   backdrop-filter: blur(4px);
 
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image: radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px);
-    background-size: 32px 32px;
-  }
+  &::before { display: none; }
 }
 
 .loading-content {
@@ -103,12 +50,6 @@
   max-width: 400px;
   animation: fadeIn 0.6s ease-out;
 }
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
 .loading-spinner {
   width: 80px;
   height: 80px;
@@ -193,18 +134,6 @@
     text-align: left;
   }
 }
-
-@keyframes popIn {
-  0% { 
-    transform: scale(0.5);
-    opacity: 0;
-  }
-  100% { 
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
 .loading-bar {
   width: 220px;
   height: 4px;
@@ -222,10 +151,6 @@
   animation: slide-progress 2s ease-in-out infinite;
   box-shadow: 0 0 10px rgba(0, 230, 118, 0.8);
 }
-
-// ═══════════════════════════════════════════════
-// Header
-// ═══════════════════════════════════════════════
 .auction-header {
   height: 76px;
   flex-shrink: 0;
@@ -313,10 +238,6 @@
   .counter-total { font-size: 0.85rem; font-weight: 700; color: rgba(255,255,255,0.4); }
   .counter-lbl   { font-size: 0.6rem; color: rgba(255,255,255,0.25); text-transform: uppercase; letter-spacing: 1px; margin-left: 3px; }
 }
-
-// ═══════════════════════════════════════════════
-// Progress Bar
-// ═══════════════════════════════════════════════
 .auction-progress {
   height: 6px;
   background: rgba(255,255,255,0.05);
@@ -330,10 +251,6 @@
     box-shadow: 0 0 8px rgba(247,201,72,0.5);
   }
 }
-
-// ═══════════════════════════════════════════════
-// Main
-// ═══════════════════════════════════════════════
 .auction-main {
   flex: 1;
   display: flex;
@@ -341,10 +258,6 @@
   padding: 20px 24px 14px;
   gap: 0;
 }
-
-// ═══════════════════════════════════════════════
-// Player Panel (left)
-// ═══════════════════════════════════════════════
 .player-panel {
   flex: 0 0 57%;
   display: flex;
@@ -474,10 +387,6 @@
   letter-spacing: 1.5px;
   width: fit-content;
 }
-
-// ═══════════════════════════════════════════════
-// Divider
-// ═══════════════════════════════════════════════
 .panel-divider {
   width: 2px;
   align-self: stretch;
@@ -485,10 +394,6 @@
   background: linear-gradient(to bottom, transparent, rgba(247,201,72,0.4) 25%, rgba(247,201,72,0.4) 75%, transparent);
   flex-shrink: 0;
 }
-
-// ═══════════════════════════════════════════════
-// Bid Panel (right)
-// ═══════════════════════════════════════════════
 .bid-panel {
   flex: 1;
   display: flex;
@@ -676,10 +581,6 @@
   font-size: 0.7rem;
   color: rgba(255, 255, 255, 0.7);
 }
-
-// ═══════════════════════════════════════════════
-// Footer
-// ═══════════════════════════════════════════════
 .auction-footer {
   height: 76px;
   flex-shrink: 0;
@@ -856,10 +757,6 @@
     &:hover:not(:disabled) { background: rgba(221,44,0,0.28); box-shadow: 0 4px 16px rgba(221,44,0,0.35); }
   }
 }
-
-// ═══════════════════════════════════════════════
-// Config Modal
-// ═══════════════════════════════════════════════
 .config-modal-backdrop {
   position: fixed !important;
   inset: 0;
@@ -941,10 +838,6 @@
   .config-action-icon { font-size: 1.3rem; flex-shrink: 0; }
   .config-action-label { font-size: 0.88rem; font-weight: 600; line-height: 1.3; }
 }
-
-// ═══════════════════════════════════════════════
-// Confirm Dialog
-// ═══════════════════════════════════════════════
 .confirm-dialog {
   position: fixed !important;
   top: 50%;
@@ -1002,10 +895,6 @@
     &:hover { box-shadow: 0 6px 20px rgba(0,200,83,0.55); }
   }
 }
-
-// ═══════════════════════════════════════════════
-// Result Overlays
-// ═══════════════════════════════════════════════
 .result-overlay {
   position: fixed !important;
   top: 0 !important;
@@ -1057,10 +946,6 @@
   border: 8px solid #ff5722;
   .stamp-text { color: #ff5722; text-shadow: 0 0 50px rgba(255,87,34,0.9); }
 }
-
-// ═══════════════════════════════════════════════
-// Processing Overlay
-// ═══════════════════════════════════════════════
 .processing-overlay {
   position: fixed !important;
   top: 0 !important;
@@ -1089,18 +974,6 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 40px rgba(0, 230, 118, 0.2);
   animation: slideUp 0.4s ease-out;
 }
-
-@keyframes slideUp {
-  from { 
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to { 
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 .processing-spinner {
   width: 50px;
   height: 50px;
@@ -1128,10 +1001,6 @@
   text-align: center;
   min-width: 240px;
 }
-
-// ═══════════════════════════════════════════════
-// Auction Complete Screen
-// ═══════════════════════════════════════════════
 .auction-complete-screen {
   flex: 1;
   display: flex;
