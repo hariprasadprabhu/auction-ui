@@ -21,7 +21,7 @@ app.use(express.static(distFolder, {
 }));
 
 // Redirect all routes to index.html (SPA routing)
-app.get('*', (req, res) => {
+app.use((req, res) => {
   res.sendFile(path.join(distFolder, 'index.html'));
 });
 
