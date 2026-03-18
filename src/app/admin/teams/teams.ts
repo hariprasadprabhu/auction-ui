@@ -25,6 +25,10 @@ export class Players implements OnInit {
   selectedImage: string | null = null;
   selectedImageName: string = '';
   selectedPlayerId: number | null = null;
+  isLoading = true;
+  minLoadingTime = 800;
+  loadingStartTime = 0;
+  pendingRequests = 0;
 
   // Add Player Form
   showAddPlayerModal = false;
@@ -59,26 +63,50 @@ export class Players implements OnInit {
   private cdr = inject(ChangeDetectorRef);
 
   ngOnInit() {
+    this.loadingStartTime = Date.now();
+    this.pendingRequests = 2; // tournament + players
+    
     this.route.paramMap.subscribe((params) => {
       const id = Number(params.get('tournamentId'));
       if (id) {
         this.tournamentId = id;
         this.tournamentService.getById(id).subscribe((t) => {
           this.tournament = t;
-          this.cdr.markForCheck();
+          this.completeRequest();
         });
         this.loadPlayers();
       }
     });
   }
 
+  private completeRequest() {
+    this.pendingRequests--;
+    if (this.pendingRequests <= 0) {
+      const elapsedTime = Date.now() - this.loadingStartTime;
+      const remainingTime = Math.max(0, this.minLoadingTime - elapsedTime);
+      
+      if (remainingTime > 0) {
+        setTimeout(() => {
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        }, remainingTime);
+      } else {
+        this.isLoading = false;
+        this.cdr.markForCheck();
+      }
+    }
+  }
+
   private loadPlayers() {
     this.playerService.getByTournament(this.tournamentId).subscribe({
       next: (data) => {
         this.players = data;
-        this.cdr.markForCheck();
+        this.completeRequest();
       },
-      error: () => alert('Failed to load players.'),
+      error: () => {
+        alert('Failed to load players.');
+        this.completeRequest();
+      },
     });
   }
 

@@ -17,6 +17,10 @@ import { NormalizePhotoUrlCachedPipe } from '../../core/pipes/normalize-photo-ur
 export class TeamsListComponent implements OnInit {
   tournament: Tournament | undefined;
   teams: Team[] = [];
+  isLoading = true;
+  minLoadingTime = 800;
+  loadingStartTime = 0;
+  pendingRequests = 0;
 
   // Add Team Form
   showAddTeamModal = false;
@@ -50,14 +54,35 @@ export class TeamsListComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.loadingStartTime = Date.now();
+    this.pendingRequests = 2; // tournament + teams
+    
     const id = Number(this.route.snapshot.paramMap.get('tournamentId'));
     if (id) {
       this.tournamentId = id;
       this.tournamentService.getById(id).subscribe((t) => {
         this.tournament = t;
-        this.cdr.markForCheck();
+        this.completeRequest();
       });
       this.loadTeams();
+    }
+  }
+
+  private completeRequest() {
+    this.pendingRequests--;
+    if (this.pendingRequests <= 0) {
+      const elapsedTime = Date.now() - this.loadingStartTime;
+      const remainingTime = Math.max(0, this.minLoadingTime - elapsedTime);
+      
+      if (remainingTime > 0) {
+        setTimeout(() => {
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        }, remainingTime);
+      } else {
+        this.isLoading = false;
+        this.cdr.markForCheck();
+      }
     }
   }
 
@@ -65,9 +90,12 @@ export class TeamsListComponent implements OnInit {
     this.teamService.getByTournament(this.tournamentId).subscribe({
       next: (data) => {
         this.teams = data;
-        this.cdr.markForCheck();
+        this.completeRequest();
       },
-      error: () => alert('Failed to load teams.'),
+      error: () => {
+        alert('Failed to load teams.');
+        this.completeRequest();
+      },
     });
   }
 

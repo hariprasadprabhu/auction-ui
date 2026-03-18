@@ -1,5 +1,20 @@
 <div class="ov-container">
+  <!-- Loading Screen -->
+  <div class="ov-loading-screen" *ngIf="isLoading">
+    <div class="loading-content">
+      <div class="loading-spinner">
+        <div class="spinner-circle"></div>
+      </div>
+      <h2 class="loading-title">Loading Owner View</h2>
+      <p class="loading-subtitle">Please wait while we prepare the data...</p>
+      <div class="loading-bar">
+        <div class="loading-progress"></div>
+      </div>
+    </div>
+  </div>
 
+  <!-- Main Content -->
+  <div *ngIf="!isLoading" class="ov-main-content">
   <!-- Page Header -->
   <div class="ov-header">
     <div class="header-left">
@@ -218,4 +233,5 @@
     </div>
   </div>
 
+  </div>
 </div>

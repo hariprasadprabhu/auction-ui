@@ -36,6 +36,23 @@
     min-width: 200px;
   }
 
+  .user-greeting {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .user-icon {
+      font-size: 2rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      color: #333;
+      margin: 0;
+      font-weight: 700;
+    }
+  }
+
   h1 {
     font-size: 2rem;
     color: #333;
@@ -52,6 +69,7 @@
   .header-right {
     display: flex;
     align-items: center;
+    gap: 12px;
   }
 }
 
@@ -70,6 +88,24 @@
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(102, 126, 234, 0.45);
+  }
+}
+
+.btn-logout {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.45);
   }
 }
 

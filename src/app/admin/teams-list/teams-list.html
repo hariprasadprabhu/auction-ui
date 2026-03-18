@@ -1,4 +1,20 @@
 <div class="teams-container">
+  <!-- Loading Screen -->
+  <div class="teams-loading-screen" *ngIf="isLoading">
+    <div class="loading-content">
+      <div class="loading-spinner">
+        <div class="spinner-circle"></div>
+      </div>
+      <h2 class="loading-title">Loading Teams</h2>
+      <p class="loading-subtitle">Please wait while we prepare the data...</p>
+      <div class="loading-bar">
+        <div class="loading-progress"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!isLoading" class="main-content">
   <div class="teams-header">
     <div class="header-left">
       <h1>{{ tournament?.name }}</h1>
@@ -129,5 +145,6 @@
         </div>
       </form>
     </div>
+  </div>
   </div>
 </div>

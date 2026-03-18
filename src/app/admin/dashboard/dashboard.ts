@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TournamentService } from '../../core/services/tournament.service';
+import { AuthService } from '../../core/services/auth.service';
 import { Tournament, TournamentStatus } from '../../models';
 
 @Component({
@@ -15,12 +16,15 @@ export class Dashboard implements OnInit {
   tournaments: Tournament[] = [];
   isLoading = false;
   errorMsg = '';
+  currentUser: any;
 
   private router = inject(Router);
   private tournamentService = inject(TournamentService);
+  private authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
 
   ngOnInit() {
+    this.currentUser = this.authService.getCurrentUser();
     this.loadTournaments();
   }
 
@@ -244,6 +248,11 @@ export class Dashboard implements OnInit {
 
   viewOwnerView(tournamentId: number) {
     window.open(`/admin/owner-view/${tournamentId}`, '_blank');
+  }
+
+  logout() {
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 }
 

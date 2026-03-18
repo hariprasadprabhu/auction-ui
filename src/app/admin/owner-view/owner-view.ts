@@ -26,6 +26,10 @@ import {
 export class OwnerView implements OnInit, OnDestroy {
   data: OwnerViewResponse | null = null;
   auctionPlayers: AuctionPlayer[] = [];
+  isLoading = true;
+  minLoadingTime = 800;
+  loadingStartTime = 0;
+  pendingRequests = 0;
 
   mainTab: 'players' | 'owners' = 'players';
   playerFilter: 'all' | 'sold' | 'unsold' | 'available' = 'all';
@@ -54,6 +58,9 @@ export class OwnerView implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
+    this.loadingStartTime = Date.now();
+    this.pendingRequests = 1; // initial data load
+
     const id = Number(this.route.snapshot.paramMap.get('tournamentId'));
     if (id) {
       this.tournamentId = id;
@@ -79,21 +86,61 @@ export class OwnerView implements OnInit, OnDestroy {
   }
 
   private loadData(id: number) {
+    let dataLoadedCount = 0;
+    
     this.ownerViewService.get(id).subscribe({
       next: (d) => {
         this.data = d;
         // Immediately fetch and update team purses
         this.loadTeamPurses(id);
+        dataLoadedCount++;
+        if (dataLoadedCount === 2 && this.pendingRequests > 0) {
+          this.completeRequest();
+        }
         this.cdr.markForCheck();
       },
-      error: () => alert('Failed to load owner view.'),
+      error: () => {
+        alert('Failed to load owner view.');
+        dataLoadedCount++;
+        if (dataLoadedCount === 2 && this.pendingRequests > 0) {
+          this.completeRequest();
+        }
+      },
     });
     this.auctionPlayerService.getByTournament(id).subscribe({
       next: (players) => {
         this.auctionPlayers = players;
+        dataLoadedCount++;
+        if (dataLoadedCount === 2 && this.pendingRequests > 0) {
+          this.completeRequest();
+        }
         this.cdr.markForCheck();
       },
+      error: () => {
+        dataLoadedCount++;
+        if (dataLoadedCount === 2 && this.pendingRequests > 0) {
+          this.completeRequest();
+        }
+      }
     });
+  }
+
+  private completeRequest() {
+    this.pendingRequests--;
+    if (this.pendingRequests <= 0) {
+      const elapsedTime = Date.now() - this.loadingStartTime;
+      const remainingTime = Math.max(0, this.minLoadingTime - elapsedTime);
+      
+      if (remainingTime > 0) {
+        setTimeout(() => {
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        }, remainingTime);
+      } else {
+        this.isLoading = false;
+        this.cdr.markForCheck();
+      }
+    }
   }
 
   private loadTeamPurses(tournamentId: number) {
