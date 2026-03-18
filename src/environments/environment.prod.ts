@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'http://localhost:8080', // Update with production backend URL
+  apiUrl: 'https://auctiondeck-api-production.up.railway.app/api',
 };

@@ -1,0 +1,8 @@
+node_modules
+.angular
+.git
+.vscode
+dist
+*.log
+.DS_Store
+.env.local
