@@ -50,6 +50,10 @@ export class Auction implements OnInit {
   noUnsoldAvailable = false;
   isValidatingBid = false;
 
+  // Processing state for sold/unsold actions
+  processingOverlay = false;
+  processingMessage = '';
+
   // Loading state
   isLoading = true;
   private pendingRequests = 0;
@@ -237,8 +241,17 @@ export class Auction implements OnInit {
   }
 
   markSold() {
-    if (!this.currentBiddingTeam || !this.currentPlayer || this.showSoldOverlay || this.showUnsoldOverlay) return;
+    if (!this.currentBiddingTeam || !this.currentPlayer || this.processingOverlay || this.showSoldOverlay || this.showUnsoldOverlay) return;
+    
     const player = this.currentPlayer;
+    const teamName = this.currentBiddingTeam.name;
+    
+    // Show processing overlay immediately
+    this.processingMessage = `Processing SOLD to ${teamName}...`;
+    this.processingOverlay = true;
+    this.cdr.markForCheck();
+    
+    // Make API call in the background
     this.auctionPlayerService
       .sell(player.id, { teamId: this.currentBiddingTeam.id, soldPrice: this.currentBid })
       .subscribe({
@@ -248,12 +261,23 @@ export class Auction implements OnInit {
           player.soldToTeamName = updated.soldToTeamName;
           player.soldPrice = updated.soldPrice;
           this.refreshTeamPurse(this.currentBiddingTeam!.id, 'sold');
+          
+          // Hide processing overlay and show result overlay
+          this.processingOverlay = false;
           this.showSoldOverlay = true;
           this.overlayInteractive = false;
           this.auctionEventService.notifyAuctionUpdate(this.tournamentId);
+          
+          // Auto-advance after 2 seconds
+          setTimeout(() => {
+            this.nextPlayer();
+          }, 2000);
+          
           this.cdr.markForCheck();
         },
         error: (err: HttpErrorResponse) => {
+          // Hide processing overlay on error
+          this.processingOverlay = false;
           this.validationError = this.getHttpErrorMessage(err, 'Failed to sell player.');
           this.cdr.markForCheck();
         },
@@ -261,20 +285,39 @@ export class Auction implements OnInit {
   }
 
   markUnsold() {
-    if (!this.currentPlayer || this.showSoldOverlay || this.showUnsoldOverlay) return;
+    if (!this.currentPlayer || this.processingOverlay || this.showSoldOverlay || this.showUnsoldOverlay) return;
+    
     const player = this.currentPlayer;
+    
+    // Show processing overlay immediately
+    this.processingMessage = 'Processing UNSOLD...';
+    this.processingOverlay = true;
+    this.cdr.markForCheck();
+    
+    // Make API call in the background
     this.auctionPlayerService.markUnsold(player.id).subscribe({
       next: () => {
         player.auctionStatus = 'UNSOLD';
         if (this.currentBiddingTeam?.id) {
           this.refreshTeamPurse(this.currentBiddingTeam.id, 'unsold');
         }
+        
+        // Hide processing overlay and show result overlay
+        this.processingOverlay = false;
         this.showUnsoldOverlay = true;
         this.overlayInteractive = false;
         this.auctionEventService.notifyAuctionUpdate(this.tournamentId);
+        
+        // Auto-advance after 2 seconds
+        setTimeout(() => {
+          this.nextPlayer();
+        }, 2000);
+        
         this.cdr.markForCheck();
       },
       error: (err: HttpErrorResponse) => {
+        // Hide processing overlay on error
+        this.processingOverlay = false;
         this.validationError = this.getHttpErrorMessage(err, 'Failed to mark player as unsold.');
         this.cdr.markForCheck();
       },

@@ -175,11 +175,11 @@
       </button>
       <ng-container *ngIf="!auctionComplete && !noUnsoldAvailable">
         <button class="ctrl-btn ctrl-sold" (click)="markSold()"
-          [disabled]="!currentBiddingTeam || showSoldOverlay || showUnsoldOverlay">
+          [disabled]="!currentBiddingTeam || processingOverlay || showSoldOverlay || showUnsoldOverlay">
           ✓ SOLD
         </button>
         <button class="ctrl-btn ctrl-unsold" (click)="markUnsold()"
-          [disabled]="showSoldOverlay || showUnsoldOverlay">
+          [disabled]="processingOverlay || showSoldOverlay || showUnsoldOverlay">
           ✗ UNSOLD
         </button>
         <button class="ctrl-btn ctrl-next" (click)="nextPlayer()">
@@ -223,6 +223,17 @@
       <div class="stamp-text">UNSOLD</div>
     </div>
   </div>
+
+  <!-- Processing Overlay -->
+  <div class="processing-overlay" *ngIf="processingOverlay">
+    <div class="processing-content">
+      <div class="processing-spinner">
+        <div class="spinner-dot"></div>
+      </div>
+      <p class="processing-message">{{ processingMessage }}</p>
+    </div>
+  </div>
+
   <!-- Confirm Dialog -->
   <div class="config-modal-backdrop" *ngIf="confirmDialog" (click)="cancelConfirm()"></div>
   <div class="confirm-dialog" *ngIf="confirmDialog">
