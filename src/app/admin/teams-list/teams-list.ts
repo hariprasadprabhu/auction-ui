@@ -5,11 +5,12 @@ import { FormsModule } from '@angular/forms';
 import { TeamService } from '../../core/services/team.service';
 import { TournamentService } from '../../core/services/tournament.service';
 import { Tournament, Team } from '../../models';
+import { NormalizePhotoUrlCachedPipe } from '../../core/pipes/normalize-photo-url-cached.pipe';
 
 @Component({
   selector: 'app-teams-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NormalizePhotoUrlCachedPipe],
   templateUrl: './teams-list.html',
   styleUrls: ['./teams-list.scss'],
 })

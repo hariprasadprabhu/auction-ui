@@ -48,14 +48,14 @@
         <tr *ngFor="let player of players">
           <td>{{ player.playerNumber }}</td>
           <td class="photo-cell">
-            <img [src]="player.photoUrl | normalizePhotoUrl" [alt]="player.firstName" class="player-photo" />
+            <img [src]="player.photoUrl | normalizePhotoUrlCached | async" [alt]="player.firstName" class="player-photo" />
           </td>
           <td>{{ player.firstName }}</td>
           <td>{{ player.lastName || 'N/A' }}</td>
           <td>{{ calculateAge(player.dob) }}</td>
           <td class="proof-cell">
             <img
-              [src]="player.paymentProofUrl | authImage | async"
+              [src]="player.paymentProofUrl | authImageCached | async"
               [alt]="'Payment Proof for ' + player.firstName"
               class="payment-proof-thumbnail"
               (click)="openImageModal(player.paymentProofUrl, player.firstName, player.id)"
@@ -87,7 +87,7 @@
   <div class="modal-overlay" *ngIf="selectedImage" (click)="closeImageModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <button class="modal-close" (click)="closeImageModal()">✕</button>
-      <img [src]="selectedImage | authImage | async" [alt]="selectedImageName" class="modal-image" />
+      <img [src]="selectedImage | authImageCached | async" [alt]="selectedImageName" class="modal-image" />
       <div class="modal-actions">
         <button class="btn btn-approve-modal" (click)="approveFromModal()">✓ Approve</button>
         <button class="btn btn-reject-modal" (click)="rejectFromModal()">✕ Reject</button>

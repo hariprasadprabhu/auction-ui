@@ -53,7 +53,7 @@
       <div class="player-card">
         <div class="player-photo-col">
           <div class="photo-glow-ring">
-            <img [src]="currentPlayer.photoUrl | normalizePhotoUrl" [alt]="currentPlayer.firstName" class="player-big-photo" />
+            <img [src]="currentPlayer.photoUrl | normalizePhotoUrlCached | async" [alt]="currentPlayer.firstName" class="player-big-photo" />
           </div>
           <div class="role-badge">{{ currentPlayer.role }}</div>
         </div>
@@ -104,7 +104,7 @@
       <ng-container *ngIf="currentBiddingTeam; else noBidder">
         <div class="bid-team-display">
           <div class="bid-team-logo-ring">
-            <img [src]="currentBiddingTeam.logoUrl" [alt]="currentBiddingTeam.name" class="bid-team-logo-img" />
+            <img [src]="currentBiddingTeam.logoUrl | normalizePhotoUrlCached | async" [alt]="currentBiddingTeam.name" class="bid-team-logo-img" />
           </div>
           <div class="bid-team-label">{{ currentBiddingTeam.name }}</div>
         </div>
@@ -146,7 +146,7 @@
         [class.team-btn-out-of-budget]="isTeamOutOfBudget(team)"
         [disabled]="showSoldOverlay || showUnsoldOverlay || isTeamOutOfBudget(team) || !canTeamPlaceNextBid(team) || isValidatingBid"
       >
-        <img [src]="team.logoUrl" [alt]="team.name" class="team-btn-logo" />
+        <img [src]="team.logoUrl | normalizePhotoUrlCached | async" [alt]="team.name" class="team-btn-logo" />
         <span class="team-btn-abbr">{{ getAbbr(team.name) }}</span>
         <span class="team-tooltip">{{ team.name }}</span>
       </button>

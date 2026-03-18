@@ -5,12 +5,17 @@ import { FormsModule } from '@angular/forms';
 import { PlayerService } from '../../core/services/player.service';
 import { TournamentService } from '../../core/services/tournament.service';
 import { Tournament, Player } from '../../models';
-import { AuthImagePipe } from '../../core/pipes/auth-image.pipe';
-import { NormalizePhotoUrlPipe } from '../../core/pipes/normalize-photo-url.pipe';
+import { AuthImageCachedPipe } from '../../core/pipes/auth-image-cached.pipe';
+import { NormalizePhotoUrlCachedPipe } from '../../core/pipes/normalize-photo-url-cached.pipe';
 
 @Component({
   selector: 'app-players',
-  imports: [CommonModule, FormsModule, AuthImagePipe, NormalizePhotoUrlPipe],
+  imports: [
+    CommonModule,
+    FormsModule,
+    AuthImageCachedPipe,
+    NormalizePhotoUrlCachedPipe,
+  ],
   templateUrl: './teams.html',
   styleUrls: ['./teams.scss'],
 })

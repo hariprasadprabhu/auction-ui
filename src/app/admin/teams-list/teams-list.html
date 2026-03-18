@@ -33,7 +33,7 @@
           <tr *ngFor="let team of teams">
             <td class="team-number">{{ team.teamNumber }}</td>
             <td class="logo-cell">
-              <img [src]="team.logoUrl" [alt]="team.name" class="team-logo" />
+              <img [src]="team.logoUrl | normalizePhotoUrlCached | async" [alt]="team.name" class="team-logo" />
             </td>
             <td class="team-name">{{ team.name }}</td>
             <td class="owner-name">{{ team.ownerName }}</td>

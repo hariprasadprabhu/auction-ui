@@ -12,7 +12,7 @@ import { AuctionEventService } from '../../core/services/auction-event.service';
 import { IncrementRuleService } from '../../core/services/increment-rule.service';
 import { TeamService } from '../../core/services/team.service';
 import { TournamentService } from '../../core/services/tournament.service';
-import { NormalizePhotoUrlPipe } from '../../core/pipes/normalize-photo-url.pipe';
+import { NormalizePhotoUrlCachedPipe } from '../../core/pipes/normalize-photo-url-cached.pipe';
 import {
   Tournament,
   Team,
@@ -24,7 +24,7 @@ import {
 @Component({
   selector: 'app-auction',
   standalone: true,
-  imports: [CommonModule, NormalizePhotoUrlPipe],
+  imports: [CommonModule, NormalizePhotoUrlCachedPipe],
   templateUrl: './auction.html',
   styleUrls: ['./auction.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
