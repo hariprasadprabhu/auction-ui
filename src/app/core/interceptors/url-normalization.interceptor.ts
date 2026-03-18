@@ -2,8 +2,8 @@ import { HttpInterceptorFn, HttpResponse } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 
 /**
- * Interceptor to fix doubled /api/api paths in photo URLs returned by the backend.
- * The backend appears to be returning photoUrl with /api/api/ prefix instead of /api/.
+ * Interceptor to fix doubled /api/api paths in photo and payment proof URLs returned by the backend.
+ * The backend appears to be returning photoUrl and paymentProofUrl with /api/api/ prefix instead of /api/.
  * This interceptor normalizes these URLs before they reach the application.
  */
 export const urlNormalizationInterceptor: HttpInterceptorFn = (req, next) => {
@@ -21,7 +21,7 @@ export const urlNormalizationInterceptor: HttpInterceptorFn = (req, next) => {
 };
 
 /**
- * Recursively normalize photoUrl fields in objects by removing doubled /api/api paths.
+ * Recursively normalize photoUrl and paymentProofUrl fields in objects by removing doubled /api/api paths.
  * Returns a new object with normalized URLs, or the same object if no changes needed.
  */
 function normalizePhotoUrls(obj: any): any {
@@ -34,7 +34,7 @@ function normalizePhotoUrls(obj: any): any {
     const normalized: any = {};
 
     for (const key in obj) {
-      if (key === 'photoUrl' && typeof obj[key] === 'string' && obj[key].includes('/api/api/')) {
+      if ((key === 'photoUrl' || key === 'paymentProofUrl') && typeof obj[key] === 'string' && obj[key].includes('/api/api/')) {
         // Fix doubled /api/api to /api
         normalized[key] = obj[key].replace(/\/api\/api\//g, '/api/');
         hasChanges = true;

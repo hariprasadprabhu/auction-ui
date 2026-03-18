@@ -120,7 +120,11 @@ export class AuctionPlayerService {
     return {
       ...p,
       auctionStatus,
-      photoUrl: p.photoUrl ? `${this.apiUrl}${p.photoUrl}` : undefined,
+      photoUrl: p.photoUrl
+        ? p.photoUrl.startsWith('http')
+          ? p.photoUrl
+          : `${this.apiUrl}${p.photoUrl}`
+        : undefined,
     };
   }
 }

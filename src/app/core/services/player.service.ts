@@ -120,9 +120,15 @@ export class PlayerService {
   private mapPlayer(p: Player): Player {
     return {
       ...p,
-      photoUrl: p.photoUrl ? `${this.apiUrl}${p.photoUrl}` : undefined,
+      photoUrl: p.photoUrl
+        ? p.photoUrl.startsWith('http')
+          ? p.photoUrl
+          : `${this.apiUrl}${p.photoUrl}`
+        : undefined,
       paymentProofUrl: p.paymentProofUrl
-        ? `${this.apiUrl}${p.paymentProofUrl}`
+        ? p.paymentProofUrl.startsWith('http')
+          ? p.paymentProofUrl
+          : `${this.apiUrl}${p.paymentProofUrl}`
         : undefined,
     };
   }
