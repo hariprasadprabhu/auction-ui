@@ -5,13 +5,14 @@ import {
   OnInit,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuctionPlayerService } from '../../core/services/auction-player.service';
 import { AuctionEventService } from '../../core/services/auction-event.service';
 import { IncrementRuleService } from '../../core/services/increment-rule.service';
 import { TeamService } from '../../core/services/team.service';
 import { TournamentService } from '../../core/services/tournament.service';
+import { ImageCacheService } from '../../core/services/image-cache.service';
 import { NormalizePhotoUrlCachedPipe } from '../../core/pipes/normalize-photo-url-cached.pipe';
 import {
   Tournament,
@@ -65,6 +66,8 @@ export class Auction implements OnInit {
     private incrementRuleService: IncrementRuleService,
     private teamService: TeamService,
     private tournamentService: TournamentService,
+    private http: HttpClient,
+    private imageCacheService: ImageCacheService,
     private cdr: ChangeDetectorRef,
   ) {}
 
@@ -90,6 +93,8 @@ export class Auction implements OnInit {
       this.auctionPlayerService.getByTournament(id).subscribe({
         next: (data) => {
           this.players = data;
+          // Preload all player images
+          this.preloadAllPlayerImages();
           const firstAvailable = data.findIndex(p => p.auctionStatus === 'AVAILABLE');
           if (firstAvailable !== -1) {
             this.currentIndex = firstAvailable;
@@ -101,6 +106,42 @@ export class Auction implements OnInit {
         },
       });
     }
+  }
+
+  /**
+   * Preload all player images into cache during auction screen load
+   * This ensures images are cached and ready before they're displayed
+   */
+  private preloadAllPlayerImages(): void {
+    this.players.forEach((player) => {
+      if (player.photoUrl) {
+        // Normalize the URL first (fix /api/api/ issues)
+        const normalizedUrl = this.normalizePhotoUrl(player.photoUrl);
+        // Fetch and cache the image
+        this.http.get(normalizedUrl, { responseType: 'blob' }).subscribe({
+          next: (blob) => {
+            this.imageCacheService.cacheImage(normalizedUrl, blob);
+          },
+          error: (err) => {
+            console.warn(`Failed to preload image for ${player.firstName}:`, err);
+          },
+        });
+      }
+    });
+  }
+
+  /**
+   * Normalize photo URL by fixing doubled /api/api paths
+   */
+  private normalizePhotoUrl(url: string): string {
+    if (!url || typeof url !== 'string') {
+      return url;
+    }
+    // Fix doubled /api/api to /api
+    if (url.includes('/api/api/')) {
+      return url.replace(/\/api\/api\//g, '/api/');
+    }
+    return url;
   }
 
   get currentPlayer(): AuctionPlayer | null {
