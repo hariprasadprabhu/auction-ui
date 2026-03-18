@@ -21,7 +21,7 @@ export class AuthService {
 
   login(request: LoginRequest): Observable<LoginResponse> {
     return this.http
-      .post<LoginResponse>(`${this.apiUrl}/api/auth/login`, request)
+      .post<LoginResponse>(`${this.apiUrl}/auth/login`, request)
       .pipe(
         tap((response) => {
           localStorage.setItem(this.TOKEN_KEY, response.token);
@@ -40,7 +40,7 @@ export class AuthService {
 
   register(request: RegisterRequest): Observable<RegisterResponse> {
     return this.http.post<RegisterResponse>(
-      `${this.apiUrl}/api/auth/register`,
+      `${this.apiUrl}/auth/register`,
       request,
     );
   }

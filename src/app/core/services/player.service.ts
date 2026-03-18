@@ -25,7 +25,7 @@ export class PlayerService {
     if (status) params = params.set('status', status);
     return this.http
       .get<Player[]>(
-        `${this.apiUrl}/api/tournaments/${tournamentId}/players`,
+        `${this.apiUrl}/tournaments/${tournamentId}/players`,
         { params },
       )
       .pipe(map((list) => list.map((p) => this.mapPlayer(p))));
@@ -34,14 +34,14 @@ export class PlayerService {
   getApproved(tournamentId: number): Observable<Player[]> {
     return this.http
       .get<Player[]>(
-        `${this.apiUrl}/api/tournaments/${tournamentId}/players/approved`,
+        `${this.apiUrl}/tournaments/${tournamentId}/players/approved`,
       )
       .pipe(map((list) => list.map((p) => this.mapPlayer(p))));
   }
 
   getStats(tournamentId: number): Observable<PlayerStats> {
     return this.http.get<PlayerStats>(
-      `${this.apiUrl}/api/tournaments/${tournamentId}/players/stats`,
+      `${this.apiUrl}/tournaments/${tournamentId}/players/stats`,
     );
   }
 
@@ -53,7 +53,7 @@ export class PlayerService {
     const formData = this.buildFormData(request);
     return this.http
       .post<Player>(
-        `${this.apiUrl}/api/players/register/${tournamentId}`,
+        `${this.apiUrl}/players/register/${tournamentId}`,
         formData,
       )
       .pipe(map((p) => this.mapPlayer(p)));
@@ -61,46 +61,46 @@ export class PlayerService {
 
   getById(id: number): Observable<Player> {
     return this.http
-      .get<Player>(`${this.apiUrl}/api/players/${id}`)
+      .get<Player>(`${this.apiUrl}/players/${id}`)
       .pipe(map((p) => this.mapPlayer(p)));
   }
 
   update(id: number, request: Partial<PlayerRegistrationRequest>): Observable<Player> {
     const formData = this.buildFormData(request);
     return this.http
-      .put<Player>(`${this.apiUrl}/api/players/${id}`, formData)
+      .put<Player>(`${this.apiUrl}/players/${id}`, formData)
       .pipe(map((p) => this.mapPlayer(p)));
   }
 
   delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/api/players/${id}`);
+    return this.http.delete<void>(`${this.apiUrl}/players/${id}`);
   }
 
   approve(id: number): Observable<Player> {
     return this.http
-      .patch<Player>(`${this.apiUrl}/api/players/${id}/approve`, {})
+      .patch<Player>(`${this.apiUrl}/players/${id}/approve`, {})
       .pipe(map((p) => this.mapPlayer(p)));
   }
 
   reject(id: number): Observable<Player> {
     return this.http
-      .patch<Player>(`${this.apiUrl}/api/players/${id}/reject`, {})
+      .patch<Player>(`${this.apiUrl}/players/${id}/reject`, {})
       .pipe(map((p) => this.mapPlayer(p)));
   }
 
   addToAuction(id: number, request: AddToAuctionRequest): Observable<AuctionPlayer> {
     return this.http.post<AuctionPlayer>(
-      `${this.apiUrl}/api/players/${id}/add-to-auction`,
+      `${this.apiUrl}/players/${id}/add-to-auction`,
       request,
     );
   }
 
   getPhotoUrl(id: number): string {
-    return `${this.apiUrl}/api/players/${id}/photo`;
+    return `${this.apiUrl}/players/${id}/photo`;
   }
 
   getPaymentProofUrl(id: number): string {
-    return `${this.apiUrl}/api/players/${id}/payment-proof`;
+    return `${this.apiUrl}/players/${id}/payment-proof`;
   }
 
   private buildFormData(

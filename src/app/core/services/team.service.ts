@@ -17,20 +17,20 @@ export class TeamService {
 
   getByTournament(tournamentId: number): Observable<Team[]> {
     return this.http
-      .get<Team[]>(`${this.apiUrl}/api/tournaments/${tournamentId}/teams`)
+      .get<Team[]>(`${this.apiUrl}/tournaments/${tournamentId}/teams`)
       .pipe(map((list) => list.map((t) => this.mapTeam(t))));
   }
 
   getById(id: number): Observable<Team> {
     return this.http
-      .get<Team>(`${this.apiUrl}/api/teams/${id}`)
+      .get<Team>(`${this.apiUrl}/teams/${id}`)
       .pipe(map((t) => this.mapTeam(t)));
   }
 
   getTeamPurses(tournamentId: number): Observable<TeamPurse[]> {
     return this.http
       .get<TeamPurse[]>(
-        `${this.apiUrl}/api/tournaments/${tournamentId}/team-purses`,
+        `${this.apiUrl}/tournaments/${tournamentId}/team-purses`,
       )
       .pipe(map((list) => list.map((p) => this.mapTeamPurse(p))));
   }
@@ -38,14 +38,14 @@ export class TeamService {
   getTeamPurse(tournamentId: number, teamId: number): Observable<TeamPurse> {
     return this.http
       .get<TeamPurse>(
-        `${this.apiUrl}/api/tournaments/${tournamentId}/teams/${teamId}/purse`,
+        `${this.apiUrl}/tournaments/${tournamentId}/teams/${teamId}/purse`,
       )
       .pipe(map((p) => this.mapTeamPurse(p)));
   }
 
   getTeamPursesAcrossTournaments(teamId: number): Observable<TeamPurse[]> {
     return this.http
-      .get<TeamPurse[]>(`${this.apiUrl}/api/teams/${teamId}/purses`)
+      .get<TeamPurse[]>(`${this.apiUrl}/teams/${teamId}/purses`)
       .pipe(map((list) => list.map((p) => this.mapTeamPurse(p))));
   }
 
@@ -53,7 +53,7 @@ export class TeamService {
     const formData = this.buildFormData(request);
     return this.http
       .post<Team>(
-        `${this.apiUrl}/api/tournaments/${tournamentId}/teams`,
+        `${this.apiUrl}/tournaments/${tournamentId}/teams`,
         formData,
       )
       .pipe(map((t) => this.mapTeam(t)));
@@ -62,16 +62,16 @@ export class TeamService {
   update(id: number, request: UpdateTeamRequest): Observable<Team> {
     const formData = this.buildFormData(request);
     return this.http
-      .put<Team>(`${this.apiUrl}/api/teams/${id}`, formData)
+      .put<Team>(`${this.apiUrl}/teams/${id}`, formData)
       .pipe(map((t) => this.mapTeam(t)));
   }
 
   delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/api/teams/${id}`);
+    return this.http.delete<void>(`${this.apiUrl}/teams/${id}`);
   }
 
   getLogoUrl(id: number): string {
-    return `${this.apiUrl}/api/teams/${id}/logo`;
+    return `${this.apiUrl}/teams/${id}/logo`;
   }
 
   private buildFormData(

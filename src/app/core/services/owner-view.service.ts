@@ -11,7 +11,7 @@ export class OwnerViewService {
 
   get(tournamentId: number): Observable<OwnerViewResponse> {
     return this.http.get<OwnerViewResponse>(
-      `${this.apiUrl}/api/tournaments/${tournamentId}/owner-view`,
+      `${this.apiUrl}/tournaments/${tournamentId}/owner-view`,
     );
   }
 }

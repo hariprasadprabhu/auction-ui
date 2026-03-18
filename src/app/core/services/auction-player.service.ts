@@ -19,7 +19,7 @@ export class AuctionPlayerService {
   getByTournament(tournamentId: number): Observable<AuctionPlayer[]> {
     return this.http
       .get<AuctionPlayer[]>(
-        `${this.apiUrl}/api/tournaments/${tournamentId}/auction-players`,
+        `${this.apiUrl}/tournaments/${tournamentId}/auction-players`,
       )
       .pipe(map((list) => list.map((p) => this.mapPlayer(p))));
   }
@@ -31,7 +31,7 @@ export class AuctionPlayerService {
     const formData = this.buildFormData(request);
     return this.http
       .post<AuctionPlayer>(
-        `${this.apiUrl}/api/tournaments/${tournamentId}/auction-players`,
+        `${this.apiUrl}/tournaments/${tournamentId}/auction-players`,
         formData,
       )
       .pipe(map((p) => this.mapPlayer(p)));
@@ -39,7 +39,7 @@ export class AuctionPlayerService {
 
   getById(id: number): Observable<AuctionPlayer> {
     return this.http
-      .get<AuctionPlayer>(`${this.apiUrl}/api/auction-players/${id}`)
+      .get<AuctionPlayer>(`${this.apiUrl}/auction-players/${id}`)
       .pipe(map((p) => this.mapPlayer(p)));
   }
 
@@ -50,20 +50,20 @@ export class AuctionPlayerService {
     const formData = this.buildFormData(request);
     return this.http
       .put<AuctionPlayer>(
-        `${this.apiUrl}/api/auction-players/${id}`,
+        `${this.apiUrl}/auction-players/${id}`,
         formData,
       )
       .pipe(map((p) => this.mapPlayer(p)));
   }
 
   delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/api/auction-players/${id}`);
+    return this.http.delete<void>(`${this.apiUrl}/auction-players/${id}`);
   }
 
   sell(id: number, request: SellPlayerRequest): Observable<AuctionPlayer> {
     return this.http
       .patch<AuctionPlayer>(
-        `${this.apiUrl}/api/auction-players/${id}/sell`,
+        `${this.apiUrl}/auction-players/${id}/sell`,
         request,
       )
       .pipe(map((p) => this.mapPlayer(p)));
@@ -72,7 +72,7 @@ export class AuctionPlayerService {
   markUnsold(id: number): Observable<AuctionPlayer> {
     return this.http
       .patch<AuctionPlayer>(
-        `${this.apiUrl}/api/auction-players/${id}/unsold`,
+        `${this.apiUrl}/auction-players/${id}/unsold`,
         {},
       )
       .pipe(map((p) => this.mapPlayer(p)));
@@ -80,13 +80,13 @@ export class AuctionPlayerService {
 
   requeueUnsold(tournamentId: number): Observable<RequeueResponse> {
     return this.http.patch<RequeueResponse>(
-      `${this.apiUrl}/api/tournaments/${tournamentId}/auction-players/requeue-unsold`,
+      `${this.apiUrl}/tournaments/${tournamentId}/auction-players/requeue-unsold`,
       {},
     );
   }
 
   getPhotoUrl(id: number): string {
-    return `${this.apiUrl}/api/auction-players/${id}/photo`;
+    return `${this.apiUrl}/auction-players/${id}/photo`;
   }
 
   private buildFormData(

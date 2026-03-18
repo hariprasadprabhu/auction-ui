@@ -12,36 +12,36 @@ export class TournamentService {
 
   getAll(): Observable<Tournament[]> {
     return this.http
-      .get<Tournament[]>(`${this.apiUrl}/api/tournaments`)
+      .get<Tournament[]>(`${this.apiUrl}/tournaments`)
       .pipe(map((list) => list.map((t) => this.mapTournament(t))));
   }
 
   getById(id: number | string): Observable<Tournament> {
     return this.http
-      .get<Tournament>(`${this.apiUrl}/api/tournaments/${id}`)
+      .get<Tournament>(`${this.apiUrl}/tournaments/${id}`)
       .pipe(map((t) => this.mapTournament(t)));
   }
 
   create(request: CreateTournamentRequest): Observable<Tournament> {
     const formData = this.buildFormData(request);
     return this.http
-      .post<Tournament>(`${this.apiUrl}/api/tournaments`, formData)
+      .post<Tournament>(`${this.apiUrl}/tournaments`, formData)
       .pipe(map((t) => this.mapTournament(t)));
   }
 
   update(id: number, request: UpdateTournamentRequest): Observable<Tournament> {
     const formData = this.buildFormData(request);
     return this.http
-      .put<Tournament>(`${this.apiUrl}/api/tournaments/${id}`, formData)
+      .put<Tournament>(`${this.apiUrl}/tournaments/${id}`, formData)
       .pipe(map((t) => this.mapTournament(t)));
   }
 
   delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/api/tournaments/${id}`);
+    return this.http.delete<void>(`${this.apiUrl}/tournaments/${id}`);
   }
 
   getLogoUrl(id: number): string {
-    return `${this.apiUrl}/api/tournaments/${id}/logo`;
+    return `${this.apiUrl}/tournaments/${id}/logo`;
   }
 
   private buildFormData(

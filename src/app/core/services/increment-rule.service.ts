@@ -15,7 +15,7 @@ export class IncrementRuleService {
 
   getByTournament(tournamentId: number): Observable<IncrementRule[]> {
     return this.http.get<IncrementRule[]>(
-      `${this.apiUrl}/api/tournaments/${tournamentId}/increment-rules`,
+      `${this.apiUrl}/tournaments/${tournamentId}/increment-rules`,
     );
   }
 
@@ -24,7 +24,7 @@ export class IncrementRuleService {
     request: CreateIncrementRuleRequest,
   ): Observable<IncrementRule> {
     return this.http.post<IncrementRule>(
-      `${this.apiUrl}/api/tournaments/${tournamentId}/increment-rules`,
+      `${this.apiUrl}/tournaments/${tournamentId}/increment-rules`,
       request,
     );
   }
@@ -34,12 +34,12 @@ export class IncrementRuleService {
     request: UpdateIncrementRuleRequest,
   ): Observable<IncrementRule> {
     return this.http.put<IncrementRule>(
-      `${this.apiUrl}/api/increment-rules/${id}`,
+      `${this.apiUrl}/increment-rules/${id}`,
       request,
     );
   }
 
   delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/api/increment-rules/${id}`);
+    return this.http.delete<void>(`${this.apiUrl}/increment-rules/${id}`);
   }
 }
