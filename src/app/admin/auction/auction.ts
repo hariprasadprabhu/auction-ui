@@ -57,6 +57,8 @@ export class Auction implements OnInit {
   // Loading state
   isLoading = true;
   private pendingRequests = 0;
+  private minLoadingTime = 800; // Minimum 800ms for loading screen to be visible
+  private loadingStartTime = 0;
   
   // Detailed loading states
   loadingTournament = false;
@@ -89,6 +91,7 @@ export class Auction implements OnInit {
     const id = Number(this.route.snapshot.paramMap.get('tournamentId'));
     if (id) {
       this.tournamentId = id;
+      this.loadingStartTime = Date.now();
       
       // Load Tournament
       this.loadingTournament = true;
@@ -162,8 +165,21 @@ export class Auction implements OnInit {
   private completeRequest(): void {
     this.pendingRequests--;
     if (this.pendingRequests <= 0) {
-      this.isLoading = false;
       this.pendingRequests = 0;
+      
+      // Respect minimum loading time to ensure loading screen is visible
+      const elapsedTime = Date.now() - this.loadingStartTime;
+      const remainingTime = Math.max(0, this.minLoadingTime - elapsedTime);
+      
+      if (remainingTime > 0) {
+        setTimeout(() => {
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        }, remainingTime);
+      } else {
+        this.isLoading = false;
+        this.cdr.markForCheck();
+      }
     }
   }
 
