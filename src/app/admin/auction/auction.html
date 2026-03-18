@@ -1,5 +1,19 @@
 <div class="auction-screen">
 
+  <!-- ═══ LOADING SCREEN ═══ -->
+  <div class="auction-loading-screen" *ngIf="isLoading">
+    <div class="loading-content">
+      <div class="loading-spinner">
+        <div class="spinner-circle"></div>
+      </div>
+      <h2 class="loading-title">Setting Up Your Auction</h2>
+      <p class="loading-subtitle">Preparing teams, players, and budgets...</p>
+      <div class="loading-bar">
+        <div class="loading-progress"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- ═══ HEADER ═══ -->
   <header class="auction-header">
     <div class="header-side">

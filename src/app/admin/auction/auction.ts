@@ -50,6 +50,10 @@ export class Auction implements OnInit {
   noUnsoldAvailable = false;
   isValidatingBid = false;
 
+  // Loading state
+  isLoading = true;
+  private pendingRequests = 0;
+
   validationError: string | null = null;
   budgetNotification: string | null = null;
 
@@ -77,19 +81,30 @@ export class Auction implements OnInit {
       this.tournamentId = id;
       this.tournamentService.getById(id).subscribe((t) => {
         this.tournament = t;
+        this.completeRequest();
         this.cdr.markForCheck();
       });
+      this.startRequest();
+
       this.teamService.getByTournament(id).subscribe((t) => {
         this.teams = t;
+        this.completeRequest();
         this.cdr.markForCheck();
       });
+      this.startRequest();
+
       this.loadTeamPurses();
+      this.startRequest();
+
       this.incrementRuleService.getByTournament(id).subscribe({
         next: (rules) => {
           this.incrementRules = rules.sort((a, b) => a.fromAmount - b.fromAmount);
+          this.completeRequest();
           this.cdr.markForCheck();
         },
       });
+      this.startRequest();
+
       this.auctionPlayerService.getByTournament(id).subscribe({
         next: (data) => {
           this.players = data;
@@ -102,9 +117,29 @@ export class Auction implements OnInit {
           } else if (data.length > 0) {
             this.auctionComplete = true;
           }
+          this.completeRequest();
           this.cdr.markForCheck();
         },
       });
+      this.startRequest();
+    }
+  }
+
+  /**
+   * Track request start
+   */
+  private startRequest(): void {
+    this.pendingRequests++;
+  }
+
+  /**
+   * Track request completion and update loading state
+   */
+  private completeRequest(): void {
+    this.pendingRequests--;
+    if (this.pendingRequests <= 0) {
+      this.isLoading = false;
+      this.pendingRequests = 0;
     }
   }
 
@@ -347,6 +382,7 @@ export class Auction implements OnInit {
         this.teamPurses = purses;
         this.teamPurseByTeamId.clear();
         purses.forEach((purse) => this.teamPurseByTeamId.set(purse.teamId, purse));
+        this.completeRequest();
         this.cdr.markForCheck();
       },
       error: (err: HttpErrorResponse) => {
@@ -354,6 +390,7 @@ export class Auction implements OnInit {
           err,
           'Failed to load team budgets for this auction.',
         );
+        this.completeRequest();
         this.cdr.markForCheck();
       },
     });
