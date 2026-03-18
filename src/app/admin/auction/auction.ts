@@ -247,7 +247,7 @@ export class Auction implements OnInit {
     const teamName = this.currentBiddingTeam.name;
     
     // Show processing overlay immediately
-    this.processingMessage = `Processing SOLD to ${teamName}...`;
+    this.processingMessage = `Marking player as SOLD to ${teamName}...`;
     this.processingOverlay = true;
     this.cdr.markForCheck();
     
@@ -290,7 +290,7 @@ export class Auction implements OnInit {
     const player = this.currentPlayer;
     
     // Show processing overlay immediately
-    this.processingMessage = 'Processing UNSOLD...';
+    this.processingMessage = 'Marking player as Unsold...';
     this.processingOverlay = true;
     this.cdr.markForCheck();
     
