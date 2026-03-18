@@ -7,7 +7,29 @@
         <div class="spinner-circle"></div>
       </div>
       <h2 class="loading-title">Setting Up Your Auction</h2>
-      <p class="loading-subtitle">Preparing teams, players, and budgets...</p>
+      <p class="loading-subtitle">Preparing your auction data...</p>
+      
+      <!-- Detailed Loading Steps -->
+      <div class="loading-steps">
+        <div class="loading-step" [class.completed]="!loadingTournament">
+          <div class="step-icon">{{ loadingTournament ? '⏳' : '✓' }}</div>
+          <span class="step-text">Loading your tournament</span>
+        </div>
+        <div class="loading-step" [class.completed]="!loadingTeams">
+          <div class="step-icon">{{ loadingTeams ? '⏳' : '✓' }}</div>
+          <span class="step-text">Loading your teams</span>
+        </div>
+        <div class="loading-step" [class.completed]="!loadingPlayers">
+          <div class="step-icon">{{ loadingPlayers ? '⏳' : '✓' }}</div>
+          <span class="step-text">Loading your players</span>
+        </div>
+        <div class="loading-step" [class.completed]="!loadingMasterView">
+          <div class="step-icon">{{ loadingMasterView ? '⏳' : '✓' }}</div>
+          <span class="step-text">Loading master view</span>
+        </div>
+      </div>
+      
+      <!-- Progress Bar -->
       <div class="loading-bar">
         <div class="loading-progress"></div>
       </div>

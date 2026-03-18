@@ -149,6 +149,62 @@
   letter-spacing: 0.3px;
 }
 
+.loading-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 28px;
+  padding: 16px;
+  background: rgba(0, 230, 118, 0.05);
+  border: 1px solid rgba(0, 230, 118, 0.15);
+  border-radius: 8px;
+}
+
+.loading-step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  transition: all 0.3s ease;
+
+  &.completed {
+    color: rgba(0, 230, 118, 0.9);
+    
+    .step-icon {
+      color: rgba(0, 230, 118, 1);
+      animation: popIn 0.3s ease-out;
+    }
+  }
+
+  .step-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.5);
+    transition: all 0.3s ease;
+  }
+
+  .step-text {
+    flex: 1;
+    text-align: left;
+  }
+}
+
+@keyframes popIn {
+  0% { 
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  100% { 
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 .loading-bar {
   width: 220px;
   height: 4px;

@@ -57,6 +57,12 @@ export class Auction implements OnInit {
   // Loading state
   isLoading = true;
   private pendingRequests = 0;
+  
+  // Detailed loading states
+  loadingTournament = false;
+  loadingTeams = false;
+  loadingPlayers = false;
+  loadingMasterView = false;
 
   validationError: string | null = null;
   budgetNotification: string | null = null;
@@ -83,35 +89,49 @@ export class Auction implements OnInit {
     const id = Number(this.route.snapshot.paramMap.get('tournamentId'));
     if (id) {
       this.tournamentId = id;
+      
+      // Load Tournament
+      this.loadingTournament = true;
       this.tournamentService.getById(id).subscribe((t) => {
         this.tournament = t;
+        this.loadingTournament = false;
         this.completeRequest();
         this.cdr.markForCheck();
       });
       this.startRequest();
 
+      // Load Teams
+      this.loadingTeams = true;
       this.teamService.getByTournament(id).subscribe((t) => {
         this.teams = t;
+        this.loadingTeams = false;
         this.completeRequest();
         this.cdr.markForCheck();
       });
       this.startRequest();
 
+      // Load Master View (Team Purses)
+      this.loadingMasterView = true;
       this.loadTeamPurses();
       this.startRequest();
 
+      // Load Increment Rules (part of master view)
       this.incrementRuleService.getByTournament(id).subscribe({
         next: (rules) => {
           this.incrementRules = rules.sort((a, b) => a.fromAmount - b.fromAmount);
+          this.loadingMasterView = false;
           this.completeRequest();
           this.cdr.markForCheck();
         },
       });
       this.startRequest();
 
+      // Load Players
+      this.loadingPlayers = true;
       this.auctionPlayerService.getByTournament(id).subscribe({
         next: (data) => {
           this.players = data;
+          this.loadingPlayers = false;
           // Preload all player images
           this.preloadAllPlayerImages();
           const firstAvailable = data.findIndex(p => p.auctionStatus === 'AVAILABLE');
