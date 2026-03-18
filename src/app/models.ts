@@ -144,8 +144,8 @@ export interface PlayerRegistrationRequest {
   lastName?: string;
   dob?: string;
   role: string;
-  photo?: File;
-  paymentProof?: File;
+  photo?: File | undefined;
+  paymentProof?: File | undefined;
 }
 
 export interface AddToAuctionRequest {

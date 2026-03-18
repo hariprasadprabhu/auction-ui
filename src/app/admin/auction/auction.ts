@@ -244,15 +244,51 @@ export class Auction implements OnInit {
       return false;
     }
 
-    const bidToBePlaced = !this.currentBiddingTeam
+    // Calculate the minimum bid required to place a new outbidding action
+    // This is the current bid amount (not including the increment they'll need to raise)
+    const minBidRequired = !this.currentBiddingTeam
       ? this.currentPlayer.basePrice
-      : this.currentBid + this.getIncrementForAmount(this.currentBid);
+      : this.currentBid;
 
     // Calculate max allowed bid considering remaining purse and reserved fund
     const maxBidAllowed = purse.currentPurse - purse.reservedFund;
     const maxAllowedBid = Math.min(purse.maxBidPerPlayer, purse.availableForBidding, maxBidAllowed);
 
-    return bidToBePlaced > maxAllowedBid;
+    // Team is out of budget only if they can't afford even the minimum required bid amount
+    return minBidRequired > maxAllowedBid;
+  }
+
+  /**
+   * Returns true if team can place the next bid considering increment rules and their max bid limit.
+   */
+  canTeamPlaceNextBid(team: Team): boolean {
+    if (!this.currentPlayer) return false;
+
+    const purse = this.teamPurseByTeamId.get(team.id);
+    if (!purse) return false;
+
+    // If this team is currently bidding, they can raise (unless they hit their max)
+    if (this.currentBiddingTeam?.id === team.id) {
+      const nextBid = this.currentBid + this.nextIncrement;
+      // Check all budget constraints for raising
+      if (nextBid > purse.maxBidPerPlayer) return false;
+      if (nextBid > purse.availableForBidding) return false;
+      const spendableAmount = purse.currentPurse - purse.reservedFund;
+      if (nextBid > spendableAmount) return false;
+      return true;
+    }
+
+    // For other teams, calculate what their next bid would be if they outbid current bidder
+    const nextBid = !this.currentBiddingTeam
+      ? this.currentPlayer.basePrice
+      : this.currentBid + this.nextIncrement;
+
+    // Check all budget constraints for placing a new bid
+    if (nextBid > purse.maxBidPerPlayer) return false;
+    if (nextBid > purse.availableForBidding) return false;
+    const spendableAmount = purse.currentPurse - purse.reservedFund;
+    if (nextBid > spendableAmount) return false;
+    return true;
   }
 
   getPurseForTeam(teamId: number): TeamPurse | undefined {
@@ -294,17 +330,6 @@ export class Auction implements OnInit {
       return;
     }
 
-    // If this is a NEW team trying to outbid the current bidder, check if current bidder can defend
-    if (this.currentBiddingTeam && this.currentBiddingTeam.id !== team.id) {
-      const currentBidderPurse = this.teamPurseByTeamId.get(this.currentBiddingTeam.id);
-      if (currentBidderPurse && bidAmount > currentBidderPurse.availableForBidding) {
-        this.validationError = `Bid rejected: ₹${bidAmount}L exceeds ${this.currentBiddingTeam.name}'s maximum bidding capacity of ₹${currentBidderPurse.availableForBidding}L. Current bidder cannot defend this amount.`;
-        this.isValidatingBid = false;
-        this.cdr.markForCheck();
-        return;
-      }
-    }
-
     const error = this.getBidValidationError(bidAmount, purse);
     if (error) {
       this.validationError = error;
@@ -320,31 +345,20 @@ export class Auction implements OnInit {
   }
 
   private getBidValidationError(bidAmount: number, purse: TeamPurse): string | null {
+    // Check 1: Bid must not exceed maxBidPerPlayer
     if (bidAmount > purse.maxBidPerPlayer) {
       return `Bid rejected: ₹${bidAmount}L exceeds max bid per player ₹${purse.maxBidPerPlayer}L.`;
     }
 
-    // Ensure bid doesn't exceed remaining purse minus reserved purse
-    const maxBidAllowed = purse.currentPurse - purse.reservedFund;
-    if (bidAmount > maxBidAllowed) {
-      return `Bid rejected: ₹${bidAmount}L exceeds maximum allowed (remaining purse ₹${purse.currentPurse}L - reserved ₹${purse.reservedFund}L = ₹${maxBidAllowed}L).`;
-    }
-
-    // Must use availableForBidding, not currentPurse, to protect minimum squad reserve.
+    // Check 2: Bid must not exceed availableForBidding (remaining team budget for players)
     if (bidAmount > purse.availableForBidding) {
-      return `Bid rejected: ₹${bidAmount}L exceeds available for bidding ₹${purse.availableForBidding}L.`;
+      return `Bid rejected: ₹${bidAmount}L exceeds team's available bidding amount ₹${purse.availableForBidding}L.`;
     }
 
-    // Ensure the team can afford the next increment after placing this bid
-    const nextIncrement = this.getIncrementForAmount(bidAmount);
-    const nextPossibleBid = bidAmount + nextIncrement;
-    if (nextPossibleBid > purse.availableForBidding) {
-      return `Bid rejected: ₹${bidAmount}L would leave insufficient funds for next bid (next increment: ₹${nextIncrement}L = ₹${nextPossibleBid}L total, but only ₹${purse.availableForBidding}L available).`;
-    }
-
-    // Ensure the next bid wouldn't exceed the max bid per player
-    if (nextPossibleBid > purse.maxBidPerPlayer) {
-      return `Bid rejected: ₹${bidAmount}L would result in next bid (₹${nextPossibleBid}L) exceeding max bid per player ₹${purse.maxBidPerPlayer}L.`;
+    // Check 3: Bid must not exceed currentPurse minus reservedFund
+    const spendableAmount = purse.currentPurse - purse.reservedFund;
+    if (bidAmount > spendableAmount) {
+      return `Bid rejected: ₹${bidAmount}L exceeds spendable purse ₹${spendableAmount}L (remaining: ₹${purse.currentPurse}L, reserved: ₹${purse.reservedFund}L).`;
     }
 
     return null;
@@ -439,26 +453,30 @@ export class Auction implements OnInit {
       action: () => {
         this.auctionPlayerService.requeueUnsold(this.tournamentId).subscribe({
           next: () => {
-            // Fetch fresh player data from DB
+            // Fetch fresh player data from DB to sync status updates
             this.auctionPlayerService.getByTournament(this.tournamentId).subscribe({
               next: (allPlayers) => {
-                // Filter to only show UNSOLD players
-                const unsoldPlayers = allPlayers.filter(p => p.auctionStatus === 'UNSOLD');
+                // Update the players array with fresh data (preserving all players)
+                this.players = allPlayers;
                 
                 this.showConfigModal = false;
+                this.noUnsoldAvailable = false;
+                this.auctionComplete = false;
                 
-                if (unsoldPlayers.length === 0) {
-                  // No unsold players available
+                // Find the first AVAILABLE player to auction immediately
+                const firstAvailableIndex = this.players.findIndex(p => p.auctionStatus === 'AVAILABLE');
+                
+                if (firstAvailableIndex === -1) {
+                  // No available players left
                   this.noUnsoldAvailable = true;
-                  this.players = [];
-                  this.auctionComplete = false;
                 } else {
-                  // Show only unsold players for auction
-                  this.noUnsoldAvailable = false;
-                  this.players = unsoldPlayers;
-                  this.currentIndex = 0;
+                  // Show the first available player immediately
+                  this.currentIndex = firstAvailableIndex;
                   this.initBid();
+                  this.showUnsoldOverlay = false;
+                  this.overlayInteractive = false;
                 }
+                
                 this.cdr.markForCheck();
               },
               error: () => alert('Failed to reload player data after requeuing.'),

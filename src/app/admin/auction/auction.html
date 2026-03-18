@@ -124,9 +124,9 @@
       </div>
 
       <div class="raise-bid-group">
-        <button class="raise-btn" (click)="raiseBid(nextIncrement)" [disabled]="!currentBiddingTeam || showSoldOverlay || showUnsoldOverlay || isValidatingBid">+₹{{ nextIncrement }}L</button>
-        <button class="raise-btn" (click)="raiseBid(nextIncrement * 2)" [disabled]="!currentBiddingTeam || showSoldOverlay || showUnsoldOverlay || isValidatingBid">+₹{{ nextIncrement * 2 }}L</button>
-        <button class="raise-btn raise-btn-lg" (click)="raiseBid(nextIncrement * 5)" [disabled]="!currentBiddingTeam || showSoldOverlay || showUnsoldOverlay || isValidatingBid">+₹{{ nextIncrement * 5 }}L</button>
+        <button class="raise-btn" (click)="raiseBid(nextIncrement)" [disabled]="!currentBiddingTeam || showSoldOverlay || showUnsoldOverlay || isValidatingBid || !canTeamPlaceNextBid(currentBiddingTeam!)">+₹{{ nextIncrement }}L</button>
+        <button class="raise-btn" (click)="raiseBid(nextIncrement * 2)" [disabled]="!currentBiddingTeam || showSoldOverlay || showUnsoldOverlay || isValidatingBid || !canTeamPlaceNextBid(currentBiddingTeam!)">+₹{{ nextIncrement * 2 }}L</button>
+        <button class="raise-btn raise-btn-lg" (click)="raiseBid(nextIncrement * 5)" [disabled]="!currentBiddingTeam || showSoldOverlay || showUnsoldOverlay || isValidatingBid || !canTeamPlaceNextBid(currentBiddingTeam!)">+₹{{ nextIncrement * 5 }}L</button>
       </div>
 
       <p class="bid-validation-error" *ngIf="validationError">{{ validationError }}</p>
@@ -144,7 +144,7 @@
         (click)="placeBidForTeam(team)"
         [class.team-btn-active]="currentBiddingTeam?.id === team.id"
         [class.team-btn-out-of-budget]="isTeamOutOfBudget(team)"
-        [disabled]="showSoldOverlay || showUnsoldOverlay || isTeamOutOfBudget(team) || isValidatingBid"
+        [disabled]="showSoldOverlay || showUnsoldOverlay || isTeamOutOfBudget(team) || !canTeamPlaceNextBid(team) || isValidatingBid"
       >
         <img [src]="team.logoUrl" [alt]="team.name" class="team-btn-logo" />
         <span class="team-btn-abbr">{{ getAbbr(team.name) }}</span>

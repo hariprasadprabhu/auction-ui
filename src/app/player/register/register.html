@@ -44,7 +44,18 @@
       <p class="form-subtitle" *ngIf="!tournamentLookupFailed">Fill in your details below to register for this tournament</p>
       <p class="form-subtitle" *ngIf="tournamentLookupFailed">Tournament details are temporarily unavailable. You can still complete registration.</p>
 
-      <form (ngSubmit)="submitForm()" class="register-form" #registerForm="ngForm">
+      <form (ngSubmit)="submitForm()" class="register-form" #registerForm="ngForm" [attr.disabled]="isCooldownActive">
+
+        <!-- Rate Limit Error -->
+        <div class="rate-limit-error" *ngIf="rateLimitError">
+          <p>⏱️ {{ rateLimitError }}</p>
+          <p class="rate-info" *ngIf="remainingAttempts > 0">Remaining attempts: <strong>{{ remainingAttempts }}/3</strong></p>
+        </div>
+
+        <!-- Error Message -->
+        <div class="error-message" *ngIf="serverError">
+          <p>⚠️ {{ serverError }}</p>
+        </div>
 
         <!-- Photo Upload -->
         <div class="form-section">
@@ -131,9 +142,10 @@
 
         <!-- Submit -->
         <div class="form-actions">
-          <button type="submit" class="btn-submit" [disabled]="!form.firstName || !form.role || !photoPreview || !paymentProofPreview">
-            Register
+          <button type="submit" class="btn-submit" [disabled]="!form.firstName || !form.role || !photoPreview || !paymentProofPreview || isSubmitting || isCooldownActive" [attr.data-cooldown]="isCooldownActive">
+            {{ isSubmitting ? 'Registering...' : (isCooldownActive ? `Wait ${cooldownRemaining}s` : 'Register') }}
           </button>
+          <p class="attempts-info" *ngIf="remainingAttempts > 0 && remainingAttempts < 3">{{ remainingAttempts }} registration attempt{{ remainingAttempts !== 1 ? 's' : '' }} remaining for this tournament</p>
         </div>
 
       </form>
