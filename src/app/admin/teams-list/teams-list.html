@@ -28,7 +28,14 @@
   <div class="teams-content">
     <button class="btn btn-back-light" (click)="goBack()" title="Back to Dashboard">← Back To Dashboard</button>
     <div class="action-buttons">
-      <button class="btn btn-primary" (click)="openAddTeamModal()">+ Add Team</button>
+      <div class="add-team-wrapper">
+        <button class="btn btn-primary" (click)="openAddTeamModal()" [disabled]="!canAddMoreTeams()" [title]="canAddMoreTeams() ? 'Add a new team' : 'Team limit reached (' + tournament?.teamesAllowed + '/' + tournament?.teamesAllowed + ')'">
+          + Add Team
+        </button>
+        <span class="team-limit-info" *ngIf="tournament?.teamesAllowed">
+          {{ teams.length }}/{{ tournament?.teamesAllowed }} teams
+        </span>
+      </div>
       <button class="btn btn-secondary">Clear All</button>
       <button class="btn btn-secondary">Load from Excel</button>
     </div>

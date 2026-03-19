@@ -61,6 +61,7 @@ export interface Tournament {
   incrementAmount?: number;
   initialIncrementAmount: number;
   logoUrl?: string;
+  teamesAllowed?: number;
 }
 
 export interface CreateTournamentRequest {

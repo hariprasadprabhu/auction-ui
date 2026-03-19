@@ -132,6 +132,10 @@ export class TeamsListComponent implements OnInit {
   }
 
   addTeam() {
+    if (!this.canAddMoreTeams()) {
+      alert(`Cannot add more teams. Maximum limit of ${this.tournament?.teamesAllowed} teams reached.`);
+      return;
+    }
     if (!this.newTeam.name || !this.newTeam.ownerName || !this.newTeam.mobileNumber) {
       alert('Please fill in all required fields');
       return;
@@ -222,5 +226,19 @@ export class TeamsListComponent implements OnInit {
 
   goBack() {
     this.router.navigate(['/admin']);
+  }
+
+  canAddMoreTeams(): boolean {
+    if (!this.tournament?.teamesAllowed) {
+      return true; // No limit set
+    }
+    return this.teams.length < this.tournament.teamesAllowed;
+  }
+
+  getRemainingTeamSlots(): number {
+    if (!this.tournament?.teamesAllowed) {
+      return -1; // No limit
+    }
+    return this.tournament.teamesAllowed - this.teams.length;
   }
 }
