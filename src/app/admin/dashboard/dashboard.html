@@ -13,7 +13,16 @@
   </div>
 
   <div class="tournaments-container">
-    <div class="tournaments-grid">
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="isLoading">
+      <div class="loading-spinner">
+        <div class="spinner-circle"></div>
+      </div>
+      <p class="loading-message">Your tournaments are loading...</p>
+    </div>
+
+    <!-- Tournaments Grid -->
+    <div class="tournaments-grid" *ngIf="!isLoading">
       <div class="tournament-card" *ngFor="let tournament of tournaments">
         <div class="card-header">
           <div class="tournament-logo-wrap">
