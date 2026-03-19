@@ -1,0 +1,269 @@
+<div class="auction-screen">
+
+  <!-- ═══ LOADING SCREEN ═══ -->
+  <div class="auction-loading-screen" *ngIf="isLoading">
+    <div class="loading-content">
+      <div class="loading-spinner">
+        <div class="spinner-circle"></div>
+      </div>
+      <h2 class="loading-title">Setting Up Your Auction</h2>
+      <p class="loading-subtitle">Preparing your auction data...</p>
+      
+      <!-- Detailed Loading Steps -->
+      <div class="loading-steps">
+        <div class="loading-step" [class.completed]="!loadingTournament">
+          <div class="step-icon">{{ loadingTournament ? '⏳' : '✓' }}</div>
+          <span class="step-text">Loading your tournament</span>
+        </div>
+        <div class="loading-step" [class.completed]="!loadingTeams">
+          <div class="step-icon">{{ loadingTeams ? '⏳' : '✓' }}</div>
+          <span class="step-text">Loading your teams</span>
+        </div>
+        <div class="loading-step" [class.completed]="!loadingPlayers">
+          <div class="step-icon">{{ loadingPlayers ? '⏳' : '✓' }}</div>
+          <span class="step-text">Loading your players</span>
+        </div>
+        <div class="loading-step" [class.completed]="!loadingMasterView">
+          <div class="step-icon">{{ loadingMasterView ? '⏳' : '✓' }}</div>
+          <span class="step-text">Loading master view</span>
+        </div>
+      </div>
+      
+      <!-- Progress Bar -->
+      <div class="loading-bar">
+        <div class="loading-progress"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ HEADER ═══ -->
+  <header class="auction-header">
+    <div class="header-side">
+      <div class="header-logo-badge logo-left">🏏</div>
+    </div>
+    <div class="header-center">
+      <div class="live-indicator">
+        <span class="live-dot"></span>LIVE AUCTION
+      </div>
+      <h1 class="tournament-title">{{ tournament?.name }}</h1>
+    </div>
+    <div class="header-side header-side-right">
+      <div class="player-counter" *ngIf="players.length">
+        <span class="counter-done">{{ getSoldCount() }}</span>
+        <span class="counter-sep">/</span>
+        <span class="counter-total">{{ players.length }}</span>
+        <span class="counter-lbl">Players</span>
+      </div>
+      <div class="header-logo-badge logo-right">🏆</div>
+    </div>
+  </header>
+
+  <!-- Progress Bar -->
+  <div class="auction-progress">
+    <div class="progress-fill" [style.width.%]="getProgressPercent()"></div>
+  </div>
+
+  <!-- ═══ AUCTION COMPLETE ═══ -->
+  <div class="auction-complete-screen" *ngIf="auctionComplete">
+    <div class="complete-trophy">🏆</div>
+    <h2>Auction Complete!</h2>
+    <p>All {{ players.length }} players have been auctioned.</p>
+    <button class="btn-back-home" (click)="goBack()">← Back to Dashboard</button>
+  </div>
+
+  <!-- ═══ NO UNSOLD PLAYERS ═══ -->
+  <div class="auction-complete-screen" *ngIf="noUnsoldAvailable">
+    <div class="complete-trophy">⚠️</div>
+    <h2>No Unsold Players Available</h2>
+    <p>All players have already been sold. There are no unsold players to requeue.</p>
+    <button class="btn-back-home" (click)="goBack()">← Back to Dashboard</button>
+  </div>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="auction-main" *ngIf="!auctionComplete && !noUnsoldAvailable && currentPlayer">
+
+    <!-- Left: Player Spotlight -->
+    <section class="player-panel">
+      <div class="player-number-badge">{{ currentPlayer.playerNumber }}</div>
+
+      <div class="player-card">
+        <div class="player-photo-col">
+          <div class="photo-glow-ring">
+            <img [src]="currentPlayer.photoUrl | normalizePhotoUrlCached | async" [alt]="currentPlayer.firstName" class="player-big-photo" />
+          </div>
+          <div class="role-badge">{{ currentPlayer.role }}</div>
+        </div>
+
+        <div class="player-info-col">
+          <div class="player-full-name">
+            <span class="first-name">{{ currentPlayer.firstName }}</span>
+            <span class="last-name">{{ currentPlayer.lastName }}</span>
+          </div>
+
+          <div class="stats-list">
+            <div class="stat-row">
+              <span class="stat-icon">🎂</span>
+              <span class="stat-val">{{ currentPlayer.age || 'N/A' }} yrs</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-icon">🏏</span>
+              <span class="stat-val">{{ currentPlayer.role }}</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-icon">📍</span>
+              <span class="stat-val">India</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-icon">🎯</span>
+              <span class="stat-val">{{ currentPlayer.battingStyle }}</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-icon">⚡</span>
+              <span class="stat-val">{{ currentPlayer.bowlingStyle }}</span>
+            </div>
+          </div>
+
+          <div class="base-price-chip">
+            BASE &nbsp;·&nbsp; ₹{{ currentPlayer.basePrice }}L
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Divider -->
+    <div class="panel-divider"></div>
+
+    <!-- Right: Bid Panel -->
+    <section class="bid-panel">
+      <div class="bid-header-label">{{ currentBiddingTeam ? 'HIGHEST BID' : 'STARTING BID' }}</div>
+
+      <ng-container *ngIf="currentBiddingTeam; else noBidder">
+        <div class="bid-team-display">
+          <div class="bid-team-logo-ring">
+            <img [src]="currentBiddingTeam.logoUrl | normalizePhotoUrlCached | async" [alt]="currentBiddingTeam.name" class="bid-team-logo-img" />
+          </div>
+          <div class="bid-team-label">{{ currentBiddingTeam.name }}</div>
+        </div>
+      </ng-container>
+
+      <ng-template #noBidder>
+        <div class="no-bidder-placeholder">
+          <div class="no-bidder-q">?</div>
+          <div class="no-bidder-text">Awaiting first bid</div>
+        </div>
+      </ng-template>
+
+      <div class="bid-amount-display" [class.active]="!!currentBiddingTeam">
+        <span class="bid-currency">₹</span>
+        <span class="bid-value">{{ currentBid }}</span>
+        <span class="bid-unit">L</span>
+      </div>
+
+      <div class="raise-bid-group">
+        <button class="raise-btn" (click)="raiseBid(nextIncrement)" [disabled]="!currentBiddingTeam || showSoldOverlay || showUnsoldOverlay || isValidatingBid || !canTeamPlaceNextBid(currentBiddingTeam!)">+₹{{ nextIncrement }}L</button>
+        <button class="raise-btn" (click)="raiseBid(nextIncrement * 2)" [disabled]="!currentBiddingTeam || showSoldOverlay || showUnsoldOverlay || isValidatingBid || !canTeamPlaceNextBid(currentBiddingTeam!)">+₹{{ nextIncrement * 2 }}L</button>
+        <button class="raise-btn raise-btn-lg" (click)="raiseBid(nextIncrement * 5)" [disabled]="!currentBiddingTeam || showSoldOverlay || showUnsoldOverlay || isValidatingBid || !canTeamPlaceNextBid(currentBiddingTeam!)">+₹{{ nextIncrement * 5 }}L</button>
+      </div>
+
+      <p class="bid-validation-error" *ngIf="validationError">{{ validationError }}</p>
+      <p class="budget-notice" *ngIf="budgetNotification">{{ budgetNotification }}</p>
+    </section>
+
+  </main>
+
+  <!-- ═══ FOOTER ═══ -->
+  <footer class="auction-footer">
+    <div class="team-buttons-row" *ngIf="!auctionComplete && !noUnsoldAvailable">
+      <button
+        *ngFor="let team of teams"
+        class="team-btn"
+        (click)="placeBidForTeam(team)"
+        [class.team-btn-active]="currentBiddingTeam?.id === team.id"
+        [class.team-btn-out-of-budget]="isTeamOutOfBudget(team)"
+        [disabled]="showSoldOverlay || showUnsoldOverlay || isTeamOutOfBudget(team) || !canTeamPlaceNextBid(team) || isValidatingBid"
+      >
+        <img [src]="team.logoUrl | normalizePhotoUrlCached | async" [alt]="team.name" class="team-btn-logo" />
+        <span class="team-btn-abbr">{{ getAbbr(team.name) }}</span>
+        <span class="team-tooltip">{{ team.name }}</span>
+      </button>
+    </div>
+
+    <div class="auction-controls">
+      <button class="ctrl-btn ctrl-exit" (click)="goBack()">
+        ← EXIT
+      </button>
+      <button class="ctrl-btn ctrl-config" (click)="showConfigModal = true">
+        ⚙ CONFIG
+      </button>
+      <ng-container *ngIf="!auctionComplete && !noUnsoldAvailable">
+        <button class="ctrl-btn ctrl-sold" (click)="markSold()"
+          [disabled]="!currentBiddingTeam || processingOverlay || showSoldOverlay || showUnsoldOverlay">
+          ✓ SOLD
+        </button>
+        <button class="ctrl-btn ctrl-unsold" (click)="markUnsold()"
+          [disabled]="processingOverlay || showSoldOverlay || showUnsoldOverlay">
+          ✗ UNSOLD
+        </button>
+        <button class="ctrl-btn ctrl-next" (click)="nextPlayer()">
+          NEXT ▶
+        </button>
+      </ng-container>
+    </div>
+  </footer>
+
+  <!-- Config Modal -->
+  <div class="config-modal-backdrop" *ngIf="showConfigModal" (click)="showConfigModal = false"></div>
+  <div class="config-modal" *ngIf="showConfigModal">
+    <div class="config-modal-header">
+      <span class="config-modal-title">⚙ Configuration</span>
+      <button class="config-close-btn" (click)="showConfigModal = false">✕</button>
+    </div>
+    <div class="config-modal-body">
+      <button class="config-action-btn" (click)="reQueueUnsoldPlayers()">
+        <span class="config-action-icon">🔄</span>
+        <span class="config-action-label">Mark all UNSOLD players available for Auction</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- SOLD Overlay -->
+  <div class="result-overlay sold-overlay" *ngIf="showSoldOverlay"
+    [class.overlay-interactive]="overlayInteractive"
+    (animationend)="onOverlayAnimationDone()">
+    <div class="result-stamp sold-stamp">
+      <div class="stamp-text">SOLD!</div>
+      <div class="stamp-price">₹{{ currentPlayer?.soldPrice }}L</div>
+      <div class="stamp-team">{{ getSoldTeamName(currentPlayer?.soldToTeamId) }}</div>
+    </div>
+  </div>
+
+  <!-- UNSOLD Overlay -->
+  <div class="result-overlay unsold-overlay" *ngIf="showUnsoldOverlay"
+    [class.overlay-interactive]="overlayInteractive"
+    (animationend)="onOverlayAnimationDone()">
+    <div class="result-stamp unsold-stamp">
+      <div class="stamp-text">UNSOLD</div>
+    </div>
+  </div>
+
+  <!-- Processing Overlay -->
+  <div class="processing-overlay" *ngIf="processingOverlay">
+    <div class="processing-content">
+      <div class="processing-spinner">
+        <div class="spinner-dot"></div>
+      </div>
+      <p class="processing-message">{{ processingMessage }}</p>
+    </div>
+  </div>
+
+  <!-- Confirm Dialog -->
+  <div class="config-modal-backdrop" *ngIf="confirmDialog" (click)="cancelConfirm()"></div>
+  <div class="confirm-dialog" *ngIf="confirmDialog">
+    <p class="confirm-message">{{ confirmDialog.message }}</p>
+    <div class="confirm-actions">
+      <button class="confirm-btn confirm-cancel" (click)="cancelConfirm()">Cancel</button>
+      <button class="confirm-btn confirm-ok" (click)="confirmAction()">Yes, Confirm</button>
+    </div>
+  </div>
+
+</div>
