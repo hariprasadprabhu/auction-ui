@@ -35,6 +35,20 @@ export class Players implements OnInit {
   selectAllChecked = false;
   isProcessingBatchAction = false;
 
+  // Custom Modal States
+  showConfirmModal = false;
+  confirmTitle = '';
+  confirmMessage = '';
+  confirmCallback: (() => void) | null = null;
+
+  showSuccessModal = false;
+  successTitle = '';
+  successMessage = '';
+
+  showErrorModal = false;
+  errorTitle = '';
+  errorMessage = '';
+
   // Add Player Form
   showAddPlayerModal = false;
   newPlayer = {
@@ -286,67 +300,81 @@ export class Players implements OnInit {
   approveSelectedPlayers() {
     const selectedIds = this.getSelectedPlayerIds();
     if (selectedIds.length === 0) {
-      alert('Please select at least one player to approve');
+      this.openErrorModal('No Selection', 'Please select at least one player to approve');
       return;
     }
 
-    if (confirm(`Approve ${selectedIds.length} player(s)?`)) {
-      this.isProcessingBatchAction = true;
-      this.playerService.approveAll(this.tournamentId, selectedIds).subscribe({
-        next: (response) => {
-          // Update the status of approved players
-          selectedIds.forEach((id) => {
-            const player = this.players.find((p) => p.id === id);
-            if (player) player.status = 'APPROVED';
-          });
-          this.selectedPlayers.clear();
-          this.selectAllChecked = false;
-          this.isProcessingBatchAction = false;
-          alert(`${response.approvedCount} player(s) approved successfully`);
-          this.cdr.markForCheck();
-        },
-        error: (error) => {
-          this.isProcessingBatchAction = false;
-          const errorMessage =
-            error?.error?.message || 'Failed to approve selected players';
-          alert(errorMessage);
-          this.cdr.markForCheck();
-        },
-      });
-    }
+    this.openConfirmModal(
+      'Approve Players',
+      `Are you sure you want to approve ${selectedIds.length} player(s)?`,
+      () => {
+        this.isProcessingBatchAction = true;
+        this.playerService.approveAll(this.tournamentId, selectedIds).subscribe({
+          next: (response) => {
+            // Update the status of approved players
+            selectedIds.forEach((id) => {
+              const player = this.players.find((p) => p.id === id);
+              if (player) player.status = 'APPROVED';
+            });
+            this.selectedPlayers.clear();
+            this.selectAllChecked = false;
+            this.isProcessingBatchAction = false;
+            this.openSuccessModal(
+              'Approval Successful',
+              `${response.approvedCount} player(s) have been approved successfully`
+            );
+            this.cdr.markForCheck();
+          },
+          error: (error) => {
+            this.isProcessingBatchAction = false;
+            const errorMessage =
+              error?.error?.message || 'Failed to approve selected players';
+            this.openErrorModal('Approval Failed', errorMessage);
+            this.cdr.markForCheck();
+          },
+        });
+      }
+    );
   }
 
   rejectSelectedPlayers() {
     const selectedIds = this.getSelectedPlayerIds();
     if (selectedIds.length === 0) {
-      alert('Please select at least one player to reject');
+      this.openErrorModal('No Selection', 'Please select at least one player to reject');
       return;
     }
 
-    if (confirm(`Reject ${selectedIds.length} player(s)?`)) {
-      this.isProcessingBatchAction = true;
-      this.playerService.rejectAll(this.tournamentId, selectedIds).subscribe({
-        next: (response) => {
-          // Update the status of rejected players
-          selectedIds.forEach((id) => {
-            const player = this.players.find((p) => p.id === id);
-            if (player) player.status = 'REJECTED';
-          });
-          this.selectedPlayers.clear();
-          this.selectAllChecked = false;
-          this.isProcessingBatchAction = false;
-          alert(`${response.rejectedCount} player(s) rejected successfully`);
-          this.cdr.markForCheck();
-        },
-        error: (error) => {
-          this.isProcessingBatchAction = false;
-          const errorMessage =
-            error?.error?.message || 'Failed to reject selected players';
-          alert(errorMessage);
-          this.cdr.markForCheck();
-        },
-      });
-    }
+    this.openConfirmModal(
+      'Reject Players',
+      `Are you sure you want to reject ${selectedIds.length} player(s)?`,
+      () => {
+        this.isProcessingBatchAction = true;
+        this.playerService.rejectAll(this.tournamentId, selectedIds).subscribe({
+          next: (response) => {
+            // Update the status of rejected players
+            selectedIds.forEach((id) => {
+              const player = this.players.find((p) => p.id === id);
+              if (player) player.status = 'REJECTED';
+            });
+            this.selectedPlayers.clear();
+            this.selectAllChecked = false;
+            this.isProcessingBatchAction = false;
+            this.openSuccessModal(
+              'Rejection Successful',
+              `${response.rejectedCount} player(s) have been rejected successfully`
+            );
+            this.cdr.markForCheck();
+          },
+          error: (error) => {
+            this.isProcessingBatchAction = false;
+            const errorMessage =
+              error?.error?.message || 'Failed to reject selected players';
+            this.openErrorModal('Rejection Failed', errorMessage);
+            this.cdr.markForCheck();
+          },
+        });
+      }
+    );
   }
 
   openEditPlayerModal(player: Player) {
@@ -415,5 +443,46 @@ export class Players implements OnInit {
 
   goBack() {
     this.router.navigate(['/admin']);
+  }
+
+  // ── Custom Modal Methods ──────────────────────────────────────────────────
+
+  openConfirmModal(title: string, message: string, onConfirm: () => void) {
+    this.confirmTitle = title;
+    this.confirmMessage = message;
+    this.confirmCallback = onConfirm;
+    this.showConfirmModal = true;
+  }
+
+  closeConfirmModal() {
+    this.showConfirmModal = false;
+    this.confirmCallback = null;
+  }
+
+  confirmAction() {
+    if (this.confirmCallback) {
+      this.confirmCallback();
+    }
+    this.closeConfirmModal();
+  }
+
+  openSuccessModal(title: string, message: string) {
+    this.successTitle = title;
+    this.successMessage = message;
+    this.showSuccessModal = true;
+  }
+
+  closeSuccessModal() {
+    this.showSuccessModal = false;
+  }
+
+  openErrorModal(title: string, message: string) {
+    this.errorTitle = title;
+    this.errorMessage = message;
+    this.showErrorModal = true;
+  }
+
+  closeErrorModal() {
+    this.showErrorModal = false;
   }
 }

@@ -254,5 +254,56 @@
       </form>
     </div>
   </div>
+
+  <!-- Confirmation Modal -->
+  <div class="modal-overlay" *ngIf="showConfirmModal" (click)="closeConfirmModal()">
+    <div class="modal-content confirm-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header confirm-header">
+        <h2>{{ confirmTitle }}</h2>
+        <button class="modal-close" (click)="closeConfirmModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="confirm-message">{{ confirmMessage }}</p>
+      </div>
+      <div class="modal-footer confirm-footer">
+        <button class="btn btn-secondary" (click)="closeConfirmModal()">Cancel</button>
+        <button class="btn btn-primary" (click)="confirmAction()">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div class="modal-overlay" *ngIf="showSuccessModal" (click)="closeSuccessModal()">
+    <div class="modal-content success-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header success-header">
+        <span class="success-icon">✓</span>
+        <h2>{{ successTitle }}</h2>
+        <button class="modal-close" (click)="closeSuccessModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="success-message">{{ successMessage }}</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-success" (click)="closeSuccessModal()">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Modal -->
+  <div class="modal-overlay" *ngIf="showErrorModal" (click)="closeErrorModal()">
+    <div class="modal-content error-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header error-header">
+        <span class="error-icon">!</span>
+        <h2>{{ errorTitle }}</h2>
+        <button class="modal-close" (click)="closeErrorModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="error-message">{{ errorMessage }}</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-danger" (click)="closeErrorModal()">Close</button>
+      </div>
+    </div>
+  </div>
   </div>
 </div>
