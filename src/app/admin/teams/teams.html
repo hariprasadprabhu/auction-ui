@@ -38,6 +38,15 @@
       <button class="btn btn-secondary" title="Load from Excel">
         <span>📊</span> Load from Excel
       </button>
+      <div class="batch-actions" *ngIf="selectedPlayers.size > 0">
+        <span class="selected-count">{{ selectedPlayers.size }} selected</span>
+        <button class="btn btn-success" title="Approve Selected" (click)="approveSelectedPlayers()" [disabled]="isProcessingBatchAction">
+          <span>✓</span> Approve Selected
+        </button>
+        <button class="btn btn-danger" title="Reject Selected" (click)="rejectSelectedPlayers()" [disabled]="isProcessingBatchAction">
+          <span>✕</span> Reject Selected
+        </button>
+      </div>
     </div>
     <button class="btn btn-back-light" title="Back to Dashboard" (click)="goBack()">
       ← Back To Dashboard
@@ -49,6 +58,9 @@
     <table class="players-table">
       <thead>
         <tr>
+          <th class="checkbox-col">
+            <input type="checkbox" [checked]="selectAllChecked" (change)="onSelectAllChange($any($event).target.checked)" title="Select All" />
+          </th>
           <th>Player #</th>
           <th>Photo</th>
           <th>Name</th>
@@ -62,6 +74,9 @@
       </thead>
       <tbody>
         <tr *ngFor="let player of players">
+          <td class="checkbox-col">
+            <input type="checkbox" [checked]="selectedPlayers.has(player.id)" (change)="onPlayerCheckboxChange(player.id, $any($event).target.checked)" />
+          </td>
           <td>{{ player.playerNumber }}</td>
           <td class="photo-cell">
             <img [src]="player.photoUrl | normalizePhotoUrlCached | async" [alt]="player.firstName" class="player-photo" />

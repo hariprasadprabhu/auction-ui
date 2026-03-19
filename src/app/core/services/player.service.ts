@@ -88,6 +88,20 @@ export class PlayerService {
       .pipe(map((p) => this.mapPlayer(p)));
   }
 
+  approveAll(tournamentId: number, playerIds: number[]): Observable<{ message: string; approvedCount: number; status: string }> {
+    return this.http.patch<{ message: string; approvedCount: number; status: string }>(
+      `${this.apiUrl}/tournaments/${tournamentId}/players/approve-all`,
+      { playerIds },
+    );
+  }
+
+  rejectAll(tournamentId: number, playerIds: number[]): Observable<{ message: string; rejectedCount: number; status: string }> {
+    return this.http.patch<{ message: string; rejectedCount: number; status: string }>(
+      `${this.apiUrl}/tournaments/${tournamentId}/players/reject-all`,
+      { playerIds },
+    );
+  }
+
   addToAuction(id: number, request: AddToAuctionRequest): Observable<AuctionPlayer> {
     return this.http.post<AuctionPlayer>(
       `${this.apiUrl}/players/${id}/add-to-auction`,

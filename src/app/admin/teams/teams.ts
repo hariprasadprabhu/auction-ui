@@ -30,6 +30,11 @@ export class Players implements OnInit {
   loadingStartTime = 0;
   pendingRequests = 0;
 
+  // Player Selection for Batch Actions
+  selectedPlayers = new Set<number>();
+  selectAllChecked = false;
+  isProcessingBatchAction = false;
+
   // Add Player Form
   showAddPlayerModal = false;
   newPlayer = {
@@ -249,6 +254,98 @@ export class Players implements OnInit {
     if (this.selectedPlayerId) {
       this.rejectPlayer(this.selectedPlayerId);
       this.closeImageModal();
+    }
+  }
+
+  // ── Batch Actions ────────────────────────────────────────────────────────
+
+  onPlayerCheckboxChange(playerId: number, checked: boolean) {
+    if (checked) {
+      this.selectedPlayers.add(playerId);
+    } else {
+      this.selectedPlayers.delete(playerId);
+      this.selectAllChecked = false;
+    }
+    this.cdr.markForCheck();
+  }
+
+  onSelectAllChange(checked: boolean) {
+    this.selectAllChecked = checked;
+    if (checked) {
+      this.players.forEach((p) => this.selectedPlayers.add(p.id));
+    } else {
+      this.selectedPlayers.clear();
+    }
+    this.cdr.markForCheck();
+  }
+
+  getSelectedPlayerIds(): number[] {
+    return Array.from(this.selectedPlayers);
+  }
+
+  approveSelectedPlayers() {
+    const selectedIds = this.getSelectedPlayerIds();
+    if (selectedIds.length === 0) {
+      alert('Please select at least one player to approve');
+      return;
+    }
+
+    if (confirm(`Approve ${selectedIds.length} player(s)?`)) {
+      this.isProcessingBatchAction = true;
+      this.playerService.approveAll(this.tournamentId, selectedIds).subscribe({
+        next: (response) => {
+          // Update the status of approved players
+          selectedIds.forEach((id) => {
+            const player = this.players.find((p) => p.id === id);
+            if (player) player.status = 'APPROVED';
+          });
+          this.selectedPlayers.clear();
+          this.selectAllChecked = false;
+          this.isProcessingBatchAction = false;
+          alert(`${response.approvedCount} player(s) approved successfully`);
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          this.isProcessingBatchAction = false;
+          const errorMessage =
+            error?.error?.message || 'Failed to approve selected players';
+          alert(errorMessage);
+          this.cdr.markForCheck();
+        },
+      });
+    }
+  }
+
+  rejectSelectedPlayers() {
+    const selectedIds = this.getSelectedPlayerIds();
+    if (selectedIds.length === 0) {
+      alert('Please select at least one player to reject');
+      return;
+    }
+
+    if (confirm(`Reject ${selectedIds.length} player(s)?`)) {
+      this.isProcessingBatchAction = true;
+      this.playerService.rejectAll(this.tournamentId, selectedIds).subscribe({
+        next: (response) => {
+          // Update the status of rejected players
+          selectedIds.forEach((id) => {
+            const player = this.players.find((p) => p.id === id);
+            if (player) player.status = 'REJECTED';
+          });
+          this.selectedPlayers.clear();
+          this.selectAllChecked = false;
+          this.isProcessingBatchAction = false;
+          alert(`${response.rejectedCount} player(s) rejected successfully`);
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          this.isProcessingBatchAction = false;
+          const errorMessage =
+            error?.error?.message || 'Failed to reject selected players';
+          alert(errorMessage);
+          this.cdr.markForCheck();
+        },
+      });
     }
   }
 
