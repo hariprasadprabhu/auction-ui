@@ -21,7 +21,7 @@ export class Dashboard implements OnInit {
   // ── Limit Error Modal ────────────────────────────────────────────────────
   showLimitErrorModal = false;
   limitErrorMessage = '';
-  maxTeamsAllowed = 2;
+  maxTeamsAllowed = 0; // Will be extracted from API response
   costPerTeam = 70;
   whatsappNumber = '+91 6360634388';
   contactEmail = 'auction.deck@gmail.com';
@@ -156,6 +156,11 @@ export class Dashboard implements OnInit {
           // Check for maximum allowed teams error
           if (errorBody?.error === 'BAD_REQUEST' && 
               errorBody?.message?.includes('Reached maximum allowed teams')) {
+            // Extract the maximum allowed teams from error message
+            const match = errorBody.message.match(/Reached maximum allowed teams: (\d+)/);
+            if (match && match[1]) {
+              this.maxTeamsAllowed = parseInt(match[1], 10);
+            }
             this.showLimitErrorModal = true;
             this.limitErrorMessage = errorBody.message || '';
             this.cdr.markForCheck();
@@ -267,6 +272,11 @@ export class Dashboard implements OnInit {
           // Check for maximum allowed teams error
           if (errorBody?.error === 'BAD_REQUEST' && 
               errorBody?.message?.includes('Reached maximum allowed teams')) {
+            // Extract the maximum allowed teams from error message
+            const match = errorBody.message.match(/Reached maximum allowed teams: (\d+)/);
+            if (match && match[1]) {
+              this.maxTeamsAllowed = parseInt(match[1], 10);
+            }
             this.showLimitErrorModal = true;
             this.limitErrorMessage = errorBody.message || '';
             this.cdr.markForCheck();

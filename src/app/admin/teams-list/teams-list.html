@@ -166,7 +166,7 @@
 
       <div class="limit-error-body">
         <p class="limit-message">
-          Your free limit is <strong>{{ maxTeamsAllowed }} teams</strong>. 
+          Your free limit is <strong>{{ tournament?.teamesAllowed || 2 }} teams</strong>. 
           To add more teams, contact us. It's <strong>₹{{ costPerTeam }}/team</strong>.
         </p>
         

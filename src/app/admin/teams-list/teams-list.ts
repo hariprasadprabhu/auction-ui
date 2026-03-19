@@ -46,7 +46,6 @@ export class TeamsListComponent implements OnInit {
   // ── Limit Error Modal ────────────────────────────────────────────────────
   showLimitErrorModal = false;
   limitErrorMessage = '';
-  maxTeamsAllowed = 2;
   costPerTeam = 70;
   whatsappNumber = '+91 6360634388';
   contactEmail = 'auction.deck@gmail.com';
@@ -255,14 +254,14 @@ export class TeamsListComponent implements OnInit {
   }
 
   contactViaWhatsapp() {
-    const message = `Hi, I'm interested in adding more teams to my tournament. Current free limit is ${this.maxTeamsAllowed} teams. I'd like to know more about upgrading.`;
+    const message = `Hi, I'm interested in adding more teams to my tournament. Current free limit is ${this.tournament?.teamesAllowed || 2} teams. I'd like to know more about upgrading.`;
     const encodedMessage = encodeURIComponent(message);
     window.open(`https://wa.me/${this.whatsappNumber.replace(/\D/g, '')}?text=${encodedMessage}`, '_blank');
   }
 
   contactViaEmail() {
     const subject = encodeURIComponent('Inquiry: Adding More Teams to Tournament');
-    const body = encodeURIComponent(`Hi,\n\nI would like to add more teams to my tournament. Currently, the free plan allows ${this.maxTeamsAllowed} teams. Can you provide information about the paid plan?\n\nThank you`);
+    const body = encodeURIComponent(`Hi,\n\nI would like to add more teams to my tournament. Currently, the free plan allows ${this.tournament?.teamesAllowed || 2} teams. Can you provide information about the paid plan?\n\nThank you`);
     window.location.href = `mailto:${this.contactEmail}?subject=${subject}&body=${body}`;
   }
 
