@@ -43,6 +43,14 @@ export class TeamsListComponent implements OnInit {
   editLogoPreview: string | null = null;
   editLogoFile: File | null = null;
 
+  // ── Limit Error Modal ────────────────────────────────────────────────────
+  showLimitErrorModal = false;
+  limitErrorMessage = '';
+  maxTeamsAllowed = 2;
+  costPerTeam = 70;
+  whatsappNumber = '+91 6360634388';
+  contactEmail = 'auction.deck@gmail.com';
+
   private tournamentId!: number;
 
   constructor(
@@ -153,7 +161,21 @@ export class TeamsListComponent implements OnInit {
           this.closeAddTeamModal();
           this.cdr.markForCheck();
         },
-        error: () => alert('Failed to add team.'),
+        error: (err: any) => {
+          console.log('API Error Response:', err);
+          const errorBody = err.error || err;
+          console.log('Error Body:', errorBody);
+          
+          // Check for maximum allowed teams error
+          if (errorBody?.error === 'BAD_REQUEST' && 
+              errorBody?.message?.includes('Reached maximum allowed teams')) {
+            this.showLimitErrorModal = true;
+            this.limitErrorMessage = errorBody.message || '';
+            this.cdr.markForCheck();
+          } else {
+            alert('Failed to add team.');
+          }
+        },
       });
   }
 
@@ -226,6 +248,22 @@ export class TeamsListComponent implements OnInit {
 
   goBack() {
     this.router.navigate(['/admin']);
+  }
+
+  closeLimitErrorModal() {
+    this.showLimitErrorModal = false;
+  }
+
+  contactViaWhatsapp() {
+    const message = `Hi, I'm interested in adding more teams to my tournament. Current free limit is ${this.maxTeamsAllowed} teams. I'd like to know more about upgrading.`;
+    const encodedMessage = encodeURIComponent(message);
+    window.open(`https://wa.me/${this.whatsappNumber.replace(/\D/g, '')}?text=${encodedMessage}`, '_blank');
+  }
+
+  contactViaEmail() {
+    const subject = encodeURIComponent('Inquiry: Adding More Teams to Tournament');
+    const body = encodeURIComponent(`Hi,\n\nI would like to add more teams to my tournament. Currently, the free plan allows ${this.maxTeamsAllowed} teams. Can you provide information about the paid plan?\n\nThank you`);
+    window.location.href = `mailto:${this.contactEmail}?subject=${subject}&body=${body}`;
   }
 
   canAddMoreTeams(): boolean {

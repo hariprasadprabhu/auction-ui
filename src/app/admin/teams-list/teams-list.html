@@ -153,5 +153,44 @@
       </form>
     </div>
   </div>
+
+  <!-- Limit Error Modal -->
+  <div class="modal-overlay" *ngIf="showLimitErrorModal" (click)="closeLimitErrorModal()">
+    <div class="modal-content limit-error-modal" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="closeLimitErrorModal()">✕</button>
+      
+      <div class="limit-error-header">
+        <div class="limit-error-icon">⚠️</div>
+        <h2>Free Plan Limit Reached</h2>
+      </div>
+
+      <div class="limit-error-body">
+        <p class="limit-message">
+          Your free limit is <strong>{{ maxTeamsAllowed }} teams</strong>. 
+          To add more teams, contact us. It's <strong>₹{{ costPerTeam }}/team</strong>.
+        </p>
+        
+        <div class="contact-section">
+          <p class="contact-label">Choose how to contact us:</p>
+          
+          <div class="contact-buttons">
+            <button type="button" class="btn btn-contact whatsapp-btn" (click)="contactViaWhatsapp()">
+              <span class="contact-icon">💬</span>
+              <span class="contact-text">WhatsApp</span>
+            </button>
+            
+            <button type="button" class="btn btn-contact email-btn" (click)="contactViaEmail()">
+              <span class="contact-icon">✉️</span>
+              <span class="contact-text">Email</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="limit-error-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeLimitErrorModal()">Close</button>
+      </div>
+    </div>
+  </div>
   </div>
 </div>
