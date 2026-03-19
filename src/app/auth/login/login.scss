@@ -129,6 +129,13 @@ $white:        #ffffff;
   text-align: center;
   margin-bottom: 28px;
 
+  .card-logo {
+    height: 45px;
+    width: auto;
+    object-fit: contain;
+    margin-bottom: 12px;
+  }
+
   .shield-icon {
     font-size: 2.5rem;
     margin-bottom: 10px;
