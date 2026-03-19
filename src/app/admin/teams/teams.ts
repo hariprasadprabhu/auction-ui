@@ -49,6 +49,9 @@ export class Players implements OnInit {
   errorTitle = '';
   errorMessage = '';
 
+  showLoadingModal = false;
+  loadingMessage = '';
+
   // Add Player Form
   showAddPlayerModal = false;
   newPlayer = {
@@ -240,20 +243,44 @@ export class Players implements OnInit {
   }
 
   approvePlayer(playerId: number) {
+    this.showLoadingModal = true;
+    this.loadingMessage = 'Approving player...';
+    this.cdr.markForCheck();
+
     this.playerService.approve(playerId).subscribe({
       next: (updated) => {
         const player = this.players.find((p) => p.id === playerId);
-        if (player) player.status = updated.status;        this.cdr.markForCheck();      },
-      error: () => alert('Failed to approve player.'),
+        if (player) player.status = updated.status;
+        this.showLoadingModal = false;
+        this.openSuccessModal('Approval Successful', 'Player has been approved successfully');
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.showLoadingModal = false;
+        this.openErrorModal('Approval Failed', 'Failed to approve player. Please try again.');
+        this.cdr.markForCheck();
+      },
     });
   }
 
   rejectPlayer(playerId: number) {
+    this.showLoadingModal = true;
+    this.loadingMessage = 'Rejecting player...';
+    this.cdr.markForCheck();
+
     this.playerService.reject(playerId).subscribe({
       next: (updated) => {
         const player = this.players.find((p) => p.id === playerId);
-        if (player) player.status = updated.status;        this.cdr.markForCheck();      },
-      error: () => alert('Failed to reject player.'),
+        if (player) player.status = updated.status;
+        this.showLoadingModal = false;
+        this.openSuccessModal('Rejection Successful', 'Player has been rejected successfully');
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.showLoadingModal = false;
+        this.openErrorModal('Rejection Failed', 'Failed to reject player. Please try again.');
+        this.cdr.markForCheck();
+      },
     });
   }
 
@@ -308,7 +335,11 @@ export class Players implements OnInit {
       'Approve Players',
       `Are you sure you want to approve ${selectedIds.length} player(s)?`,
       () => {
+        this.showLoadingModal = true;
+        this.loadingMessage = `Approving ${selectedIds.length} player(s)...`;
         this.isProcessingBatchAction = true;
+        this.cdr.markForCheck();
+
         this.playerService.approveAll(this.tournamentId, selectedIds).subscribe({
           next: (response) => {
             // Update the status of approved players
@@ -319,6 +350,7 @@ export class Players implements OnInit {
             this.selectedPlayers.clear();
             this.selectAllChecked = false;
             this.isProcessingBatchAction = false;
+            this.showLoadingModal = false;
             this.openSuccessModal(
               'Approval Successful',
               `${response.approvedCount} player(s) have been approved successfully`
@@ -327,6 +359,7 @@ export class Players implements OnInit {
           },
           error: (error) => {
             this.isProcessingBatchAction = false;
+            this.showLoadingModal = false;
             const errorMessage =
               error?.error?.message || 'Failed to approve selected players';
             this.openErrorModal('Approval Failed', errorMessage);
@@ -348,7 +381,11 @@ export class Players implements OnInit {
       'Reject Players',
       `Are you sure you want to reject ${selectedIds.length} player(s)?`,
       () => {
+        this.showLoadingModal = true;
+        this.loadingMessage = `Rejecting ${selectedIds.length} player(s)...`;
         this.isProcessingBatchAction = true;
+        this.cdr.markForCheck();
+
         this.playerService.rejectAll(this.tournamentId, selectedIds).subscribe({
           next: (response) => {
             // Update the status of rejected players
@@ -359,6 +396,7 @@ export class Players implements OnInit {
             this.selectedPlayers.clear();
             this.selectAllChecked = false;
             this.isProcessingBatchAction = false;
+            this.showLoadingModal = false;
             this.openSuccessModal(
               'Rejection Successful',
               `${response.rejectedCount} player(s) have been rejected successfully`
@@ -367,6 +405,7 @@ export class Players implements OnInit {
           },
           error: (error) => {
             this.isProcessingBatchAction = false;
+            this.showLoadingModal = false;
             const errorMessage =
               error?.error?.message || 'Failed to reject selected players';
             this.openErrorModal('Rejection Failed', errorMessage);

@@ -305,5 +305,17 @@
       </div>
     </div>
   </div>
+
+  <!-- Loading Modal -->
+  <div class="modal-overlay" *ngIf="showLoadingModal">
+    <div class="modal-content loading-modal" (click)="$event.stopPropagation()">
+      <div class="loading-spinner-container">
+        <div class="loading-spinner">
+          <div class="spinner-circle"></div>
+        </div>
+        <p class="loading-message">{{ loadingMessage }}</p>
+      </div>
+    </div>
+  </div>
   </div>
 </div>
