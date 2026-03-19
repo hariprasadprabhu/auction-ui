@@ -136,15 +136,15 @@ export class Players implements OnInit {
 
   private setLoadingTimeout() {
     this.clearLoadingTimeout();
-    // Force hide loading after 8 seconds maximum (safety fallback)
+    // Force hide loading after 20 seconds maximum (safety fallback)
     this.loadingTimeoutId = setTimeout(() => {
-      if (this.isLoading) {
-        console.warn('Loading timeout - forcing loading screen to close');
+      if (this.isLoading || this.pendingImages > 0) {
+        console.warn('Loading timeout - forcing loading to complete');
         this.isLoading = false;
         this.pendingImages = 0;
         this.cdr.markForCheck();
       }
-    }, 8000);
+    }, 20000);
   }
 
   onImageLoad() {

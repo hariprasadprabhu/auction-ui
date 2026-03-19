@@ -13,8 +13,19 @@
     </div>
   </div>
 
+  <!-- Image Loading Overlay -->
+  <div class="image-loading-overlay" *ngIf="!isLoading && pendingImages > 0">
+    <div class="overlay-backdrop"></div>
+    <div class="overlay-content">
+      <div class="loading-spinner">
+        <div class="spinner-circle"></div>
+      </div>
+      <p class="overlay-text">Loading images...</p>
+    </div>
+  </div>
+
   <!-- Main Content -->
-  <div *ngIf="!isLoading" class="teams-content">
+  <div [class.blur-content]="!isLoading && pendingImages > 0" class="teams-content">
   <!-- Header -->
   <div class="teams-header">
     <div class="header-content">
