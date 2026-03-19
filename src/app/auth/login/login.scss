@@ -92,6 +92,13 @@ $white:        #ffffff;
   color: $white;
 
   .brand-icon { font-size: 2rem; }
+
+  .brand-logo {
+    height: 60px;
+    width: auto;
+    object-fit: contain;
+  }
+
   .brand-name {
     font-size: 1.75rem;
     font-weight: 700;

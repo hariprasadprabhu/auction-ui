@@ -28,6 +28,12 @@
 
   .brand-icon { font-size: 1.5rem; }
 
+  .brand-logo-small {
+    height: 45px;
+    width: auto;
+    object-fit: contain;
+  }
+
   .brand-name {
     font-size: 1.35rem;
     font-weight: 700;

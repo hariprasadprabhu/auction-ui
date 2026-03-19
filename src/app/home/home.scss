@@ -90,6 +90,17 @@ $text-muted: #777;
 
   .brand-icon { font-size: 1.8rem; }
 
+  .brand-logo {
+    height: 50px;
+    width: auto;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+
   .brand-name {
     font-size: 1.5rem;
     font-weight: 800;
@@ -788,6 +799,14 @@ $text-muted: #777;
 .footer-brand {
   .footer-brand-logo {
     margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+
+    .brand-logo.footer-logo {
+      height: 60px;
+      width: auto;
+      object-fit: contain;
+    }
 
     .brand-name { color: $white; }
   }
