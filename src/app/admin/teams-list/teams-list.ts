@@ -24,6 +24,7 @@ export class TeamsListComponent implements OnInit {
 
   // Add Team Form
   showAddTeamModal = false;
+  isAddingTeam = false;
   newTeam = {
     name: '',
     ownerName: '',
@@ -147,6 +148,7 @@ export class TeamsListComponent implements OnInit {
       alert('Please fill in all required fields');
       return;
     }
+    this.isAddingTeam = true;
     this.teamService
       .create(this.tournamentId, {
         name: this.newTeam.name,
@@ -157,10 +159,12 @@ export class TeamsListComponent implements OnInit {
       .subscribe({
         next: (t) => {
           this.teams.push(t);
+          this.isAddingTeam = false;
           this.closeAddTeamModal();
           this.cdr.markForCheck();
         },
         error: (err: any) => {
+          this.isAddingTeam = false;
           console.log('API Error Response:', err);
           const errorBody = err.error || err;
           console.log('Error Body:', errorBody);

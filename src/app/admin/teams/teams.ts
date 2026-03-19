@@ -56,6 +56,7 @@ export class Players implements OnInit {
 
   // Add Player Form
   showAddPlayerModal = false;
+  isAddingPlayer = false;
   newPlayer = {
     firstName: '',
     lastName: '',
@@ -280,6 +281,7 @@ export class Players implements OnInit {
       return;
     }
 
+    this.isAddingPlayer = true;
     // Use public registration endpoint (admin adds player directly)
     this.playerService
       .register(this.tournamentId, {
@@ -293,10 +295,14 @@ export class Players implements OnInit {
       .subscribe({
         next: (p) => {
           this.players.push(p);
+          this.isAddingPlayer = false;
           this.closeAddPlayerModal();
           this.cdr.markForCheck();
         },
-        error: () => alert('Failed to add player.'),
+        error: () => {
+          this.isAddingPlayer = false;
+          alert('Failed to add player.');
+        },
       });
   }
 

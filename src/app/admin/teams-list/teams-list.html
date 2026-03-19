@@ -115,6 +115,15 @@
   <!-- Add Team Modal -->
   <div class="modal-overlay" *ngIf="showAddTeamModal" (click)="closeAddTeamModal()">
     <div class="modal-content form-modal" (click)="$event.stopPropagation()">
+      <!-- Loading Overlay -->
+      <div class="modal-loading-overlay" *ngIf="isAddingTeam">
+        <div class="modal-loader">
+          <div class="spinner-dot"></div>
+          <div class="spinner-dot"></div>
+          <div class="spinner-dot"></div>
+        </div>
+      </div>
+      
       <button class="modal-close" (click)="closeAddTeamModal()">✕</button>
       <h2>Add New Team</h2>
       <form (ngSubmit)="addTeam()" class="add-team-form">
