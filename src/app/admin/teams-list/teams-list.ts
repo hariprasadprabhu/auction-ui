@@ -35,6 +35,8 @@ export class TeamsListComponent implements OnInit {
 
   // Edit Team Form
   showEditTeamModal = false;
+  isEditingTeam = false;
+  isDeletingTeam = false;
   editingTeam: Team | null = null;
   editTeam = {
     name: '',
@@ -219,6 +221,7 @@ export class TeamsListComponent implements OnInit {
       alert('Please fill in all required fields');
       return;
     }
+    this.isEditingTeam = true;
     this.teamService
       .update(this.editingTeam.id, {
         name: this.editTeam.name,
@@ -230,21 +233,30 @@ export class TeamsListComponent implements OnInit {
         next: (updated) => {
           const index = this.teams.findIndex((t) => t.id === this.editingTeam!.id);
           if (index !== -1) this.teams[index] = updated;
+          this.isEditingTeam = false;
           this.closeEditTeamModal();
           this.cdr.markForCheck();
         },
-        error: () => alert('Failed to update team.'),
+        error: () => {
+          this.isEditingTeam = false;
+          alert('Failed to update team.');
+        },
       });
   }
 
   deleteTeam(team: Team) {
     if (confirm(`Are you sure you want to delete "${team.name}"?`)) {
+      this.isDeletingTeam = true;
       this.teamService.delete(team.id).subscribe({
         next: () => {
           this.teams = this.teams.filter((t) => t.id !== team.id);
+          this.isDeletingTeam = false;
           this.cdr.markForCheck();
         },
-        error: () => alert('Failed to delete team.'),
+        error: () => {
+          this.isDeletingTeam = false;
+          alert('Failed to delete team.');
+        },
       });
     }
   }

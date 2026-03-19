@@ -74,6 +74,15 @@
   <!-- Edit Team Modal -->
   <div class="modal-overlay" *ngIf="showEditTeamModal" (click)="closeEditTeamModal()">
     <div class="modal-content form-modal" (click)="$event.stopPropagation()">
+      <!-- Loading Overlay -->
+      <div class="modal-loading-overlay" *ngIf="isEditingTeam">
+        <div class="modal-loader">
+          <div class="spinner-dot"></div>
+          <div class="spinner-dot"></div>
+          <div class="spinner-dot"></div>
+        </div>
+      </div>
+      
       <button class="modal-close" (click)="closeEditTeamModal()">✕</button>
       <h2>Edit Team</h2>
       <form (ngSubmit)="saveEditTeam()" class="add-team-form">

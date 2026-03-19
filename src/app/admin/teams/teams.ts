@@ -69,6 +69,8 @@ export class Players implements OnInit {
 
   // Edit Player Form
   showEditPlayerModal = false;
+  isEditingPlayer = false;
+  isDeletingPlayer = false;
   editingPlayer: Player | null = null;
   editPlayerForm = {
     firstName: '',
@@ -246,12 +248,17 @@ export class Players implements OnInit {
 
   deletePlayer(playerId: number) {
     if (confirm('Are you sure you want to delete this player?')) {
+      this.isDeletingPlayer = true;
       this.playerService.delete(playerId).subscribe({
         next: () => {
           this.players = this.players.filter((p) => p.id !== playerId);
+          this.isDeletingPlayer = false;
           this.cdr.markForCheck();
         },
-        error: () => alert('Failed to delete player.'),
+        error: () => {
+          this.isDeletingPlayer = false;
+          alert('Failed to delete player.');
+        },
       });
     }
   }
@@ -537,6 +544,7 @@ export class Players implements OnInit {
       alert('First Name is required');
       return;
     }
+    this.isEditingPlayer = true;
     this.playerService
       .update(this.editingPlayer.id, {
         firstName: this.editPlayerForm.firstName,
@@ -550,10 +558,14 @@ export class Players implements OnInit {
         next: (updated) => {
           const index = this.players.findIndex((p) => p.id === this.editingPlayer!.id);
           if (index !== -1) this.players[index] = updated;
+          this.isEditingPlayer = false;
           this.closeEditPlayerModal();
           this.cdr.markForCheck();
         },
-        error: () => alert('Failed to update player.'),
+        error: () => {
+          this.isEditingPlayer = false;
+          alert('Failed to update player.');
+        },
       });
   }
 
