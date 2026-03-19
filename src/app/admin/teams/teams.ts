@@ -30,6 +30,7 @@ export class Players implements OnInit {
   loadingStartTime = 0;
   pendingRequests = 0;
   pendingImages = 0;
+  loadingTimeoutId: any = null;
 
   // Player Selection for Batch Actions
   selectedPlayers = new Set<number>();
@@ -88,6 +89,7 @@ export class Players implements OnInit {
   ngOnInit() {
     this.loadingStartTime = Date.now();
     this.pendingRequests = 2; // tournament + players
+    this.setLoadingTimeout();
     
     this.route.paramMap.subscribe((params) => {
       const id = Number(params.get('tournamentId'));
@@ -109,6 +111,7 @@ export class Players implements OnInit {
 
   private checkLoadingComplete() {
     if (this.pendingRequests <= 0 && this.pendingImages <= 0) {
+      this.clearLoadingTimeout();
       const elapsedTime = Date.now() - this.loadingStartTime;
       const remainingTime = Math.max(0, this.minLoadingTime - elapsedTime);
       
@@ -122,6 +125,26 @@ export class Players implements OnInit {
         this.cdr.markForCheck();
       }
     }
+  }
+
+  private clearLoadingTimeout() {
+    if (this.loadingTimeoutId) {
+      clearTimeout(this.loadingTimeoutId);
+      this.loadingTimeoutId = null;
+    }
+  }
+
+  private setLoadingTimeout() {
+    this.clearLoadingTimeout();
+    // Force hide loading after 8 seconds maximum (safety fallback)
+    this.loadingTimeoutId = setTimeout(() => {
+      if (this.isLoading) {
+        console.warn('Loading timeout - forcing loading screen to close');
+        this.isLoading = false;
+        this.pendingImages = 0;
+        this.cdr.markForCheck();
+      }
+    }, 8000);
   }
 
   onImageLoad() {
@@ -140,10 +163,11 @@ export class Players implements OnInit {
         this.players = data;
         // Count images: photo + payment proof for each player
         this.pendingImages = data.length * 2;
+        this.completeRequest();
+        
         if (this.pendingImages === 0) {
-          this.completeRequest();
+          // No images to load, loading will complete
         } else {
-          this.completeRequest();
           // Schedule image load checking after DOM update
           this.cdr.markForCheck();
           setTimeout(() => this.trackImageLoads(), 100);
@@ -158,18 +182,25 @@ export class Players implements OnInit {
 
   private trackImageLoads() {
     const images = document.querySelectorAll('.grid-container img');
-    if (images.length > 0) {
-      images.forEach((img: any) => {
-        if (img.complete) {
-          // Image already loaded from cache
-          this.onImageLoad();
-        } else {
-          // Image still loading
-          img.addEventListener('load', () => this.onImageLoad());
-          img.addEventListener('error', () => this.onImageError());
-        }
-      });
+    
+    if (images.length === 0) {
+      // If no images found in DOM, assume they're not needed or failed
+      // Reset pending images to allow loading to complete
+      this.pendingImages = 0;
+      this.checkLoadingComplete();
+      return;
     }
+    
+    images.forEach((img: any) => {
+      if (img.complete) {
+        // Image already loaded from cache
+        this.onImageLoad();
+      } else {
+        // Image still loading
+        img.addEventListener('load', () => this.onImageLoad());
+        img.addEventListener('error', () => this.onImageError());
+      }
+    });
   }
 
   openAddPlayerModal() {
