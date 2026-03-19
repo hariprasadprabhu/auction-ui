@@ -29,6 +29,7 @@ export class Players implements OnInit {
   minLoadingTime = 800;
   loadingStartTime = 0;
   pendingRequests = 0;
+  pendingImages = 0;
 
   // Player Selection for Batch Actions
   selectedPlayers = new Set<number>();
@@ -103,7 +104,11 @@ export class Players implements OnInit {
 
   private completeRequest() {
     this.pendingRequests--;
-    if (this.pendingRequests <= 0) {
+    this.checkLoadingComplete();
+  }
+
+  private checkLoadingComplete() {
+    if (this.pendingRequests <= 0 && this.pendingImages <= 0) {
       const elapsedTime = Date.now() - this.loadingStartTime;
       const remainingTime = Math.max(0, this.minLoadingTime - elapsedTime);
       
@@ -119,17 +124,52 @@ export class Players implements OnInit {
     }
   }
 
+  onImageLoad() {
+    this.pendingImages--;
+    this.checkLoadingComplete();
+  }
+
+  onImageError() {
+    this.pendingImages--;
+    this.checkLoadingComplete();
+  }
+
   private loadPlayers() {
     this.playerService.getByTournament(this.tournamentId).subscribe({
       next: (data) => {
         this.players = data;
-        this.completeRequest();
+        // Count images: photo + payment proof for each player
+        this.pendingImages = data.length * 2;
+        if (this.pendingImages === 0) {
+          this.completeRequest();
+        } else {
+          this.completeRequest();
+          // Schedule image load checking after DOM update
+          this.cdr.markForCheck();
+          setTimeout(() => this.trackImageLoads(), 100);
+        }
       },
       error: () => {
-        alert('Failed to load players.');
+        this.openErrorModal('Error', 'Failed to load players.');
         this.completeRequest();
       },
     });
+  }
+
+  private trackImageLoads() {
+    const images = document.querySelectorAll('.grid-container img');
+    if (images.length > 0) {
+      images.forEach((img: any) => {
+        if (img.complete) {
+          // Image already loaded from cache
+          this.onImageLoad();
+        } else {
+          // Image still loading
+          img.addEventListener('load', () => this.onImageLoad());
+          img.addEventListener('error', () => this.onImageError());
+        }
+      });
+    }
   }
 
   openAddPlayerModal() {

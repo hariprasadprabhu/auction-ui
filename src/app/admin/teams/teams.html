@@ -79,7 +79,13 @@
           </td>
           <td>{{ player.playerNumber }}</td>
           <td class="photo-cell">
-            <img [src]="player.photoUrl | normalizePhotoUrlCached | async" [alt]="player.firstName" class="player-photo" />
+            <img 
+              [src]="player.photoUrl | normalizePhotoUrlCached | async" 
+              [alt]="player.firstName" 
+              class="player-photo"
+              (load)="onImageLoad()"
+              (error)="onImageError()"
+            />
           </td>
           <td>{{ player.firstName }}</td>
           <td>{{ player.lastName || 'N/A' }}</td>
@@ -90,6 +96,8 @@
               [alt]="'Payment Proof for ' + player.firstName"
               class="payment-proof-thumbnail"
               (click)="openImageModal(player.paymentProofUrl, player.firstName, player.id)"
+              (load)="onImageLoad()"
+              (error)="onImageError()"
             />
           </td>
           <td class="action-cell">
