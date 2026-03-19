@@ -149,12 +149,16 @@ export class Dashboard implements OnInit {
           this.cdr.markForCheck();
         },
         error: (err: any) => {
-          const errorResponse = err.error;
+          console.log('API Error Response:', err);
+          const errorBody = err.error || err;
+          console.log('Error Body:', errorBody);
+          
           // Check for maximum allowed teams error
-          if (errorResponse?.error === 'BAD_REQUEST' && 
-              errorResponse?.message?.includes('Reached maximum allowed teams')) {
+          if (errorBody?.error === 'BAD_REQUEST' && 
+              errorBody?.message?.includes('Reached maximum allowed teams')) {
             this.showLimitErrorModal = true;
-            this.limitErrorMessage = errorResponse.message || '';
+            this.limitErrorMessage = errorBody.message || '';
+            this.cdr.markForCheck();
           } else {
             alert('Failed to create tournament. Please try again.');
           }
@@ -255,7 +259,21 @@ export class Dashboard implements OnInit {
           this.closeEditModal();
           this.cdr.markForCheck();
         },
-        error: () => alert('Failed to update tournament. Please try again.'),
+        error: (err: any) => {
+          console.log('API Error Response:', err);
+          const errorBody = err.error || err;
+          console.log('Error Body:', errorBody);
+          
+          // Check for maximum allowed teams error
+          if (errorBody?.error === 'BAD_REQUEST' && 
+              errorBody?.message?.includes('Reached maximum allowed teams')) {
+            this.showLimitErrorModal = true;
+            this.limitErrorMessage = errorBody.message || '';
+            this.cdr.markForCheck();
+          } else {
+            alert('Failed to update tournament. Please try again.');
+          }
+        },
       });
   }
 
