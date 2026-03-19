@@ -1034,11 +1034,29 @@
             display: inline;
           }
 
+          .contact-number {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            font-weight: 500;
+          }
+
           &:hover {
             background: #667eea;
             color: white;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+          }
+
+          &.phone-btn {
+            border-color: #ff6b6b;
+            color: #ff6b6b;
+
+            &:hover {
+              background: #ff6b6b;
+              color: white;
+              border-color: #ff6b6b;
+              box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+            }
           }
 
           &.whatsapp-btn {

@@ -100,6 +100,10 @@ export class Dashboard implements OnInit {
     this.showLimitErrorModal = false;
   }
 
+  contactViaPhone() {
+    window.location.href = `tel:${this.whatsappNumber}`;
+  }
+
   contactViaWhatsapp() {
     const message = `Hi, I'm interested in adding more teams to my tournament. Current free limit is ${this.maxTeamsAllowed} teams. I'd like to know more about upgrading.`;
     const encodedMessage = encodeURIComponent(message);

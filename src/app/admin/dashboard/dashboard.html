@@ -356,6 +356,12 @@
           <p class="contact-label">Choose how to contact us:</p>
           
           <div class="contact-buttons">
+            <button type="button" class="btn btn-contact phone-btn" (click)="contactViaPhone()">
+              <span class="contact-icon">📞</span>
+              <span class="contact-text">Call</span>
+              <span class="contact-number">{{ whatsappNumber }}</span>
+            </button>
+            
             <button type="button" class="btn btn-contact whatsapp-btn" (click)="contactViaWhatsapp()">
               <span class="contact-icon">💬</span>
               <span class="contact-text">WhatsApp</span>
