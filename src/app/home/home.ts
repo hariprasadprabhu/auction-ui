@@ -13,17 +13,20 @@ export class Home implements OnInit, AfterViewInit {
   protected readonly Math = Math;
 
   stats = [
-    { label: 'Auctions Conducted', value: 120, suffix: '+', current: 0 },
-    { label: 'Teams Registered', value: 3400, suffix: '+', current: 0 },
-    { label: 'Players Auctioned', value: 15000, suffix: '+', current: 0 },
-    { label: 'Happy Organisers', value: 98, suffix: '%', current: 0 },
+    { label: 'Successful Auctions', value: 156, suffix: '+', current: 0 },
+    { label: 'Teams Registered', value: 4200, suffix: '+', current: 0 },
+    { label: 'Players Auctioned', value: 28500, suffix: '+', current: 0 },
+    { label: 'Organiser Satisfaction', value: 99, suffix: '%', current: 0 },
   ];
 
   mobileMenuOpen = false;
 
   constructor(private router: Router) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    // Initialize stats display
+    this.stats = this.stats.map(stat => ({...stat, current: 0}));
+  }
 
   ngAfterViewInit() {
     const observer = new IntersectionObserver(
