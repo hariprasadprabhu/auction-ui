@@ -18,6 +18,14 @@ export class Dashboard implements OnInit {
   errorMsg = '';
   currentUser: any;
 
+  // ── Limit Error Modal ────────────────────────────────────────────────────
+  showLimitErrorModal = false;
+  limitErrorMessage = '';
+  maxTeamsAllowed = 2;
+  costPerTeam = 70;
+  whatsappNumber = '+91 6360634388';
+  contactEmail = 'auction.deck@gmail.com';
+
   private router = inject(Router);
   private tournamentService = inject(TournamentService);
   private authService = inject(AuthService);
@@ -88,6 +96,22 @@ export class Dashboard implements OnInit {
     this.showCreateModal = false;
   }
 
+  closeLimitErrorModal() {
+    this.showLimitErrorModal = false;
+  }
+
+  contactViaWhatsapp() {
+    const message = `Hi, I'm interested in adding more teams to my tournament. Current free limit is ${this.maxTeamsAllowed} teams. I'd like to know more about upgrading.`;
+    const encodedMessage = encodeURIComponent(message);
+    window.open(`https://wa.me/${this.whatsappNumber.replace(/\D/g, '')}?text=${encodedMessage}`, '_blank');
+  }
+
+  contactViaEmail() {
+    const subject = encodeURIComponent('Inquiry: Adding More Teams to Tournament');
+    const body = encodeURIComponent(`Hi,\n\nI would like to add more teams to my tournament. Currently, the free plan allows ${this.maxTeamsAllowed} teams. Can you provide information about the paid plan?\n\nThank you`);
+    window.location.href = `mailto:${this.contactEmail}?subject=${subject}&body=${body}`;
+  }
+
   onLogoSelected(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
@@ -124,7 +148,17 @@ export class Dashboard implements OnInit {
           this.closeCreateModal();
           this.cdr.markForCheck();
         },
-        error: () => alert('Failed to create tournament. Please try again.'),
+        error: (err: any) => {
+          const errorResponse = err.error;
+          // Check for maximum allowed teams error
+          if (errorResponse?.error === 'BAD_REQUEST' && 
+              errorResponse?.message?.includes('Reached maximum allowed teams')) {
+            this.showLimitErrorModal = true;
+            this.limitErrorMessage = errorResponse.message || '';
+          } else {
+            alert('Failed to create tournament. Please try again.');
+          }
+        },
       });
   }
 
