@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { PlayerService } from '../../core/services/player.service';
+import { AuctionPlayerService } from '../../core/services/auction-player.service';
 import { TournamentService } from '../../core/services/tournament.service';
 import { Tournament, Player } from '../../models';
 import { AuthImageCachedPipe } from '../../core/pipes/auth-image-cached.pipe';
@@ -36,6 +37,11 @@ export class Players implements OnInit {
   selectedPlayers = new Set<number>();
   selectAllChecked = false;
   isProcessingBatchAction = false;
+
+  // Reset Auction Functionality
+  selectedPlayersForReset = new Set<number>();
+  isResettingAuction = false;
+  resetMessage = '';
 
   // Custom Modal States
   showConfirmModal = false;
@@ -86,6 +92,7 @@ export class Players implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private playerService = inject(PlayerService);
+  private auctionPlayerService = inject(AuctionPlayerService);
   private tournamentService = inject(TournamentService);
   private cdr = inject(ChangeDetectorRef);
 
@@ -406,6 +413,77 @@ export class Players implements OnInit {
 
   getSelectedPlayerIds(): number[] {
     return Array.from(this.selectedPlayers);
+  }
+
+  // ── Reset Auction Status ────────────────────────────────────────────────
+
+  onPlayerResetCheckboxChange(playerId: number, checked: boolean) {
+    if (checked) {
+      this.selectedPlayersForReset.add(playerId);
+    } else {
+      this.selectedPlayersForReset.delete(playerId);
+    }
+  }
+
+  isPlayerSelectedForReset(playerId: number): boolean {
+    return this.selectedPlayersForReset.has(playerId);
+  }
+
+  resetSinglePlayerAuctionStatus(playerId: number) {
+    if (!confirm('Are you sure you want to reset this player\'s auction status to Available?')) {
+      return;
+    }
+
+    this.isResettingAuction = true;
+    this.resetMessage = 'Resetting player...';
+    this.cdr.markForCheck();
+
+    this.auctionPlayerService.resetAuctionPlayers(this.tournamentId, [playerId]).subscribe({
+      next: () => {
+        this.isResettingAuction = false;
+        this.resetMessage = '';
+        this.openSuccessModal('Reset Successful', 'Player auction status has been reset to Available');
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.isResettingAuction = false;
+        this.resetMessage = '';
+        this.openErrorModal('Reset Failed', 'Failed to reset player auction status. ' + (err?.error?.message || ''));
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  resetSelectedPlayersAuctionStatus() {
+    const selectedIds = Array.from(this.selectedPlayersForReset);
+    if (selectedIds.length === 0) {
+      this.openErrorModal('No Selection', 'Please select at least one player to reset');
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to reset auction status for ${selectedIds.length} player(s) to Available?`)) {
+      return;
+    }
+
+    this.isResettingAuction = true;
+    this.resetMessage = `Resetting ${selectedIds.length} player(s)...`;
+    this.cdr.markForCheck();
+
+    this.auctionPlayerService.resetAuctionPlayers(this.tournamentId, selectedIds).subscribe({
+      next: () => {
+        this.isResettingAuction = false;
+        this.resetMessage = '';
+        this.selectedPlayersForReset.clear();
+        this.openSuccessModal('Reset Successful', `${selectedIds.length} player(s) auction status have been reset to Available`);
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.isResettingAuction = false;
+        this.resetMessage = '';
+        this.openErrorModal('Reset Failed', 'Failed to reset player auction status. ' + (err?.error?.message || ''));
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   approveSelectedPlayers() {

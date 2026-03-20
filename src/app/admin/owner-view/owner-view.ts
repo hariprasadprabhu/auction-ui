@@ -39,12 +39,6 @@ export class OwnerView implements OnInit, OnDestroy {
   selectedTeamPortfolio: TeamPurse[] = [];
   portfolioError: string | null = null;
 
-  // Reset functionality
-  selectedPlayersForReset = new Set<number>();
-  showResetModal = false;
-  resetMessage = '';
-  isResettingPlayers = false;
-
   private tournamentId = 0;
   private eventSub: Subscription | null = null;
   private refreshInterval: any = null;
@@ -294,87 +288,6 @@ export class OwnerView implements OnInit, OnDestroy {
   playerStatusLabel(status: string): string {
     if (status === 'AVAILABLE') return 'Available';
     return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
-  }
-
-  // ── Reset Auction Status ────────────────────────────────────────────────
-
-  onPlayerCheckboxChange(playerId: number, checked: boolean) {
-    if (checked) {
-      this.selectedPlayersForReset.add(playerId);
-    } else {
-      this.selectedPlayersForReset.delete(playerId);
-    }
-  }
-
-  isPlayerSelected(playerId: number): boolean {
-    return this.selectedPlayersForReset.has(playerId);
-  }
-
-  resetSinglePlayerAuctionStatus(playerId: number) {
-    if (!confirm('Are you sure you want to reset this player\'s auction status to Available?')) {
-      return;
-    }
-
-    this.isResettingPlayers = true;
-    this.resetMessage = 'Resetting player...';
-
-    this.auctionPlayerService.resetAuctionPlayers(this.tournamentId, [playerId]).subscribe({
-      next: () => {
-        // Refresh player data
-        this.auctionPlayerService.getByTournament(this.tournamentId).subscribe({
-          next: (players) => {
-            this.auctionPlayers = players;
-            this.isResettingPlayers = false;
-            this.resetMessage = '';
-            this.auctionEventService.notifyAuctionUpdate(this.tournamentId);
-            this.cdr.markForCheck();
-          },
-        });
-      },
-      error: (err) => {
-        this.isResettingPlayers = false;
-        this.resetMessage = '';
-        alert('Failed to reset player auction status. ' + (err?.error?.message || ''));
-        this.cdr.markForCheck();
-      },
-    });
-  }
-
-  resetSelectedPlayersAuctionStatus() {
-    const selectedIds = Array.from(this.selectedPlayersForReset);
-    if (selectedIds.length === 0) {
-      alert('Please select at least one player to reset');
-      return;
-    }
-
-    if (!confirm(`Are you sure you want to reset auction status for ${selectedIds.length} player(s) to Available?`)) {
-      return;
-    }
-
-    this.isResettingPlayers = true;
-    this.resetMessage = `Resetting ${selectedIds.length} player(s)...`;
-
-    this.auctionPlayerService.resetAuctionPlayers(this.tournamentId, selectedIds).subscribe({
-      next: () => {
-        // Refresh player data
-        this.auctionPlayerService.getByTournament(this.tournamentId).subscribe({
-          next: (players) => {
-            this.auctionPlayers = players;
-            this.selectedPlayersForReset.clear();
-            this.isResettingPlayers = false;
-            this.resetMessage = '';
-            this.auctionEventService.notifyAuctionUpdate(this.tournamentId);
-            this.cdr.markForCheck();
-          },
-        });
-      },
-      error: (err) => {
-        this.isResettingPlayers = false;
-        this.resetMessage = '';
-        alert('Failed to reset player auction status. ' + (err?.error?.message || ''));
-        this.cdr.markForCheck();
-      },
-    });
   }
 
   private getPortfolioErrorMessage(error: HttpErrorResponse): string {
