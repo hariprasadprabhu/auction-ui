@@ -23,6 +23,7 @@ import { NormalizePhotoUrlCachedPipe } from '../../core/pipes/normalize-photo-ur
 export class Players implements OnInit {
   tournament: Tournament | null = null;
   players: Player[] = [];
+  auctionPlayerMap = new Map<number, any>(); // Map player ID to auction player data
   selectedImage: string | null = null;
   selectedImageName: string = '';
   selectedPlayerId: number | null = null;
@@ -98,7 +99,7 @@ export class Players implements OnInit {
 
   ngOnInit() {
     this.loadingStartTime = Date.now();
-    this.pendingRequests = 2; // tournament + players
+    this.pendingRequests = 3; // tournament + players + auction players
     this.setLoadingTimeout();
     
     this.route.paramMap.subscribe((params) => {
@@ -110,6 +111,23 @@ export class Players implements OnInit {
           this.completeRequest();
         });
         this.loadPlayers();
+        this.loadAuctionPlayers();
+      }
+    });
+  }
+
+  private loadAuctionPlayers() {
+    this.auctionPlayerService.getByTournament(this.tournamentId).subscribe({
+      next: (auctionPlayers) => {
+        this.auctionPlayerMap.clear();
+        auctionPlayers.forEach(ap => {
+          this.auctionPlayerMap.set(ap.id, ap);
+        });
+        this.completeRequest();
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.completeRequest();
       }
     });
   }
@@ -427,6 +445,53 @@ export class Players implements OnInit {
 
   isPlayerSelectedForReset(playerId: number): boolean {
     return this.selectedPlayersForReset.has(playerId);
+  }
+
+  getPlayerAuctionStatus(playerId: number): string {
+    return this.auctionPlayerMap.get(playerId)?.auctionStatus || 'N/A';
+  }
+
+  isResetAllowed(playerId: number, playerStatus: string): boolean {
+    // Reset is only allowed if player is APPROVED (not PENDING/REJECTED) AND has been auctioned (SOLD/UNSOLD)
+    if (playerStatus !== 'APPROVED') {
+      return false; // Can't reset pending or rejected players
+    }
+    
+    const auctionStatus = this.getPlayerAuctionStatus(playerId);
+    return auctionStatus === 'SOLD' || auctionStatus === 'UNSOLD';
+  }
+
+  getDisplayPlayerStatus(playerStatus: string, playerId: number): string {
+    if (playerStatus !== 'APPROVED') {
+      return playerStatus; // Show PENDING or REJECTED as-is
+    }
+    
+    // For APPROVED players, show auction status
+    const auctionStatus = this.getPlayerAuctionStatus(playerId);
+    switch (auctionStatus) {
+      case 'SOLD':
+        return 'Sold';
+      case 'UNSOLD':
+        return 'Unsold';
+      default:
+        return 'Approved'; // Still available for auction
+    }
+  }
+
+  getStatusBadgeClass(playerStatus: string, playerId: number): string {
+    if (playerStatus !== 'APPROVED') {
+      return `status-${playerStatus.toLowerCase()}`;
+    }
+    
+    const auctionStatus = this.getPlayerAuctionStatus(playerId);
+    switch (auctionStatus) {
+      case 'SOLD':
+        return 'status-sold';
+      case 'UNSOLD':
+        return 'status-unsold';
+      default:
+        return 'status-approved';
+    }
   }
 
   resetSinglePlayerAuctionStatus(playerId: number) {

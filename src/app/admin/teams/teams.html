@@ -126,8 +126,8 @@
             </button>
           </td>
           <td>
-            <span class="status-badge" [ngClass]="'status-' + (player.status | lowercase)">
-              {{ player.status | titlecase }}
+            <span class="status-badge" [ngClass]="getStatusBadgeClass(player.status, player.id)">
+              {{ getDisplayPlayerStatus(player.status, player.id) | titlecase }}
             </span>
           </td>
           <td class="delete-cell">
@@ -135,11 +135,13 @@
               [checked]="isPlayerSelectedForReset(player.id)"
               (change)="onPlayerResetCheckboxChange(player.id, $event.target.checked)"
               class="reset-checkbox"
-              title="Select for reset"
+              [disabled]="!isResetAllowed(player.id, player.status)"
+              title="Select for reset (only for Sold/Unsold players)"
             />
             <button class="btn-reset-player" 
               (click)="resetSinglePlayerAuctionStatus(player.id)"
-              title="Reset this player's auction status">
+              [disabled]="!isResetAllowed(player.id, player.status)"
+              title="Reset this player's auction status (only for Sold/Unsold)">
               ↺
             </button>
             <button class="btn-edit" (click)="openEditPlayerModal(player)" title="Edit">✏️</button>

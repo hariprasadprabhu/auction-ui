@@ -409,6 +409,18 @@
     background: #ffebee;
     color: #d32f2f;
   }
+
+  &.status-sold {
+    background: #c8e6c9;
+    color: #1b5e20;
+    font-weight: 700;
+  }
+
+  &.status-unsold {
+    background: #ffe0b2;
+    color: #e65100;
+    font-weight: 700;
+  }
 }
 
 /* Modal */
@@ -1215,6 +1227,11 @@
   cursor: pointer;
   accent-color: #667eea;
   margin-right: 8px;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
 }
 
 .btn-reset-player {
@@ -1230,14 +1247,22 @@
   box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
   margin: 0 4px;
 
-  &:hover {
+  &:hover:not(:disabled) {
     background: #ee5a5a;
     box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
     transform: translateY(-2px);
   }
 
-  &:active {
+  &:active:not(:disabled) {
     transform: translateY(0);
+  }
+
+  &:disabled {
+    background: #ccc;
+    color: #999;
+    cursor: not-allowed;
+    box-shadow: none;
+    opacity: 0.6;
   }
 }
 
