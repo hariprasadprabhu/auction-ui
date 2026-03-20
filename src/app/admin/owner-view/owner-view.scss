@@ -922,6 +922,25 @@
   white-space: nowrap;
 }
 
+.squad-auction-details {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.squad-status-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  background: #e3f2fd;
+  color: #1565c0;
+  white-space: nowrap;
+}
+
 .squad-empty {
   text-align: center;
   padding: 30px;
