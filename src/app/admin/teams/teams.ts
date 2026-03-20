@@ -121,7 +121,9 @@ export class Players implements OnInit {
       next: (auctionPlayers) => {
         this.auctionPlayerMap.clear();
         auctionPlayers.forEach(ap => {
-          this.auctionPlayerMap.set(ap.id, ap);
+          // Map by playerId if available, otherwise by id
+          const key = ap.playerId || ap.id;
+          this.auctionPlayerMap.set(key, ap);
         });
         this.completeRequest();
         this.cdr.markForCheck();
@@ -512,14 +514,24 @@ export class Players implements OnInit {
       return;
     }
 
+    // Get the auction player to get its ID
+    const auctionPlayer = this.auctionPlayerMap.get(playerId);
+    if (!auctionPlayer) {
+      this.openErrorModal('Error', 'Could not find auction data for this player');
+      return;
+    }
+
     this.isResettingAuction = true;
     this.resetMessage = 'Resetting player...';
     this.cdr.markForCheck();
 
-    this.auctionPlayerService.resetAuctionPlayers(this.tournamentId, [playerId]).subscribe({
+    // Pass the auction player ID to the reset endpoint
+    this.auctionPlayerService.resetAuctionPlayers(this.tournamentId, [auctionPlayer.id]).subscribe({
       next: () => {
         this.isResettingAuction = false;
         this.resetMessage = '';
+        // Refresh auction players after reset
+        this.loadAuctionPlayers();
         this.openSuccessModal('Reset Successful', 'Player auction status has been reset to Available');
         this.cdr.markForCheck();
       },
@@ -533,26 +545,42 @@ export class Players implements OnInit {
   }
 
   resetSelectedPlayersAuctionStatus() {
-    const selectedIds = Array.from(this.selectedPlayersForReset);
-    if (selectedIds.length === 0) {
+    const selectedPlayerIds = Array.from(this.selectedPlayersForReset);
+    if (selectedPlayerIds.length === 0) {
       this.openErrorModal('No Selection', 'Please select at least one player to reset');
       return;
     }
 
-    if (!confirm(`Are you sure you want to reset auction status for ${selectedIds.length} player(s) to Available?`)) {
+    if (!confirm(`Are you sure you want to reset auction status for ${selectedPlayerIds.length} player(s) to Available?`)) {
+      return;
+    }
+
+    // Convert player IDs to auction player IDs
+    const auctionPlayerIds: number[] = [];
+    for (const playerId of selectedPlayerIds) {
+      const auctionPlayer = this.auctionPlayerMap.get(playerId);
+      if (auctionPlayer) {
+        auctionPlayerIds.push(auctionPlayer.id);
+      }
+    }
+
+    if (auctionPlayerIds.length === 0) {
+      this.openErrorModal('Error', 'Could not find auction data for selected players');
       return;
     }
 
     this.isResettingAuction = true;
-    this.resetMessage = `Resetting ${selectedIds.length} player(s)...`;
+    this.resetMessage = `Resetting ${auctionPlayerIds.length} player(s)...`;
     this.cdr.markForCheck();
 
-    this.auctionPlayerService.resetAuctionPlayers(this.tournamentId, selectedIds).subscribe({
+    this.auctionPlayerService.resetAuctionPlayers(this.tournamentId, auctionPlayerIds).subscribe({
       next: () => {
         this.isResettingAuction = false;
         this.resetMessage = '';
         this.selectedPlayersForReset.clear();
-        this.openSuccessModal('Reset Successful', `${selectedIds.length} player(s) auction status have been reset to Available`);
+        // Refresh auction players after reset
+        this.loadAuctionPlayers();
+        this.openSuccessModal('Reset Successful', `${auctionPlayerIds.length} player(s) auction status have been reset to Available`);
         this.cdr.markForCheck();
       },
       error: (err) => {
