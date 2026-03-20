@@ -61,13 +61,38 @@
     <section class="tab-panel players-section" *ngIf="mainTab === 'players'">
       <div class="filter-tabs">
         <button class="tab-btn"              [class.active]="playerFilter === 'all'"       (click)="playerFilter = 'all'">All</button>
-        <button class="tab-btn tab-available" [class.active]="playerFilter === 'available'" (click)="playerFilter = 'available'">Available for Auction</button>
+        <button class="tab-btn tab-available" [class.active]="playerFilter === 'available'" (click)="playerFilter === 'available'" (click)="playerFilter = 'available'">Available for Auction</button>
         <button class="tab-btn tab-sold"      [class.active]="playerFilter === 'sold'"      (click)="playerFilter = 'sold'">Sold</button>
         <button class="tab-btn tab-unsold"    [class.active]="playerFilter === 'unsold'"    (click)="playerFilter = 'unsold'">Unsold</button>
       </div>
 
-      <div class="players-grid">
+      <!-- Batch Reset Actions -->
+      <div class="batch-actions" *ngIf="filteredPlayers.length > 0">
+        <div class="batch-controls">
+          <label class="checkbox-label">
+            <input type="checkbox" 
+              [checked]="selectedPlayersForReset.size === filteredPlayers.length && filteredPlayers.length > 0"
+              (change)="$event.target.checked ? filteredPlayers.forEach(p => selectedPlayersForReset.add(p.id)) : selectedPlayersForReset.clear()"
+            />
+            Select All ({{ selectedPlayersForReset.size }})
+          </label>
+          <button class="btn-batch-reset" 
+            *ngIf="selectedPlayersForReset.size > 0"
+            (click)="resetSelectedPlayersAuctionStatus()"
+            [disabled]="isResettingPlayers">
+            🔄 Reset Selected ({{ selectedPlayersForReset.size }})
+          </button>
+        </div>
+      </div>
+
+      <div class="players-grid" *ngIf="!isResettingPlayers">
         <div class="player-card" *ngFor="let player of filteredPlayers" [ngClass]="'card-' + (player.auctionStatus | lowercase)">
+          <div class="player-card-checkbox">
+            <input type="checkbox" 
+              [checked]="isPlayerSelected(player.id)"
+              (change)="onPlayerCheckboxChange(player.id, $event.target.checked)"
+            />
+          </div>
           <img [src]="player.photoUrl | normalizePhotoUrl" [alt]="player.firstName" class="player-photo" />
           <div class="player-card-body">
             <p class="player-name">{{ player.firstName }} {{ player.lastName }}</p>
@@ -82,9 +107,23 @@
               {{ formatAmount(player.soldPrice || player.basePrice) }}
             </span>
           </div>
+          <button class="btn-reset-player" 
+            *ngIf="player.auctionStatus !== 'AVAILABLE'"
+            (click)="resetSinglePlayerAuctionStatus(player.id)"
+            title="Reset auction status to Available">
+            ↺ Reset
+          </button>
         </div>
         <div class="empty-state" *ngIf="filteredPlayers.length === 0">
           No players in this category.
+        </div>
+      </div>
+
+      <!-- Processing Overlay -->
+      <div class="processing-overlay" *ngIf="isResettingPlayers">
+        <div class="processing-content">
+          <div class="spinner"></div>
+          <p class="processing-message">{{ resetMessage }}</p>
         </div>
       </div>
     </section>

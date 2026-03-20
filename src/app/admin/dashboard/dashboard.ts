@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TournamentService } from '../../core/services/tournament.service';
+import { AuctionPlayerService } from '../../core/services/auction-player.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Tournament, TournamentStatus } from '../../models';
 
@@ -26,8 +27,17 @@ export class Dashboard implements OnInit {
   whatsappNumber = '+91 6360634388';
   contactEmail = 'auction.deck@gmail.com';
 
+  // ── Reset Entire Auction Modal ───────────────────────────────────────────
+  showResetAuctionModal = false;
+  resetAuctionConfirmText = '';
+  resetAuctionExpectedText = 'reset ins';
+  isResettingAuction = false;
+  resetAuctionMessage = '';
+  resetAuctionTournamentId: number | null = null;
+
   private router = inject(Router);
   private tournamentService = inject(TournamentService);
+  private auctionPlayerService = inject(AuctionPlayerService);
   private authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
 
@@ -314,6 +324,52 @@ export class Dashboard implements OnInit {
 
   viewOwnerView(tournamentId: number) {
     window.open(`/admin/owner-view/${tournamentId}`, '_blank');
+  }
+
+  // ── Reset Entire Auction ────────────────────────────────────────────────
+  openResetAuctionModal(tournamentId: number) {
+    this.resetAuctionTournamentId = tournamentId;
+    this.resetAuctionConfirmText = '';
+    this.showResetAuctionModal = true;
+    this.cdr.markForCheck();
+  }
+
+  closeResetAuctionModal() {
+    this.showResetAuctionModal = false;
+    this.resetAuctionConfirmText = '';
+    this.resetAuctionTournamentId = null;
+    this.isResettingAuction = false;
+    this.resetAuctionMessage = '';
+    this.cdr.markForCheck();
+  }
+
+  resetEntireAuction() {
+    if (this.resetAuctionConfirmText !== this.resetAuctionExpectedText) {
+      alert(`Please type "${this.resetAuctionExpectedText}" to confirm`);
+      return;
+    }
+
+    if (!this.resetAuctionTournamentId) return;
+
+    this.isResettingAuction = true;
+    this.resetAuctionMessage = 'Resetting entire auction...';
+    this.cdr.markForCheck();
+
+    this.auctionPlayerService.resetEntireAuction(this.resetAuctionTournamentId).subscribe({
+      next: (response) => {
+        this.isResettingAuction = false;
+        this.resetAuctionMessage = '';
+        alert('Auction has been reset successfully!\n\n' + (response?.message || 'All auction data has been reset.'));
+        this.closeResetAuctionModal();
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.isResettingAuction = false;
+        this.resetAuctionMessage = '';
+        alert('Failed to reset auction. ' + (err?.error?.message || 'Please try again.'));
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   logout() {

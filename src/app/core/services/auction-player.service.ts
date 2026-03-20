@@ -85,6 +85,22 @@ export class AuctionPlayerService {
     );
   }
 
+  // Reset Specific Auction Players
+  resetAuctionPlayers(tournamentId: number, playerIds: number[]): Observable<any> {
+    return this.http.post<any>(
+      `${this.apiUrl}/tournaments/${tournamentId}/auction-players/reset`,
+      { playerIds },
+    );
+  }
+
+  // Reset Entire Auction
+  resetEntireAuction(tournamentId: number): Observable<any> {
+    return this.http.post<any>(
+      `${this.apiUrl}/tournaments/${tournamentId}/auction/reset-entire`,
+      {},
+    );
+  }
+
   getPhotoUrl(id: number): string {
     const baseUrl = this.apiUrl.replace(/\/api\/?$/, '');
     return `${baseUrl}/api/auction-players/${id}/photo`;

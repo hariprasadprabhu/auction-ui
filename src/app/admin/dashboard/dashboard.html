@@ -99,6 +99,10 @@
             <span class="icon">✏️</span>
             <span class="tooltip">Edit</span>
           </button>
+          <button class="action-btn action-btn-reset" (click)="openResetAuctionModal(tournament.id)">
+            <span class="icon">↺</span>
+            <span class="tooltip">Reset Auction</span>
+          </button>
           <button class="action-btn" (click)="deleteTournament(tournament.id)">
             <span class="icon">🗑️</span>
             <span class="tooltip">Delete</span>
@@ -377,6 +381,67 @@
 
       <div class="limit-error-footer">
         <button type="button" class="btn btn-secondary" (click)="closeLimitErrorModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reset Entire Auction Modal -->
+  <div class="modal-overlay" *ngIf="showResetAuctionModal" (click)="closeResetAuctionModal()">
+    <div class="modal-content reset-auction-modal" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="closeResetAuctionModal()">✕</button>
+      
+      <div class="reset-header">
+        <div class="reset-icon">⚠️</div>
+        <h2>Reset Entire Auction</h2>
+      </div>
+
+      <div class="reset-body">
+        <p class="reset-warning">
+          <strong>Warning:</strong> This will reset the entire auction. All players will be set to AVAILABLE, 
+          and all teams' purses will be recalculated based on current tournament settings. This action <em>cannot be undone</em>.
+        </p>
+
+        <div class="reset-confirmation">
+          <p class="confirmation-text">
+            To confirm, type "<strong>{{ resetAuctionExpectedText }}</strong>" below:
+          </p>
+          <input type="text" 
+            class="confirmation-input"
+            [(ngModel)]="resetAuctionConfirmText"
+            placeholder="Type confirmation text here"
+            [disabled]="isResettingAuction"
+          />
+          <p class="confirmation-hint" 
+            [class.confirmed]="resetAuctionConfirmText === resetAuctionExpectedText">
+            {{ resetAuctionConfirmText === resetAuctionExpectedText ? '✓ Ready to reset' : '⏳ Enter confirmation text' }}
+          </p>
+        </div>
+
+        <div class="reset-info">
+          <h4>What will happen:</h4>
+          <ul>
+            <li>All sold players will be refunded to teams</li>
+            <li>All players will be set to AVAILABLE status</li>
+            <li>Current tournament settings (Base Price, Purse, Players Per Team) will be applied</li>
+            <li>All team purses will be recalculated</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="reset-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeResetAuctionModal()" [disabled]="isResettingAuction">
+          Cancel
+        </button>
+        <button type="button" 
+          class="btn btn-danger" 
+          (click)="resetEntireAuction()"
+          [disabled]="isResettingAuction || resetAuctionConfirmText !== resetAuctionExpectedText">
+          {{ isResettingAuction ? '🔄 Resetting...' : '↺ Reset Entire Auction' }}
+        </button>
+      </div>
+
+      <div class="reset-message" *ngIf="isResettingAuction">
+        <p>{{ resetAuctionMessage }}</p>
       </div>
     </div>
   </div>
