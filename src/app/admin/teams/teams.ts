@@ -469,11 +469,7 @@ export class Players implements OnInit {
   }
 
   isResetAllowed(playerId: number, playerStatus: string): boolean {
-    // Reset is only allowed if player is APPROVED (not PENDING/REJECTED) AND has been auctioned (SOLD/UNSOLD)
-    if (playerStatus !== 'APPROVED') {
-      return false; // Can't reset pending or rejected players
-    }
-    
+    // Reset is allowed if the player auction status is SOLD or UNSOLD
     const auctionStatus = this.getPlayerAuctionStatus(playerId);
     return auctionStatus === 'SOLD' || auctionStatus === 'UNSOLD';
   }
