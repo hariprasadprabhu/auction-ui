@@ -229,10 +229,7 @@
             <span class="squad-name">{{ p.firstName }} {{ p.lastName }}</span>
             <span class="squad-role">{{ p.role }} · #{{ p.playerNumber }}</span>
           </div>
-          <div class="squad-auction-details">
-            <span class="squad-status-badge">SOLD</span>
-            <span class="squad-price">{{ formatAmount(p.soldPrice) }}</span>
-          </div>
+          <span class="squad-price">{{ formatAmount(p.soldPrice) }}</span>
         </div>
       </div>
 
