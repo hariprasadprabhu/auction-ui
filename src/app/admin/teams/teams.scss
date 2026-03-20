@@ -423,6 +423,59 @@
   }
 }
 
+/* Auction Status Info */
+.auction-status-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 0.75rem;
+}
+
+.auction-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  font-size: 0.65rem;
+
+  &.auction-sold {
+    background: #e3f2fd;
+    color: #1565c0;
+  }
+
+  &.auction-unsold {
+    background: #ffebee;
+    color: #c62828;
+  }
+}
+
+.auction-team {
+  font-weight: 600;
+  color: #1565c0;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.75rem;
+}
+
+.auction-price {
+  font-weight: 700;
+  color: #1565c0;
+  font-family: 'Courier New', monospace;
+  font-size: 0.75rem;
+}
+
+.base-price {
+  font-weight: 600;
+  color: #666;
+  font-family: 'Courier New', monospace;
+  font-size: 0.75rem;
+}
+
 /* Modal */
 .modal-overlay {
   position: fixed;

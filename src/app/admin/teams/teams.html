@@ -129,6 +129,18 @@
             <span class="status-badge" [ngClass]="getStatusBadgeClass(player.status, player.id)">
               {{ getDisplayPlayerStatus(player.status, player.id) | titlecase }}
             </span>
+            <div class="auction-status-info" *ngIf="getAuctionStatus(player.id)">
+              <span class="auction-badge" [ngClass]="'auction-' + getAuctionStatus(player.id)?.toLowerCase()">
+                {{ getAuctionStatus(player.id) }}
+              </span>
+              <ng-container *ngIf="getAuctionStatus(player.id) === 'SOLD'">
+                <span class="auction-team">{{ getAuctionTeamName(player.id) }}</span>
+                <span class="auction-price">₹{{ getAuctionPrice(player.id) }}L</span>
+              </ng-container>
+              <ng-container *ngIf="getAuctionStatus(player.id) === 'UNSOLD'">
+                <span class="base-price">Base: ₹{{ getBasePrice(player.id) }}L</span>
+              </ng-container>
+            </div>
           </td>
           <td class="delete-cell">
             <input type="checkbox" 

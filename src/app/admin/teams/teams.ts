@@ -451,6 +451,23 @@ export class Players implements OnInit {
     return this.auctionPlayerMap.get(playerId)?.auctionStatus || 'N/A';
   }
 
+  getAuctionStatus(playerId: number): string | null {
+    const status = this.getPlayerAuctionStatus(playerId);
+    return status === 'SOLD' || status === 'UNSOLD' ? status : null;
+  }
+
+  getAuctionTeamName(playerId: number): string {
+    return this.auctionPlayerMap.get(playerId)?.soldToTeamName || '';
+  }
+
+  getAuctionPrice(playerId: number): number {
+    return this.auctionPlayerMap.get(playerId)?.soldPrice || 0;
+  }
+
+  getBasePrice(playerId: number): number {
+    return this.auctionPlayerMap.get(playerId)?.basePrice || 0;
+  }
+
   isResetAllowed(playerId: number, playerStatus: string): boolean {
     // Reset is only allowed if player is APPROVED (not PENDING/REJECTED) AND has been auctioned (SOLD/UNSOLD)
     if (playerStatus !== 'APPROVED') {
