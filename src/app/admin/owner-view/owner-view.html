@@ -87,18 +87,29 @@
 
       <div class="players-grid" *ngIf="!isResettingPlayers">
         <div class="player-card" *ngFor="let player of filteredPlayers" [ngClass]="'card-' + (player.auctionStatus | lowercase)">
-          <div class="player-card-checkbox">
+          <!-- Checkbox Header -->
+          <div class="player-card-header">
             <input type="checkbox" 
               [checked]="isPlayerSelected(player.id)"
               (change)="onPlayerCheckboxChange(player.id, $event.target.checked)"
+              class="player-checkbox"
             />
+            <button class="btn-reset-player" 
+              *ngIf="player.auctionStatus !== 'AVAILABLE'"
+              (click)="resetSinglePlayerAuctionStatus(player.id)"
+              title="Reset auction status to Available">
+              ↺ Reset
+            </button>
           </div>
+          <!-- Photo -->
           <img [src]="player.photoUrl | normalizePhotoUrl" [alt]="player.firstName" class="player-photo" />
+          <!-- Info -->
           <div class="player-card-body">
             <p class="player-name">{{ player.firstName }} {{ player.lastName }}</p>
             <p class="player-meta">{{ player.role }} · {{ player.age || 'N/A' }} yrs · India</p>
             <p class="player-base">Base: {{ formatAmount(player.basePrice) }}</p>
           </div>
+          <!-- Footer -->
           <div class="player-card-footer">
             <span class="status-badge badge-{{ player.auctionStatus | lowercase }}">
               {{ playerStatusLabel(player.auctionStatus) }}
@@ -107,12 +118,6 @@
               {{ formatAmount(player.soldPrice || player.basePrice) }}
             </span>
           </div>
-          <button class="btn-reset-player" 
-            *ngIf="player.auctionStatus !== 'AVAILABLE'"
-            (click)="resetSinglePlayerAuctionStatus(player.id)"
-            title="Reset auction status to Available">
-            ↺ Reset
-          </button>
         </div>
         <div class="empty-state" *ngIf="filteredPlayers.length === 0">
           No players in this category.
