@@ -366,6 +366,7 @@
   justify-content: space-between;
   background: #fafafa;
   border-top: 1px solid #f0f0f0;
+  gap: 8px;
 }
 
 .status-badge {
@@ -375,6 +376,7 @@
   border-radius: 10px;
   text-transform: uppercase;
   letter-spacing: 0.4px;
+  flex-shrink: 0;
 
   &.badge-sold      { background: #e3f2fd; color: #1565c0; }
   &.badge-unsold    { background: #ffebee; color: #c62828; }
@@ -382,10 +384,36 @@
   &.badge-upcoming  { background: #e8f5e9; color: #2e7d32; }
 }
 
+.auction-details {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  justify-content: flex-end;
+  font-size: 0.75rem;
+}
+
+.sold-team {
+  font-weight: 600;
+  color: #1565c0;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.75rem;
+}
+
 .sold-price {
   font-size: 0.8rem;
   font-weight: 700;
   color: #1565c0;
+  font-family: 'Courier New', monospace;
+}
+
+.unsold-price {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #666;
   font-family: 'Courier New', monospace;
 }
 
