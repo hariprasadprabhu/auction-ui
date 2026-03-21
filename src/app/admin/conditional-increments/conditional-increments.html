@@ -9,7 +9,15 @@
     </div>
   </div>
 
-  <div class="increments-content">
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <div class="loader-spinner">
+      <div class="spinner"></div>
+      <p class="loader-text">Loading rules...</p>
+    </div>
+  </div>
+
+  <div class="increments-content" *ngIf="!isLoading">
     <button class="btn btn-back-light" (click)="goBack()">← Back To Dashboard</button>
     <div class="action-buttons">
       <button class="btn btn-primary" (click)="openAddModal()">+ Add Rule</button>

@@ -19,6 +19,7 @@ const LONG_MAX = 9223372036854775807;
 export class ConditionalIncrements implements OnInit {
   tournament: Tournament | undefined;
   rules: IncrementRule[] = [];
+  isLoading = true;
 
   // ── Add Rule Modal ────────────────────────────────────────────────────────
   showAddModal = false;
@@ -68,11 +69,19 @@ export class ConditionalIncrements implements OnInit {
   }
 
   private loadRules() {
+    this.isLoading = true;
+    this.cdr.markForCheck();
     this.incrementRuleService.getByTournament(this.tournamentId).subscribe({
       next: (data) => {
+        this.isLoading = false;
         this.rules = data.sort((a, b) => a.fromAmount - b.fromAmount);
+        this.cdr.markForCheck();
       },
-      error: () => alert('Failed to load increment rules.'),
+      error: () => {
+        this.isLoading = false;
+        alert('Failed to load increment rules.');
+        this.cdr.markForCheck();
+      },
     });
   }
 
