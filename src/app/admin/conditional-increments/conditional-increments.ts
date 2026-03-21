@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -20,12 +20,33 @@ export class ConditionalIncrements implements OnInit {
   tournament: Tournament | undefined;
   rules: IncrementRule[] = [];
 
+  // ── Add Rule Modal ────────────────────────────────────────────────────────
   showAddModal = false;
+  isAddingRule = false;
   newRule = { fromAmount: 0, toAmount: 0, incrementBy: 0 };
 
+  // ── Edit Rule Modal ───────────────────────────────────────────────────────
   showEditModal = false;
+  isEditingRule = false;
   editingRule: IncrementRule | null = null;
   editRule = { fromAmount: 0, toAmount: 0, incrementBy: 0 };
+
+  // ── Delete Rule ───────────────────────────────────────────────────────────
+  isDeletingRule = false;
+
+  // ── Custom Modals ────────────────────────────────────────────────────────
+  showSuccessModal = false;
+  successTitle = '';
+  successMessage = '';
+
+  showErrorModal = false;
+  errorTitle = '';
+  errorMessage = '';
+
+  showConfirmModal = false;
+  confirmTitle = '';
+  confirmMessage = '';
+  confirmCallback: (() => void) | null = null;
 
   private tournamentId!: number;
 
@@ -34,6 +55,7 @@ export class ConditionalIncrements implements OnInit {
     private router: Router,
     private incrementRuleService: IncrementRuleService,
     private tournamentService: TournamentService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
@@ -72,6 +94,8 @@ export class ConditionalIncrements implements OnInit {
   }
 
   saveNewRule() {
+    this.isAddingRule = true;
+    this.cdr.markForCheck();
     this.incrementRuleService
       .create(this.tournamentId, {
         fromAmount: this.newRule.fromAmount,
@@ -80,11 +104,19 @@ export class ConditionalIncrements implements OnInit {
       })
       .subscribe({
         next: (rule) => {
+          this.isAddingRule = false;
           this.rules.push(rule);
           this.rules.sort((a, b) => a.fromAmount - b.fromAmount);
           this.closeAddModal();
+          this.openSuccessModal('Rule Added', 'Increment rule has been created successfully.');
+          this.cdr.markForCheck();
         },
-        error: () => alert('Failed to create rule.'),
+        error: (err: any) => {
+          this.isAddingRule = false;
+          const errorMessage = err?.error?.message || 'Failed to create rule. Please try again.';
+          this.openErrorModal('Failed to Add Rule', errorMessage);
+          this.cdr.markForCheck();
+        },
       });
   }
 
@@ -123,13 +155,28 @@ export class ConditionalIncrements implements OnInit {
   }
 
   deleteRule(rule: IncrementRule) {
-    if (!confirm('Delete this increment rule?')) return;
-    this.incrementRuleService.delete(rule.id).subscribe({
-      next: () => {
-        this.rules = this.rules.filter(r => r.id !== rule.id);
-      },
-      error: () => alert('Failed to delete rule.'),
-    });
+    this.openConfirmModal(
+      'Delete Rule?',
+      'Are you sure you want to delete this increment rule? This action cannot be undone.',
+      () => {
+        this.isDeletingRule = true;
+        this.cdr.markForCheck();
+        this.incrementRuleService.delete(rule.id).subscribe({
+          next: () => {
+            this.isDeletingRule = false;
+            this.rules = this.rules.filter(r => r.id !== rule.id);
+            this.openSuccessModal('Rule Deleted', 'Increment rule has been deleted successfully.');
+            this.cdr.markForCheck();
+          },
+          error: (err: any) => {
+            this.isDeletingRule = false;
+            const errorMessage = err?.error?.message || 'Failed to delete rule. Please try again.';
+            this.openErrorModal('Failed to Delete Rule', errorMessage);
+            this.cdr.markForCheck();
+          },
+        });
+      }
+    );
   }
 
   formatTo(toAmount: number): string {
@@ -138,5 +185,46 @@ export class ConditionalIncrements implements OnInit {
 
   formatAmount(amount: number): string {
     return '₹' + amount.toLocaleString('en-IN');
+  }
+
+  // ── Custom Modal Methods ──────────────────────────────────────────────────
+
+  openSuccessModal(title: string, message: string) {
+    this.successTitle = title;
+    this.successMessage = message;
+    this.showSuccessModal = true;
+  }
+
+  closeSuccessModal() {
+    this.showSuccessModal = false;
+  }
+
+  openErrorModal(title: string, message: string) {
+    this.errorTitle = title;
+    this.errorMessage = message;
+    this.showErrorModal = true;
+  }
+
+  closeErrorModal() {
+    this.showErrorModal = false;
+  }
+
+  openConfirmModal(title: string, message: string, onConfirm: () => void) {
+    this.confirmTitle = title;
+    this.confirmMessage = message;
+    this.confirmCallback = onConfirm;
+    this.showConfirmModal = true;
+  }
+
+  closeConfirmModal() {
+    this.showConfirmModal = false;
+    this.confirmCallback = null;
+  }
+
+  confirmAction() {
+    if (this.confirmCallback) {
+      this.confirmCallback();
+    }
+    this.closeConfirmModal();
   }
 }

@@ -336,3 +336,78 @@
   justify-content: flex-end;
   margin-top: 8px;
 }
+
+/* Modal Variations */
+.modal-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+
+  h2 {
+    margin: 0;
+    flex: 1;
+  }
+}
+
+.modal-body {
+  margin: 20px 0;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.success-header {
+  align-items: center;
+
+  .success-icon {
+    font-size: 1.8rem;
+    color: #4caf50;
+  }
+}
+
+.error-header {
+  align-items: center;
+
+  .error-icon {
+    font-size: 1.8rem;
+    color: #f44336;
+  }
+}
+
+.confirm-header {
+  justify-content: space-between;
+  align-items: center;
+
+  .modal-close {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 0;
+    background: none;
+  }
+}
+
+.success-modal,
+.error-modal,
+.confirm-modal {
+  max-width: 450px;
+}
+
+.success-message,
+.error-message,
+.confirm-message {
+  margin: 0;
+  color: #666;
+  line-height: 1.5;
+}
+
+.confirm-footer {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
