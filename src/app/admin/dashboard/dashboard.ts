@@ -201,7 +201,7 @@ export class Dashboard implements OnInit {
     const tournamentName = tournament?.name || 'Tournament';
     this.openConfirmModal(
       'Delete Tournament',
-      `Are you sure you want to delete "${tournamentName}"? This action cannot be undone.`,
+      `Are you sure you want to delete "${tournamentName}"? All tournament data will be deleted permanently.`,
       () => {
         this.tournamentService.delete(id).subscribe({
           next: () => {
