@@ -34,6 +34,7 @@ export class Dashboard implements OnInit {
   isResettingAuction = false;
   resetAuctionMessage = '';
   resetAuctionTournamentId: number | null = null;
+  isDeletingWithReset = false;  // Track if we're in delete+reset mode
 
   // ── Custom Confirmation Modal ────────────────────────────────────────────
   showConfirmModal = false;
@@ -203,17 +204,29 @@ export class Dashboard implements OnInit {
       'Delete Tournament',
       `Are you sure you want to delete "${tournamentName}"? This action cannot be undone.`,
       () => {
-        this.tournamentService.delete(id).subscribe({
-          next: () => {
-            this.tournaments = this.tournaments.filter((t) => t.id !== id);
-            this.cdr.markForCheck();
-          },
-          error: () => {
-            this.cdr.markForCheck();
-          }
-        });
+        this.proceedDeleteTournament(id);
       }
     );
+  }
+
+  private proceedDeleteTournament(id: number) {
+    this.tournamentService.delete(id).subscribe({
+      next: () => {
+        this.tournaments = this.tournaments.filter((t) => t.id !== id);
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  deleteWithResetOption(id: number) {
+    this.resetAuctionTournamentId = id;
+    this.resetAuctionConfirmText = '';
+    this.isDeletingWithReset = true;
+    this.showResetAuctionModal = true;
+    this.cdr.markForCheck();
   }
 
   // ── Edit Tournament modal ─────────────────────────────────────────────────
@@ -365,6 +378,7 @@ export class Dashboard implements OnInit {
     this.resetAuctionTournamentId = null;
     this.isResettingAuction = false;
     this.resetAuctionMessage = '';
+    this.isDeletingWithReset = false;  // Reset the delete mode flag
     this.cdr.markForCheck();
   }
 
@@ -384,8 +398,18 @@ export class Dashboard implements OnInit {
       next: (response) => {
         this.isResettingAuction = false;
         this.resetAuctionMessage = '';
-        alert('Auction has been reset successfully!\n\n' + (response?.message || 'All auction data has been reset.'));
-        this.closeResetAuctionModal();
+        
+        if (this.isDeletingWithReset) {
+          // If in delete mode, proceed with deletion
+          const tournamentId = this.resetAuctionTournamentId;
+          this.closeResetAuctionModal();
+          alert('Auction has been reset successfully!');
+          this.proceedDeleteTournament(tournamentId!);
+        } else {
+          // Normal reset auction flow
+          alert('Auction has been reset successfully!\n\n' + (response?.message || 'All auction data has been reset.'));
+          this.closeResetAuctionModal();
+        }
         this.cdr.markForCheck();
       },
       error: (err) => {
