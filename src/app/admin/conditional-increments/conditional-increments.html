@@ -60,6 +60,7 @@
           <div class="form-group">
             <label for="fromAmount">From Amount (₹) *</label>
             <input type="number" id="fromAmount" [(ngModel)]="newRule.fromAmount" name="fromAmount" min="0" placeholder="e.g. 1000" required />
+            <span class="form-hint">Ranges cannot overlap with existing rules</span>
           </div>
           <div class="form-group">
             <label for="toAmount">To Amount (₹) <span class="hint">(0 = unlimited)</span></label>
@@ -88,6 +89,7 @@
           <div class="form-group">
             <label for="editFromAmount">From Amount (₹) *</label>
             <input type="number" id="editFromAmount" [(ngModel)]="editRule.fromAmount" name="editFromAmount" min="0" required />
+            <span class="form-hint">Ranges cannot overlap with existing rules</span>
           </div>
           <div class="form-group">
             <label for="editToAmount">To Amount (₹) <span class="hint">(0 = unlimited)</span></label>

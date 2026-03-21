@@ -228,26 +228,21 @@ export class Auction implements OnInit {
   }
 
   private getIncrementForAmount(amount: number): number {
-    const basePrice = this.currentPlayer?.basePrice ?? 0;
     const initialIncrement = this.tournament?.initialIncrementAmount ?? 5;
 
-    // At base price (no raise yet), always use the initial increment
-    if (amount <= basePrice) {
-      return initialIncrement;
+    // If there are increment rules, always use them in preference to default increment
+    if (this.incrementRules.length > 0) {
+      // Find the best-matching rule: highest fromAmount that is <= amount
+      const matching = this.incrementRules.filter(
+        r => amount >= r.fromAmount && (!r.toAmount || r.toAmount === 9223372036854775807 || amount < r.toAmount)
+      );
+      if (matching.length > 0) {
+        // Pick the most specific rule (highest fromAmount)
+        return matching[matching.length - 1].incrementBy;
+      }
     }
 
-    if (this.incrementRules.length === 0) {
-      return initialIncrement;
-    }
-    // Find the best-matching rule: highest fromAmount that is <= amount
-    const matching = this.incrementRules.filter(
-      r => amount >= r.fromAmount && (!r.toAmount || r.toAmount > Number.MAX_SAFE_INTEGER || amount < r.toAmount)
-    );
-    if (matching.length > 0) {
-      // Pick the most specific rule (highest fromAmount)
-      return matching[matching.length - 1].incrementBy;
-    }
-    // No rule covers this amount — fall back to initial increment
+    // No matching rule found or no rules exist — use initial increment
     return initialIncrement;
   }
 

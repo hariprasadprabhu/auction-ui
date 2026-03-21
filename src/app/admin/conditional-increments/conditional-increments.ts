@@ -94,6 +94,13 @@ export class ConditionalIncrements implements OnInit {
   }
 
   saveNewRule() {
+    // Validate that the new rule doesn't overlap with existing rules
+    const overlapError = this.checkRuleOverlap(this.newRule.fromAmount, this.newRule.toAmount);
+    if (overlapError) {
+      this.openErrorModal('Invalid Range', overlapError);
+      return;
+    }
+
     this.isAddingRule = true;
     this.cdr.markForCheck();
     this.incrementRuleService
@@ -137,6 +144,20 @@ export class ConditionalIncrements implements OnInit {
 
   saveEditRule() {
     if (!this.editingRule) return;
+
+    // Validate that the updated rule doesn't overlap with existing rules (excluding the current rule)
+    const overlapError = this.checkRuleOverlap(
+      this.editRule.fromAmount, 
+      this.editRule.toAmount, 
+      this.editingRule.id
+    );
+    if (overlapError) {
+      this.openErrorModal('Invalid Range', overlapError);
+      return;
+    }
+
+    this.isEditingRule = true;
+    this.cdr.markForCheck();
     this.incrementRuleService
       .update(this.editingRule.id, {
         fromAmount: this.editRule.fromAmount,
@@ -145,12 +166,20 @@ export class ConditionalIncrements implements OnInit {
       })
       .subscribe({
         next: (updated) => {
+          this.isEditingRule = false;
           const index = this.rules.findIndex(r => r.id === this.editingRule!.id);
           if (index !== -1) this.rules[index] = updated;
           this.rules.sort((a, b) => a.fromAmount - b.fromAmount);
           this.closeEditModal();
+          this.openSuccessModal('Rule Updated', 'Increment rule has been updated successfully.');
+          this.cdr.markForCheck();
         },
-        error: () => alert('Failed to update rule.'),
+        error: (err: any) => {
+          this.isEditingRule = false;
+          const errorMessage = err?.error?.message || 'Failed to update rule. Please try again.';
+          this.openErrorModal('Failed to Update Rule', errorMessage);
+          this.cdr.markForCheck();
+        },
       });
   }
 
@@ -207,6 +236,63 @@ export class ConditionalIncrements implements OnInit {
 
   closeErrorModal() {
     this.showErrorModal = false;
+  }
+
+  // ── Validation Methods ────────────────────────────────────────────────────
+
+  /**
+   * Check if a new range overlaps with any existing rules
+   * @param fromAmount The start of the range
+   * @param toAmount The end of the range (0 means unlimited/LONG_MAX)
+   * @param excludeRuleId Optional: if provided, excludes this rule ID from the check (for edit mode)
+   * @returns Error message if overlap found, null if valid
+   */
+  private checkRuleOverlap(fromAmount: number, toAmount: number, excludeRuleId?: number): string | null {
+    // Normalize the toAmount (0 means unlimited/LONG_MAX)
+    const normalizedTo = toAmount || LONG_MAX;
+
+    for (const existingRule of this.rules) {
+      // Skip the rule being edited
+      if (excludeRuleId && existingRule.id === excludeRuleId) {
+        continue;
+      }
+
+      const existingTo = existingRule.toAmount >= LONG_MAX ? LONG_MAX : existingRule.toAmount;
+
+      // Check for overlaps:
+      // Case 1: New range starts inside existing range
+      if (fromAmount >= existingRule.fromAmount && fromAmount < existingTo) {
+        return `Range overlaps with existing rule: ₹${this.formatAmount(
+          existingRule.fromAmount
+        )} - ₹${this.formatTo(existingRule.toAmount)}`;
+      }
+
+      // Case 2: New range ends inside existing range
+      if (normalizedTo > existingRule.fromAmount && normalizedTo <= existingTo) {
+        return `Range overlaps with existing rule: ₹${this.formatAmount(
+          existingRule.fromAmount
+        )} - ₹${this.formatTo(existingRule.toAmount)}`;
+      }
+
+      // Case 3: New range completely encompasses existing range
+      if (fromAmount <= existingRule.fromAmount && normalizedTo >= existingTo) {
+        return `Range overlaps with existing rule: ₹${this.formatAmount(
+          existingRule.fromAmount
+        )} - ₹${this.formatTo(existingRule.toAmount)}`;
+      }
+
+      // Case 4: Existing range completely encompasses new range
+      if (
+        existingRule.fromAmount <= fromAmount &&
+        existingTo >= normalizedTo
+      ) {
+        return `Range overlaps with existing rule: ₹${this.formatAmount(
+          existingRule.fromAmount
+        )} - ₹${this.formatTo(existingRule.toAmount)}`;
+      }
+    }
+
+    return null; // No overlap found
   }
 
   openConfirmModal(title: string, message: string, onConfirm: () => void) {
