@@ -392,23 +392,19 @@
       
       <div class="reset-header">
         <div class="reset-icon">⚠️</div>
-        <h2 *ngIf="!isDeletingWithReset">Reset Entire Auction</h2>
-        <h2 *ngIf="isDeletingWithReset">Delete Tournament</h2>
+        <h2>Delete Tournament</h2>
       </div>
 
       <div class="reset-body">
-        <p class="reset-warning" *ngIf="!isDeletingWithReset">
-          <strong>Warning:</strong> This will reset the entire auction. All players will be set to AVAILABLE, 
-          and all teams' purses will be recalculated based on current tournament settings. This action <em>cannot be undone</em>.
-        </p>
-        <p class="reset-warning" *ngIf="isDeletingWithReset">
-          <strong>Before deleting this tournament:</strong> Would you like to reset the auction data? 
-          This will clear all auction records. You can also choose to delete without resetting.
+        <p class="reset-warning">
+          <strong>Warning:</strong> Before deleting this tournament, the auction data will be reset. 
+          All players will be set to AVAILABLE, and all teams' purses will be recalculated. 
+          This action <em>cannot be undone</em>.
         </p>
 
-        <div class="reset-confirmation" *ngIf="!isDeletingWithReset">
+        <div class="reset-confirmation">
           <p class="confirmation-text">
-            To confirm, type "<strong>{{ resetAuctionExpectedText }}</strong>" below:
+            To confirm deletion, type "<strong>{{ resetAuctionExpectedText }}</strong>" below:
           </p>
           <input type="text" 
             class="confirmation-input"
@@ -418,57 +414,29 @@
           />
           <p class="confirmation-hint" 
             [class.confirmed]="resetAuctionConfirmText === resetAuctionExpectedText">
-            {{ resetAuctionConfirmText === resetAuctionExpectedText ? '✓ Ready to reset' : '⏳ Enter confirmation text' }}
-          </p>
-        </div>
-
-        <div class="reset-confirmation" *ngIf="isDeletingWithReset">
-          <p class="confirmation-text">
-            To reset auction before deletion, type "<strong>{{ resetAuctionExpectedText }}</strong>" below:
-          </p>
-          <input type="text" 
-            class="confirmation-input"
-            [(ngModel)]="resetAuctionConfirmText"
-            placeholder="Type confirmation text here"
-            [disabled]="isResettingAuction"
-          />
-          <p class="confirmation-hint" 
-            [class.confirmed]="resetAuctionConfirmText === resetAuctionExpectedText">
-            {{ resetAuctionConfirmText === resetAuctionExpectedText ? '✓ Ready to reset' : '⏳ Optional: leave empty to skip' }}
+            {{ resetAuctionConfirmText === resetAuctionExpectedText ? '✓ Ready to delete' : '⏳ Enter confirmation text' }}
           </p>
         </div>
 
         <div class="reset-info">
           <h4>What will happen:</h4>
-          <ul *ngIf="!isDeletingWithReset">
-            <li>All sold players will be refunded to teams</li>
-            <li>All players will be set to AVAILABLE status</li>
-            <li>Current tournament settings (Base Price, Purse, Players Per Team) will be applied</li>
+          <ul>
+            <li>Auction data will be reset (all players set to AVAILABLE)</li>
             <li>All team purses will be recalculated</li>
-          </ul>
-          <ul *ngIf="isDeletingWithReset">
             <li>Tournament and all associated data will be permanently deleted</li>
-            <li *ngIf="resetAuctionConfirmText === resetAuctionExpectedText">Auction data will be reset before deletion</li>
           </ul>
         </div>
       </div>
 
       <div class="reset-footer">
         <button type="button" class="btn btn-secondary" (click)="closeResetAuctionModal()" [disabled]="isResettingAuction">
-          {{ isDeletingWithReset ? 'Cancel' : 'Cancel' }}
-        </button>
-        <button type="button" 
-          class="btn btn-warning"
-          *ngIf="isDeletingWithReset"
-          (click)="proceedDeleteTournament(resetAuctionTournamentId!)"
-          [disabled]="isResettingAuction">
-          🗑️ Delete Without Reset
+          Cancel
         </button>
         <button type="button" 
           class="btn btn-danger" 
           (click)="resetEntireAuction()"
-          [disabled]="isResettingAuction || (resetAuctionConfirmText !== resetAuctionExpectedText && !isDeletingWithReset)">
-          {{ isResettingAuction ? '🔄 Processing...' : (isDeletingWithReset ? '↺ Reset & Delete' : '↺ Reset Entire Auction') }}
+          [disabled]="isResettingAuction || resetAuctionConfirmText !== resetAuctionExpectedText">
+          {{ isResettingAuction ? '🔄 Processing...' : '🗑️ Reset & Delete' }}
         </button>
       </div>
 

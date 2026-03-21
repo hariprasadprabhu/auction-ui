@@ -30,7 +30,7 @@ export class Dashboard implements OnInit {
   // ── Reset Entire Auction Modal ───────────────────────────────────────────
   showResetAuctionModal = false;
   resetAuctionConfirmText = '';
-  resetAuctionExpectedText = 'reset ins';
+  resetAuctionExpectedText = 'delete';
   isResettingAuction = false;
   resetAuctionMessage = '';
   resetAuctionTournamentId: number | null = null;
@@ -391,7 +391,7 @@ export class Dashboard implements OnInit {
     if (!this.resetAuctionTournamentId) return;
 
     this.isResettingAuction = true;
-    this.resetAuctionMessage = 'Resetting entire auction...';
+    this.resetAuctionMessage = 'Resetting auction and deleting tournament...';
     this.cdr.markForCheck();
 
     this.auctionPlayerService.resetEntireAuction(this.resetAuctionTournamentId).subscribe({
@@ -399,17 +399,11 @@ export class Dashboard implements OnInit {
         this.isResettingAuction = false;
         this.resetAuctionMessage = '';
         
-        if (this.isDeletingWithReset) {
-          // If in delete mode, proceed with deletion
-          const tournamentId = this.resetAuctionTournamentId;
-          this.closeResetAuctionModal();
-          alert('Auction has been reset successfully!');
-          this.proceedDeleteTournament(tournamentId!);
-        } else {
-          // Normal reset auction flow
-          alert('Auction has been reset successfully!\n\n' + (response?.message || 'All auction data has been reset.'));
-          this.closeResetAuctionModal();
-        }
+        // Always proceed with deletion
+        const tournamentId = this.resetAuctionTournamentId;
+        this.closeResetAuctionModal();
+        alert('Auction reset and tournament deleted successfully!');
+        this.proceedDeleteTournament(tournamentId!);
         this.cdr.markForCheck();
       },
       error: (err) => {
