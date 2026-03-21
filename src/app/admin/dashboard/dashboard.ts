@@ -209,7 +209,7 @@ export class Dashboard implements OnInit {
     );
   }
 
-  private proceedDeleteTournament(id: number) {
+  proceedDeleteTournament(id: number) {
     this.tournamentService.delete(id).subscribe({
       next: () => {
         this.tournaments = this.tournaments.filter((t) => t.id !== id);
