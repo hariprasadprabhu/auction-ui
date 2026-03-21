@@ -1336,21 +1336,18 @@
   }
 }
 
-// ── Delete Success Modal ─────────────────────────────────────────────────
-
 .delete-success-modal {
   max-width: 400px;
   text-align: center;
-  padding: 40px 30px !important;
-  background: white !important;
-  border-radius: 12px !important;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+  padding: 40px 30px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 
   .success-icon {
     font-size: 4rem;
     color: #4caf50;
     margin-bottom: 20px;
-    line-height: 1;
     font-weight: bold;
   }
 
