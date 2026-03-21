@@ -446,6 +446,67 @@
     </div>
   </div>
 
+  <!-- Delete Tournament Modal -->
+  <div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
+    <div class="modal-content reset-auction-modal" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="closeDeleteModal()">✕</button>
+      
+      <div class="reset-header">
+        <div class="reset-icon">⚠️</div>
+        <h2>Delete Tournament</h2>
+      </div>
+
+      <div class="reset-body">
+        <p class="reset-warning">
+          <strong>Attention:</strong> You are about to delete "{{ deleteTournamentName }}". 
+          All tournament data will be deleted permanently. This action <em>cannot be undone</em>.
+        </p>
+
+        <div class="reset-confirmation">
+          <p class="confirmation-text">
+            To confirm deletion, type "<strong>{{ deleteExpectedText }}</strong>" below:
+          </p>
+          <input type="text" 
+            class="confirmation-input"
+            [(ngModel)]="deleteConfirmText"
+            placeholder="Type confirmation text here"
+            [disabled]="isDeletingTournament"
+          />
+          <p class="confirmation-hint" 
+            [class.confirmed]="deleteConfirmText === deleteExpectedText">
+            {{ deleteConfirmText === deleteExpectedText ? '✓ Ready to delete' : '⏳ Enter confirmation text' }}
+          </p>
+        </div>
+
+        <div class="reset-info">
+          <h4>This will delete:</h4>
+          <ul>
+            <li>Tournament details and configuration</li>
+            <li>All associated teams and players</li>
+            <li>All auction data</li>
+            <li>All increment rules</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="reset-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeDeleteModal()" [disabled]="isDeletingTournament">
+          Cancel
+        </button>
+        <button type="button" 
+          class="btn btn-danger" 
+          (click)="proceedDeleteTournament()"
+          [disabled]="isDeletingTournament || deleteConfirmText !== deleteExpectedText">
+          {{ isDeletingTournament ? '🔄 Deleting...' : '🗑️ Delete Tournament' }}
+        </button>
+      </div>
+
+      <div class="reset-message" *ngIf="isDeletingTournament">
+        <p>{{ deleteMessage }}</p>
+      </div>
+    </div>
+  </div>
+
   <!-- Confirmation Modal -->
   <div class="modal-overlay" *ngIf="showConfirmModal" (click)="closeConfirmModal()">
     <div class="modal-content confirm-modal" (click)="$event.stopPropagation()">

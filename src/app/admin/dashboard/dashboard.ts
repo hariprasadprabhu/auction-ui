@@ -35,6 +35,15 @@ export class Dashboard implements OnInit {
   resetAuctionMessage = '';
   resetAuctionTournamentId: number | null = null;
 
+  // ── Delete Tournament Modal ──────────────────────────────────────────────
+  showDeleteModal = false;
+  deleteConfirmText = '';
+  deleteExpectedText = 'delete';
+  isDeletingTournament = false;
+  deleteMessage = '';
+  deleteTournamentId: number | null = null;
+  deleteTournamentName = '';
+
   // ── Custom Confirmation Modal ────────────────────────────────────────────
   showConfirmModal = false;
   confirmTitle = '';
@@ -198,22 +207,50 @@ export class Dashboard implements OnInit {
 
   deleteTournament(id: number) {
     const tournament = this.tournaments.find((t) => t.id === id);
-    const tournamentName = tournament?.name || 'Tournament';
-    this.openConfirmModal(
-      'Delete Tournament',
-      `Are you sure you want to delete "${tournamentName}"? All tournament data will be deleted permanently.`,
-      () => {
-        this.tournamentService.delete(id).subscribe({
-          next: () => {
-            this.tournaments = this.tournaments.filter((t) => t.id !== id);
-            this.cdr.markForCheck();
-          },
-          error: () => {
-            this.cdr.markForCheck();
-          }
-        });
+    this.deleteTournamentId = id;
+    this.deleteTournamentName = tournament?.name || 'Tournament';
+    this.deleteConfirmText = '';
+    this.showDeleteModal = true;
+    this.cdr.markForCheck();
+  }
+
+  closeDeleteModal() {
+    this.showDeleteModal = false;
+    this.deleteConfirmText = '';
+    this.deleteTournamentId = null;
+    this.deleteTournamentName = '';
+    this.isDeletingTournament = false;
+    this.deleteMessage = '';
+    this.cdr.markForCheck();
+  }
+
+  proceedDeleteTournament() {
+    if (this.deleteConfirmText !== this.deleteExpectedText) {
+      alert(`Please type "${this.deleteExpectedText}" to confirm`);
+      return;
+    }
+
+    if (!this.deleteTournamentId) return;
+
+    this.isDeletingTournament = true;
+    this.deleteMessage = 'Deleting tournament...';
+    this.cdr.markForCheck();
+
+    this.tournamentService.delete(this.deleteTournamentId).subscribe({
+      next: () => {
+        this.isDeletingTournament = false;
+        this.deleteMessage = '';
+        this.tournaments = this.tournaments.filter((t) => t.id !== this.deleteTournamentId);
+        this.closeDeleteModal();
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.isDeletingTournament = false;
+        this.deleteMessage = '';
+        alert('Failed to delete tournament. Please try again.');
+        this.cdr.markForCheck();
       }
-    );
+    });
   }
 
   // ── Edit Tournament modal ─────────────────────────────────────────────────
