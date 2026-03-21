@@ -274,20 +274,27 @@ export class Players implements OnInit {
   }
 
   deletePlayer(playerId: number) {
-    if (confirm('Are you sure you want to delete this player?')) {
-      this.isDeletingPlayer = true;
-      this.playerService.delete(playerId).subscribe({
-        next: () => {
-          this.players = this.players.filter((p) => p.id !== playerId);
-          this.isDeletingPlayer = false;
-          this.cdr.markForCheck();
-        },
-        error: () => {
-          this.isDeletingPlayer = false;
-          alert('Failed to delete player.');
-        },
-      });
-    }
+    const playerName = this.players.find((p) => p.id === playerId)?.firstName || 'Player';
+    this.openConfirmModal(
+      'Delete Player',
+      `Are you sure you want to delete ${playerName}? This action cannot be undone.`,
+      () => {
+        this.isDeletingPlayer = true;
+        this.playerService.delete(playerId).subscribe({
+          next: () => {
+            this.players = this.players.filter((p) => p.id !== playerId);
+            this.isDeletingPlayer = false;
+            this.openSuccessModal('Player Deleted', 'Player has been successfully deleted.');
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            this.isDeletingPlayer = false;
+            this.openErrorModal('Deletion Failed', 'Failed to delete player. Please try again.');
+            this.cdr.markForCheck();
+          },
+        });
+      }
+    );
   }
 
   onPlayerPhotoSelected(event: any) {
@@ -510,38 +517,41 @@ export class Players implements OnInit {
   }
 
   resetSinglePlayerAuctionStatus(playerId: number) {
-    if (!confirm('Are you sure you want to reset this player\'s auction status to Available?')) {
-      return;
-    }
+    const playerName = this.players.find((p) => p.id === playerId)?.firstName || 'Player';
+    this.openConfirmModal(
+      'Reset Auction Status',
+      `Are you sure you want to reset ${playerName}'s auction status to Available? Any sale will be refunded.`,
+      () => {
+        // Get the auction player to get its ID
+        const auctionPlayer = this.auctionPlayerMap.get(playerId);
+        if (!auctionPlayer) {
+          this.openErrorModal('Error', 'Could not find auction data for this player');
+          return;
+        }
 
-    // Get the auction player to get its ID
-    const auctionPlayer = this.auctionPlayerMap.get(playerId);
-    if (!auctionPlayer) {
-      this.openErrorModal('Error', 'Could not find auction data for this player');
-      return;
-    }
-
-    this.isResettingAuction = true;
-    this.resetMessage = 'Resetting player...';
-    this.cdr.markForCheck();
-
-    // Pass the auction player ID to the reset endpoint
-    this.auctionPlayerService.resetAuctionPlayers(this.tournamentId, [auctionPlayer.id]).subscribe({
-      next: () => {
-        this.isResettingAuction = false;
-        this.resetMessage = '';
-        // Refresh auction players after reset
-        this.loadAuctionPlayers();
-        this.openSuccessModal('Reset Successful', 'Player auction status has been reset to Available');
+        this.isResettingAuction = true;
+        this.resetMessage = 'Resetting player...';
         this.cdr.markForCheck();
-      },
-      error: (err) => {
-        this.isResettingAuction = false;
-        this.resetMessage = '';
-        this.openErrorModal('Reset Failed', 'Failed to reset player auction status. ' + (err?.error?.message || ''));
-        this.cdr.markForCheck();
-      },
-    });
+
+        // Pass the auction player ID to the reset endpoint
+        this.auctionPlayerService.resetAuctionPlayers(this.tournamentId, [auctionPlayer.id]).subscribe({
+          next: () => {
+            this.isResettingAuction = false;
+            this.resetMessage = '';
+            // Refresh auction players after reset
+            this.loadAuctionPlayers();
+            this.openSuccessModal('Reset Successful', 'Player auction status has been reset to Available');
+            this.cdr.markForCheck();
+          },
+          error: (err) => {
+            this.isResettingAuction = false;
+            this.resetMessage = '';
+            this.openErrorModal('Reset Failed', 'Failed to reset player auction status. ' + (err?.error?.message || ''));
+            this.cdr.markForCheck();
+          },
+        });
+      }
+    );
   }
 
   resetSelectedPlayersAuctionStatus() {
@@ -551,45 +561,47 @@ export class Players implements OnInit {
       return;
     }
 
-    if (!confirm(`Are you sure you want to reset auction status for ${selectedPlayerIds.length} player(s) to Available?`)) {
-      return;
-    }
+    this.openConfirmModal(
+      'Reset Multiple Players',
+      `Are you sure you want to reset auction status for ${selectedPlayerIds.length} player(s) to Available? Any sales will be refunded.`,
+      () => {
+        // Convert player IDs to auction player IDs
+        const auctionPlayerIds: number[] = [];
+        for (const playerId of selectedPlayerIds) {
+          const auctionPlayer = this.auctionPlayerMap.get(playerId);
+          if (auctionPlayer) {
+            auctionPlayerIds.push(auctionPlayer.id);
+          }
+        }
 
-    // Convert player IDs to auction player IDs
-    const auctionPlayerIds: number[] = [];
-    for (const playerId of selectedPlayerIds) {
-      const auctionPlayer = this.auctionPlayerMap.get(playerId);
-      if (auctionPlayer) {
-        auctionPlayerIds.push(auctionPlayer.id);
+        if (auctionPlayerIds.length === 0) {
+          this.openErrorModal('Error', 'Could not find auction data for selected players');
+          return;
+        }
+
+        this.isResettingAuction = true;
+        this.resetMessage = `Resetting ${auctionPlayerIds.length} player(s)...`;
+        this.cdr.markForCheck();
+
+        this.auctionPlayerService.resetAuctionPlayers(this.tournamentId, auctionPlayerIds).subscribe({
+          next: () => {
+            this.isResettingAuction = false;
+            this.resetMessage = '';
+            this.selectedPlayersForReset.clear();
+            // Refresh auction players after reset
+            this.loadAuctionPlayers();
+            this.openSuccessModal('Reset Successful', `${auctionPlayerIds.length} player(s) auction status have been reset to Available`);
+            this.cdr.markForCheck();
+          },
+          error: (err) => {
+            this.isResettingAuction = false;
+            this.resetMessage = '';
+            this.openErrorModal('Reset Failed', 'Failed to reset player auction status. ' + (err?.error?.message || ''));
+            this.cdr.markForCheck();
+          },
+        });
       }
-    }
-
-    if (auctionPlayerIds.length === 0) {
-      this.openErrorModal('Error', 'Could not find auction data for selected players');
-      return;
-    }
-
-    this.isResettingAuction = true;
-    this.resetMessage = `Resetting ${auctionPlayerIds.length} player(s)...`;
-    this.cdr.markForCheck();
-
-    this.auctionPlayerService.resetAuctionPlayers(this.tournamentId, auctionPlayerIds).subscribe({
-      next: () => {
-        this.isResettingAuction = false;
-        this.resetMessage = '';
-        this.selectedPlayersForReset.clear();
-        // Refresh auction players after reset
-        this.loadAuctionPlayers();
-        this.openSuccessModal('Reset Successful', `${auctionPlayerIds.length} player(s) auction status have been reset to Available`);
-        this.cdr.markForCheck();
-      },
-      error: (err) => {
-        this.isResettingAuction = false;
-        this.resetMessage = '';
-        this.openErrorModal('Reset Failed', 'Failed to reset player auction status. ' + (err?.error?.message || ''));
-        this.cdr.markForCheck();
-      },
-    });
+    );
   }
 
   approveSelectedPlayers() {

@@ -216,5 +216,22 @@
       </div>
     </div>
   </div>
+
+  <!-- Confirmation Modal -->
+  <div class="modal-overlay" *ngIf="showConfirmModal" (click)="closeConfirmModal()">
+    <div class="modal-content confirm-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header confirm-header">
+        <h2>{{ confirmTitle }}</h2>
+        <button class="modal-close" (click)="closeConfirmModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="confirm-message">{{ confirmMessage }}</p>
+      </div>
+      <div class="modal-footer confirm-footer">
+        <button class="btn btn-secondary" (click)="closeConfirmModal()">Cancel</button>
+        <button class="btn btn-primary" (click)="confirmAction()">Confirm</button>
+      </div>
+    </div>
+  </div>
   </div>
 </div>

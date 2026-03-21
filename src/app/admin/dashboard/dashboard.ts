@@ -35,6 +35,12 @@ export class Dashboard implements OnInit {
   resetAuctionMessage = '';
   resetAuctionTournamentId: number | null = null;
 
+  // ── Custom Confirmation Modal ────────────────────────────────────────────
+  showConfirmModal = false;
+  confirmTitle = '';
+  confirmMessage = '';
+  confirmCallback: (() => void) | null = null;
+
   private router = inject(Router);
   private tournamentService = inject(TournamentService);
   private auctionPlayerService = inject(AuctionPlayerService);
@@ -186,14 +192,23 @@ export class Dashboard implements OnInit {
   }
 
   deleteTournament(id: number) {
-    if (!confirm('Are you sure you want to delete this tournament?')) return;
-    this.tournamentService.delete(id).subscribe({
-      next: () => {
-        this.tournaments = this.tournaments.filter((t) => t.id !== id);
-        this.cdr.markForCheck();
-      },
-      error: () => alert('Failed to delete tournament.'),
-    });
+    const tournament = this.tournaments.find((t) => t.id === id);
+    const tournamentName = tournament?.name || 'Tournament';
+    this.openConfirmModal(
+      'Delete Tournament',
+      `Are you sure you want to delete "${tournamentName}"? This action cannot be undone.`,
+      () => {
+        this.tournamentService.delete(id).subscribe({
+          next: () => {
+            this.tournaments = this.tournaments.filter((t) => t.id !== id);
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            this.cdr.markForCheck();
+          }
+        });
+      }
+    );
   }
 
   // ── Edit Tournament modal ─────────────────────────────────────────────────
@@ -370,6 +385,27 @@ export class Dashboard implements OnInit {
         this.cdr.markForCheck();
       },
     });
+  }
+
+  // ── Custom Modal Methods ──────────────────────────────────────────────────
+
+  openConfirmModal(title: string, message: string, onConfirm: () => void) {
+    this.confirmTitle = title;
+    this.confirmMessage = message;
+    this.confirmCallback = onConfirm;
+    this.showConfirmModal = true;
+  }
+
+  closeConfirmModal() {
+    this.showConfirmModal = false;
+    this.confirmCallback = null;
+  }
+
+  confirmAction() {
+    if (this.confirmCallback) {
+      this.confirmCallback();
+    }
+    this.closeConfirmModal();
   }
 
   logout() {
