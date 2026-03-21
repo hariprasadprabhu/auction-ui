@@ -71,6 +71,7 @@ export class Dashboard implements OnInit {
   // ── Create Tournament modal ──────────────────────────────────────────────
   showCreateModal = false;
   createLogoPreview: string | null = null;
+  isCreatingTournament = false;
 
   newTournament: {
     name: string;
@@ -148,6 +149,8 @@ export class Dashboard implements OnInit {
       form.control.markAllAsTouched();
       return;
     }
+    this.isCreatingTournament = true;
+    this.cdr.markForCheck();
     this.tournamentService
       .create({
         name: this.newTournament.name,
@@ -164,11 +167,13 @@ export class Dashboard implements OnInit {
       })
       .subscribe({
         next: (t) => {
+          this.isCreatingTournament = false;
           this.tournaments = [t, ...this.tournaments];
           this.closeCreateModal();
           this.cdr.markForCheck();
         },
         error: (err: any) => {
+          this.isCreatingTournament = false;
           console.log('API Error Response:', err);
           const errorBody = err.error || err;
           console.log('Error Body:', errorBody);
@@ -215,6 +220,7 @@ export class Dashboard implements OnInit {
   showEditModal = false;
   editLogoPreview: string | null = null;
   editingTournamentId: number | null = null;
+  isUpdatingTournament = false;
 
   editTournament: {
     name: string;
@@ -271,6 +277,8 @@ export class Dashboard implements OnInit {
       return;
     }
     if (this.editingTournamentId === null) return;
+    this.isUpdatingTournament = true;
+    this.cdr.markForCheck();
     this.tournamentService
       .update(this.editingTournamentId, {
         name: this.editTournament.name,
@@ -287,6 +295,7 @@ export class Dashboard implements OnInit {
       })
       .subscribe({
         next: (updated) => {
+          this.isUpdatingTournament = false;
           this.tournaments = this.tournaments.map((t) =>
             t.id === updated.id ? updated : t,
           );
@@ -294,6 +303,7 @@ export class Dashboard implements OnInit {
           this.cdr.markForCheck();
         },
         error: (err: any) => {
+          this.isUpdatingTournament = false;
           console.log('API Error Response:', err);
           const errorBody = err.error || err;
           console.log('Error Body:', errorBody);

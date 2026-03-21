@@ -219,8 +219,8 @@
         </div>
 
         <div class="form-actions">
-          <button type="button" class="btn btn-secondary" (click)="closeCreateModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Create Tournament</button>
+          <button type="button" class="btn btn-secondary" (click)="closeCreateModal()" [disabled]="isCreatingTournament">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="isCreatingTournament">{{ isCreatingTournament ? '🔄 Creating...' : 'Create Tournament' }}</button>
         </div>
       </form>
     </div>
@@ -333,8 +333,8 @@
         </div>
 
         <div class="form-actions">
-          <button type="button" class="btn btn-secondary" (click)="closeEditModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save Changes</button>
+          <button type="button" class="btn btn-secondary" (click)="closeEditModal()" [disabled]="isUpdatingTournament">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="isUpdatingTournament">{{ isUpdatingTournament ? '🔄 Saving...' : 'Save Changes' }}</button>
         </div>
       </form>
     </div>
