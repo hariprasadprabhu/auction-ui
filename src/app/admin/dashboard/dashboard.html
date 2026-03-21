@@ -507,6 +507,16 @@
     </div>
   </div>
 
+  <!-- Delete Success Modal -->
+  <div class="modal-overlay" *ngIf="showDeleteSuccessModal" (click)="closeDeleteSuccessModal()">
+    <div class="modal-content delete-success-modal" (click)="$event.stopPropagation()">
+      <div class="success-icon">✓</div>
+      <h2 class="success-title">Tournament Deleted</h2>
+      <p class="success-message">{{ deleteSuccessMessage }}</p>
+      <button class="btn btn-success" (click)="closeDeleteSuccessModal()">Done</button>
+    </div>
+  </div>
+
   <!-- Confirmation Modal -->
   <div class="modal-overlay" *ngIf="showConfirmModal" (click)="closeConfirmModal()">
     <div class="modal-content confirm-modal" (click)="$event.stopPropagation()">

@@ -44,6 +44,11 @@ export class Dashboard implements OnInit {
   deleteTournamentId: number | null = null;
   deleteTournamentName = '';
 
+  // ── Delete Success Modal ─────────────────────────────────────────────────
+  showDeleteSuccessModal = false;
+  deletedTournamentName = '';
+  deleteSuccessMessage = '';
+
   // ── Custom Confirmation Modal ────────────────────────────────────────────
   showConfirmModal = false;
   confirmTitle = '';
@@ -241,7 +246,10 @@ export class Dashboard implements OnInit {
         this.isDeletingTournament = false;
         this.deleteMessage = '';
         this.tournaments = this.tournaments.filter((t) => t.id !== this.deleteTournamentId);
+        this.deletedTournamentName = this.deleteTournamentName;
+        this.deleteSuccessMessage = `${this.deleteTournamentName} has been deleted successfully.`;
         this.closeDeleteModal();
+        this.showDeleteSuccessModal = true;
         this.cdr.markForCheck();
       },
       error: () => {
@@ -251,6 +259,13 @@ export class Dashboard implements OnInit {
         this.cdr.markForCheck();
       }
     });
+  }
+
+  closeDeleteSuccessModal() {
+    this.showDeleteSuccessModal = false;
+    this.deletedTournamentName = '';
+    this.deleteSuccessMessage = '';
+    this.cdr.markForCheck();
   }
 
   // ── Edit Tournament modal ─────────────────────────────────────────────────

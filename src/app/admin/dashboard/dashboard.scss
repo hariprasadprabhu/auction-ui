@@ -1306,6 +1306,22 @@
           opacity: 0.6;
         }
       }
+
+      &.btn-success {
+        background: #4caf50;
+        color: white;
+        border: none;
+
+        &:hover:not(:disabled) {
+          background: #45a049;
+        }
+
+        &:disabled {
+          background: #ccc;
+          cursor: not-allowed;
+          opacity: 0.6;
+        }
+      }
     }
   }
 
@@ -1317,6 +1333,45 @@
     font-size: 0.9rem;
     color: #666;
     margin-top: 12px;
+  }
+}
+
+// ── Delete Success Modal ─────────────────────────────────────────────────
+
+.delete-success-modal {
+  max-width: 400px;
+  text-align: center;
+  padding: 40px 30px !important;
+  background: white !important;
+  border-radius: 12px !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+
+  .success-icon {
+    font-size: 4rem;
+    color: #4caf50;
+    margin-bottom: 20px;
+    line-height: 1;
+    font-weight: bold;
+  }
+
+  .success-title {
+    font-size: 1.8rem;
+    color: #333;
+    margin-bottom: 12px;
+    font-weight: 700;
+  }
+
+  .success-message {
+    font-size: 1rem;
+    color: #666;
+    margin-bottom: 30px;
+    line-height: 1.6;
+  }
+
+  .btn-success {
+    min-width: 150px;
+    padding: 12px 24px;
+    font-weight: 600;
   }
 }
 
