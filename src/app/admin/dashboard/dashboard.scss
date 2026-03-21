@@ -1342,27 +1342,24 @@
   padding: 40px 30px;
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 60px rgba(0,0,0,.3);
 
   .success-icon {
     font-size: 4rem;
     color: #4caf50;
     margin-bottom: 20px;
-    font-weight: bold;
   }
 
   .success-title {
     font-size: 1.8rem;
     color: #333;
     margin-bottom: 12px;
-    font-weight: 700;
   }
 
   .success-message {
     font-size: 1rem;
     color: #666;
     margin-bottom: 30px;
-    line-height: 1.6;
   }
 
   .btn-success {
@@ -1372,8 +1369,7 @@
   }
 }
 
-// ── Reset Button Style ───────────────────────────────────────────────────
-
+// Reset Button
 .action-btn-reset {
   &:hover {
     background: #ffebee !important;
