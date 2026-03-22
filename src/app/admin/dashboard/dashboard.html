@@ -99,6 +99,10 @@
             <span class="icon">✏️</span>
             <span class="tooltip">Edit</span>
           </button>
+          <button class="action-btn action-btn-reset" (click)="openResetAuctionModal(tournament.id)">
+            <span class="icon">↺</span>
+            <span class="tooltip">Reset Auction</span>
+          </button>
           <button class="action-btn" (click)="deleteTournament(tournament.id)">
             <span class="icon">🗑️</span>
             <span class="tooltip">Delete</span>
@@ -215,8 +219,8 @@
         </div>
 
         <div class="form-actions">
-          <button type="button" class="btn btn-secondary" (click)="closeCreateModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Create Tournament</button>
+          <button type="button" class="btn btn-secondary" (click)="closeCreateModal()" [disabled]="isCreatingTournament">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="isCreatingTournament">{{ isCreatingTournament ? '🔄 Creating...' : 'Create Tournament' }}</button>
         </div>
       </form>
     </div>
@@ -329,8 +333,8 @@
         </div>
 
         <div class="form-actions">
-          <button type="button" class="btn btn-secondary" (click)="closeEditModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save Changes</button>
+          <button type="button" class="btn btn-secondary" (click)="closeEditModal()" [disabled]="isUpdatingTournament">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="isUpdatingTournament">{{ isUpdatingTournament ? '🔄 Saving...' : 'Save Changes' }}</button>
         </div>
       </form>
     </div>
@@ -377,6 +381,155 @@
 
       <div class="limit-error-footer">
         <button type="button" class="btn btn-secondary" (click)="closeLimitErrorModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reset Entire Auction Modal -->
+  <div class="modal-overlay" *ngIf="showResetAuctionModal" (click)="closeResetAuctionModal()">
+    <div class="modal-content reset-auction-modal" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="closeResetAuctionModal()">✕</button>
+      
+      <div class="reset-header">
+        <div class="reset-icon">⚠️</div>
+        <h2>Reset Entire Auction</h2>
+      </div>
+
+      <div class="reset-body">
+        <p class="reset-warning">
+          <strong>Warning:</strong> This will reset the entire auction. All players will be set to AVAILABLE, 
+          and all teams' purses will be recalculated based on current tournament settings. This action <em>cannot be undone</em>.
+        </p>
+
+        <div class="reset-confirmation">
+          <p class="confirmation-text">
+            To confirm, type "<strong>{{ resetAuctionExpectedText }}</strong>" below:
+          </p>
+          <input type="text" 
+            class="confirmation-input"
+            [(ngModel)]="resetAuctionConfirmText"
+            placeholder="Type confirmation text here"
+            [disabled]="isResettingAuction"
+          />
+          <p class="confirmation-hint" 
+            [class.confirmed]="resetAuctionConfirmText === resetAuctionExpectedText">
+            {{ resetAuctionConfirmText === resetAuctionExpectedText ? '✓ Ready to reset' : '⏳ Enter confirmation text' }}
+          </p>
+        </div>
+
+        <div class="reset-info">
+          <h4>What will happen:</h4>
+          <ul>
+            <li>All sold players will be refunded to teams</li>
+            <li>All players will be set to AVAILABLE status</li>
+            <li>Current tournament settings (Base Price, Purse, Players Per Team) will be applied</li>
+            <li>All team purses will be recalculated</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="reset-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeResetAuctionModal()" [disabled]="isResettingAuction">
+          Cancel
+        </button>
+        <button type="button" 
+          class="btn btn-danger" 
+          (click)="resetEntireAuction()"
+          [disabled]="isResettingAuction || resetAuctionConfirmText !== resetAuctionExpectedText">
+          {{ isResettingAuction ? '🔄 Resetting...' : '↺ Reset Entire Auction' }}
+        </button>
+      </div>
+
+      <div class="reset-message" *ngIf="isResettingAuction">
+        <p>{{ resetAuctionMessage }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Tournament Modal -->
+  <div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
+    <div class="modal-content reset-auction-modal" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="closeDeleteModal()">✕</button>
+      
+      <div class="reset-header">
+        <div class="reset-icon">⚠️</div>
+        <h2>Delete Tournament</h2>
+      </div>
+
+      <div class="reset-body">
+        <p class="reset-warning">
+          <strong>Attention:</strong> You are about to delete "{{ deleteTournamentName }}". 
+          All tournament data will be deleted permanently. This action <em>cannot be undone</em>.
+        </p>
+
+        <div class="reset-confirmation">
+          <p class="confirmation-text">
+            To confirm deletion, type "<strong>{{ deleteExpectedText }}</strong>" below:
+          </p>
+          <input type="text" 
+            class="confirmation-input"
+            [(ngModel)]="deleteConfirmText"
+            placeholder="Type confirmation text here"
+            [disabled]="isDeletingTournament"
+          />
+          <p class="confirmation-hint" 
+            [class.confirmed]="deleteConfirmText === deleteExpectedText">
+            {{ deleteConfirmText === deleteExpectedText ? '✓ Ready to delete' : '⏳ Enter confirmation text' }}
+          </p>
+        </div>
+
+        <div class="reset-info">
+          <h4>This will delete:</h4>
+          <ul>
+            <li>Tournament details and configuration</li>
+            <li>All associated teams and players</li>
+            <li>All auction data</li>
+            <li>All increment rules</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="reset-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeDeleteModal()" [disabled]="isDeletingTournament">
+          Cancel
+        </button>
+        <button type="button" 
+          class="btn btn-danger" 
+          (click)="proceedDeleteTournament()"
+          [disabled]="isDeletingTournament || deleteConfirmText !== deleteExpectedText">
+          {{ isDeletingTournament ? '🔄 Deleting...' : '🗑️ Delete Tournament' }}
+        </button>
+      </div>
+
+      <div class="reset-message" *ngIf="isDeletingTournament">
+        <p>{{ deleteMessage }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Success Modal -->
+  <div class="modal-overlay" *ngIf="showDeleteSuccessModal" (click)="closeDeleteSuccessModal()">
+    <div class="modal-content delete-success-modal" (click)="$event.stopPropagation()">
+      <div class="success-icon">✓</div>
+      <h2 class="success-title">Tournament Deleted</h2>
+      <p class="success-message">{{ deleteSuccessMessage }}</p>
+      <button class="btn btn-success" (click)="closeDeleteSuccessModal()">Done</button>
+    </div>
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div class="modal-overlay" *ngIf="showConfirmModal" (click)="closeConfirmModal()">
+    <div class="modal-content confirm-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header confirm-header">
+        <h2>{{ confirmTitle }}</h2>
+        <button class="modal-close" (click)="closeConfirmModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="confirm-message">{{ confirmMessage }}</p>
+      </div>
+      <div class="modal-footer confirm-footer">
+        <button class="btn btn-secondary" (click)="closeConfirmModal()">Cancel</button>
+        <button class="btn btn-primary" (click)="confirmAction()">Confirm</button>
       </div>
     </div>
   </div>

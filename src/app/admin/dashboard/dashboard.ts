@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TournamentService } from '../../core/services/tournament.service';
+import { AuctionPlayerService } from '../../core/services/auction-player.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Tournament, TournamentStatus } from '../../models';
 
@@ -26,8 +27,37 @@ export class Dashboard implements OnInit {
   whatsappNumber = '+91 6360634388';
   contactEmail = 'auction.deck@gmail.com';
 
+  // ── Reset Entire Auction Modal ───────────────────────────────────────────
+  showResetAuctionModal = false;
+  resetAuctionConfirmText = '';
+  resetAuctionExpectedText = 'reset ins';
+  isResettingAuction = false;
+  resetAuctionMessage = '';
+  resetAuctionTournamentId: number | null = null;
+
+  // ── Delete Tournament Modal ──────────────────────────────────────────────
+  showDeleteModal = false;
+  deleteConfirmText = '';
+  deleteExpectedText = 'delete';
+  isDeletingTournament = false;
+  deleteMessage = '';
+  deleteTournamentId: number | null = null;
+  deleteTournamentName = '';
+
+  // ── Delete Success Modal ─────────────────────────────────────────────────
+  showDeleteSuccessModal = false;
+  deletedTournamentName = '';
+  deleteSuccessMessage = '';
+
+  // ── Custom Confirmation Modal ────────────────────────────────────────────
+  showConfirmModal = false;
+  confirmTitle = '';
+  confirmMessage = '';
+  confirmCallback: (() => void) | null = null;
+
   private router = inject(Router);
   private tournamentService = inject(TournamentService);
+  private auctionPlayerService = inject(AuctionPlayerService);
   private authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
 
@@ -55,6 +85,7 @@ export class Dashboard implements OnInit {
   // ── Create Tournament modal ──────────────────────────────────────────────
   showCreateModal = false;
   createLogoPreview: string | null = null;
+  isCreatingTournament = false;
 
   newTournament: {
     name: string;
@@ -132,6 +163,8 @@ export class Dashboard implements OnInit {
       form.control.markAllAsTouched();
       return;
     }
+    this.isCreatingTournament = true;
+    this.cdr.markForCheck();
     this.tournamentService
       .create({
         name: this.newTournament.name,
@@ -148,11 +181,13 @@ export class Dashboard implements OnInit {
       })
       .subscribe({
         next: (t) => {
+          this.isCreatingTournament = false;
           this.tournaments = [t, ...this.tournaments];
           this.closeCreateModal();
           this.cdr.markForCheck();
         },
         error: (err: any) => {
+          this.isCreatingTournament = false;
           console.log('API Error Response:', err);
           const errorBody = err.error || err;
           console.log('Error Body:', errorBody);
@@ -176,20 +211,68 @@ export class Dashboard implements OnInit {
   }
 
   deleteTournament(id: number) {
-    if (!confirm('Are you sure you want to delete this tournament?')) return;
-    this.tournamentService.delete(id).subscribe({
+    const tournament = this.tournaments.find((t) => t.id === id);
+    this.deleteTournamentId = id;
+    this.deleteTournamentName = tournament?.name || 'Tournament';
+    this.deleteConfirmText = '';
+    this.showDeleteModal = true;
+    this.cdr.markForCheck();
+  }
+
+  closeDeleteModal() {
+    this.showDeleteModal = false;
+    this.deleteConfirmText = '';
+    this.deleteTournamentId = null;
+    this.deleteTournamentName = '';
+    this.isDeletingTournament = false;
+    this.deleteMessage = '';
+    this.cdr.markForCheck();
+  }
+
+  proceedDeleteTournament() {
+    if (this.deleteConfirmText !== this.deleteExpectedText) {
+      alert(`Please type "${this.deleteExpectedText}" to confirm`);
+      return;
+    }
+
+    if (!this.deleteTournamentId) return;
+
+    this.isDeletingTournament = true;
+    this.deleteMessage = 'Deleting tournament...';
+    this.cdr.markForCheck();
+
+    this.tournamentService.delete(this.deleteTournamentId).subscribe({
       next: () => {
-        this.tournaments = this.tournaments.filter((t) => t.id !== id);
+        this.isDeletingTournament = false;
+        this.deleteMessage = '';
+        this.tournaments = this.tournaments.filter((t) => t.id !== this.deleteTournamentId);
+        this.deletedTournamentName = this.deleteTournamentName;
+        this.deleteSuccessMessage = `${this.deleteTournamentName} has been deleted successfully.`;
+        this.closeDeleteModal();
+        this.showDeleteSuccessModal = true;
         this.cdr.markForCheck();
       },
-      error: () => alert('Failed to delete tournament.'),
+      error: () => {
+        this.isDeletingTournament = false;
+        this.deleteMessage = '';
+        alert('Failed to delete tournament. Please try again.');
+        this.cdr.markForCheck();
+      }
     });
+  }
+
+  closeDeleteSuccessModal() {
+    this.showDeleteSuccessModal = false;
+    this.deletedTournamentName = '';
+    this.deleteSuccessMessage = '';
+    this.cdr.markForCheck();
   }
 
   // ── Edit Tournament modal ─────────────────────────────────────────────────
   showEditModal = false;
   editLogoPreview: string | null = null;
   editingTournamentId: number | null = null;
+  isUpdatingTournament = false;
 
   editTournament: {
     name: string;
@@ -246,6 +329,8 @@ export class Dashboard implements OnInit {
       return;
     }
     if (this.editingTournamentId === null) return;
+    this.isUpdatingTournament = true;
+    this.cdr.markForCheck();
     this.tournamentService
       .update(this.editingTournamentId, {
         name: this.editTournament.name,
@@ -262,6 +347,7 @@ export class Dashboard implements OnInit {
       })
       .subscribe({
         next: (updated) => {
+          this.isUpdatingTournament = false;
           this.tournaments = this.tournaments.map((t) =>
             t.id === updated.id ? updated : t,
           );
@@ -269,6 +355,7 @@ export class Dashboard implements OnInit {
           this.cdr.markForCheck();
         },
         error: (err: any) => {
+          this.isUpdatingTournament = false;
           console.log('API Error Response:', err);
           const errorBody = err.error || err;
           console.log('Error Body:', errorBody);
@@ -314,6 +401,73 @@ export class Dashboard implements OnInit {
 
   viewOwnerView(tournamentId: number) {
     window.open(`/admin/owner-view/${tournamentId}`, '_blank');
+  }
+
+  // ── Reset Entire Auction ────────────────────────────────────────────────
+  openResetAuctionModal(tournamentId: number) {
+    this.resetAuctionTournamentId = tournamentId;
+    this.resetAuctionConfirmText = '';
+    this.showResetAuctionModal = true;
+    this.cdr.markForCheck();
+  }
+
+  closeResetAuctionModal() {
+    this.showResetAuctionModal = false;
+    this.resetAuctionConfirmText = '';
+    this.resetAuctionTournamentId = null;
+    this.isResettingAuction = false;
+    this.resetAuctionMessage = '';
+    this.cdr.markForCheck();
+  }
+
+  resetEntireAuction() {
+    if (this.resetAuctionConfirmText !== this.resetAuctionExpectedText) {
+      alert(`Please type "${this.resetAuctionExpectedText}" to confirm`);
+      return;
+    }
+
+    if (!this.resetAuctionTournamentId) return;
+
+    this.isResettingAuction = true;
+    this.resetAuctionMessage = 'Resetting entire auction...';
+    this.cdr.markForCheck();
+
+    this.auctionPlayerService.resetEntireAuction(this.resetAuctionTournamentId).subscribe({
+      next: (response) => {
+        this.isResettingAuction = false;
+        this.resetAuctionMessage = '';
+        alert('Auction has been reset successfully!\n\n' + (response?.message || 'All auction data has been reset.'));
+        this.closeResetAuctionModal();
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.isResettingAuction = false;
+        this.resetAuctionMessage = '';
+        alert('Failed to reset auction. ' + (err?.error?.message || 'Please try again.'));
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  // ── Custom Modal Methods ──────────────────────────────────────────────────
+
+  openConfirmModal(title: string, message: string, onConfirm: () => void) {
+    this.confirmTitle = title;
+    this.confirmMessage = message;
+    this.confirmCallback = onConfirm;
+    this.showConfirmModal = true;
+  }
+
+  closeConfirmModal() {
+    this.showConfirmModal = false;
+    this.confirmCallback = null;
+  }
+
+  confirmAction() {
+    if (this.confirmCallback) {
+      this.confirmCallback();
+    }
+    this.closeConfirmModal();
   }
 
   logout() {

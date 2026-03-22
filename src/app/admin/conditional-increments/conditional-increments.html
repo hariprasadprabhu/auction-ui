@@ -9,7 +9,15 @@
     </div>
   </div>
 
-  <div class="increments-content">
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <div class="loader-spinner">
+      <div class="spinner"></div>
+      <p class="loader-text">Loading rules...</p>
+    </div>
+  </div>
+
+  <div class="increments-content" *ngIf="!isLoading">
     <button class="btn btn-back-light" (click)="goBack()">← Back To Dashboard</button>
     <div class="action-buttons">
       <button class="btn btn-primary" (click)="openAddModal()">+ Add Rule</button>
@@ -39,7 +47,7 @@
             <td class="increment-cell">{{ formatAmount(rule.incrementBy) }}</td>
             <td class="actions-cell">
               <button class="btn-edit" (click)="openEditModal(rule)" title="Edit Rule">✏️</button>
-              <button class="btn-delete" (click)="deleteRule(rule)" title="Delete Rule">🗑️</button>
+              <button class="btn-delete" (click)="deleteRule(rule)" title="Delete Rule" [disabled]="isDeletingRule">{{ isDeletingRule ? '🔄' : '🗑️' }}</button>
             </td>
           </tr>
           <tr *ngIf="rules.length === 0" class="empty-row">
@@ -60,6 +68,7 @@
           <div class="form-group">
             <label for="fromAmount">From Amount (₹) *</label>
             <input type="number" id="fromAmount" [(ngModel)]="newRule.fromAmount" name="fromAmount" min="0" placeholder="e.g. 1000" required />
+            <span class="form-hint">Ranges cannot overlap with existing rules</span>
           </div>
           <div class="form-group">
             <label for="toAmount">To Amount (₹) <span class="hint">(0 = unlimited)</span></label>
@@ -71,8 +80,8 @@
           <input type="number" id="incrementBy" [(ngModel)]="newRule.incrementBy" name="incrementBy" min="1" placeholder="e.g. 500" required />
         </div>
         <div class="form-actions">
-          <button type="button" class="btn btn-secondary" (click)="closeAddModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Add Rule</button>
+          <button type="button" class="btn btn-secondary" (click)="closeAddModal()" [disabled]="isAddingRule">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="isAddingRule">{{ isAddingRule ? '🔄 Adding...' : 'Add Rule' }}</button>
         </div>
       </form>
     </div>
@@ -88,6 +97,7 @@
           <div class="form-group">
             <label for="editFromAmount">From Amount (₹) *</label>
             <input type="number" id="editFromAmount" [(ngModel)]="editRule.fromAmount" name="editFromAmount" min="0" required />
+            <span class="form-hint">Ranges cannot overlap with existing rules</span>
           </div>
           <div class="form-group">
             <label for="editToAmount">To Amount (₹) <span class="hint">(0 = unlimited)</span></label>
@@ -103,6 +113,57 @@
           <button type="submit" class="btn btn-primary">Save Changes</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div class="modal-overlay" *ngIf="showConfirmModal" (click)="closeConfirmModal()">
+    <div class="modal-content confirm-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header confirm-header">
+        <h2>{{ confirmTitle }}</h2>
+        <button class="modal-close" (click)="closeConfirmModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="confirm-message">{{ confirmMessage }}</p>
+      </div>
+      <div class="modal-footer confirm-footer">
+        <button class="btn btn-secondary" (click)="closeConfirmModal()">Cancel</button>
+        <button class="btn btn-primary" (click)="confirmAction()">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div class="modal-overlay" *ngIf="showSuccessModal" (click)="closeSuccessModal()">
+    <div class="modal-content success-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header success-header">
+        <span class="success-icon">✓</span>
+        <h2>{{ successTitle }}</h2>
+        <button class="modal-close" (click)="closeSuccessModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="success-message">{{ successMessage }}</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-success" (click)="closeSuccessModal()">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Modal -->
+  <div class="modal-overlay" *ngIf="showErrorModal" (click)="closeErrorModal()">
+    <div class="modal-content error-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header error-header">
+        <span class="error-icon">!</span>
+        <h2>{{ errorTitle }}</h2>
+        <button class="modal-close" (click)="closeErrorModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="error-message">{{ errorMessage }}</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-danger" (click)="closeErrorModal()">Close</button>
+      </div>
     </div>
   </div>
 </div>

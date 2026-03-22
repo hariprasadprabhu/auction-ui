@@ -78,9 +78,15 @@
             <span class="status-badge badge-{{ player.auctionStatus | lowercase }}">
               {{ playerStatusLabel(player.auctionStatus) }}
             </span>
-            <span class="sold-price" *ngIf="player.auctionStatus === 'SOLD'">
-              {{ formatAmount(player.soldPrice || player.basePrice) }}
-            </span>
+            <div class="auction-details">
+              <ng-container *ngIf="player.auctionStatus === 'SOLD'">
+                <span class="sold-team">{{ player.soldToTeamName }}</span>
+                <span class="sold-price">{{ formatAmount(player.soldPrice || player.basePrice) }}</span>
+              </ng-container>
+              <ng-container *ngIf="player.auctionStatus === 'UNSOLD'">
+                <span class="unsold-price">Base: {{ formatAmount(player.basePrice) }}</span>
+              </ng-container>
+            </div>
           </div>
         </div>
         <div class="empty-state" *ngIf="filteredPlayers.length === 0">

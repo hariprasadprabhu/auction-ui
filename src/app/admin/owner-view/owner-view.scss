@@ -306,10 +306,11 @@
 .player-card {
   border-radius: 10px;
   border: 2px solid #f0f0f0;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   flex-direction: column;
   transition: transform 0.15s, box-shadow 0.15s;
+  position: relative;
 
   &:hover {
     transform: translateY(-3px);
@@ -322,10 +323,13 @@
   &.card-upcoming  { border-color: #c8e6c9; }
 }
 
+
+
 .player-photo {
   width: 100%;
   height: 130px;
   object-fit: cover;
+  border-bottom: 1px solid #eee;
 }
 
 .player-card-body {
@@ -362,6 +366,7 @@
   justify-content: space-between;
   background: #fafafa;
   border-top: 1px solid #f0f0f0;
+  gap: 8px;
 }
 
 .status-badge {
@@ -371,11 +376,31 @@
   border-radius: 10px;
   text-transform: uppercase;
   letter-spacing: 0.4px;
+  flex-shrink: 0;
 
   &.badge-sold      { background: #e3f2fd; color: #1565c0; }
   &.badge-unsold    { background: #ffebee; color: #c62828; }
   &.badge-available { background: #e8f5e9; color: #2e7d32; }
   &.badge-upcoming  { background: #e8f5e9; color: #2e7d32; }
+}
+
+.auction-details {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  justify-content: flex-end;
+  font-size: 0.75rem;
+}
+
+.sold-team {
+  font-weight: 600;
+  color: #1565c0;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.75rem;
 }
 
 .sold-price {
@@ -384,6 +409,72 @@
   color: #1565c0;
   font-family: 'Courier New', monospace;
 }
+
+.unsold-price {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #666;
+  font-family: 'Courier New', monospace;
+}
+
+// ── Batch Actions & Reset Controls ───────────────────────────────────────────
+
+.batch-actions {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+
+  .batch-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    color: #333;
+    user-select: none;
+
+    input[type="checkbox"] {
+      cursor: pointer;
+      width: 18px;
+      height: 18px;
+      accent-color: #667eea;
+    }
+  }
+
+  .btn-batch-reset {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+
+    &:hover:not(:disabled) {
+      background: #764ba2;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}
+
+
 
 // ── Team Purse Cards ─────────────────────────────────────────────────────────
 

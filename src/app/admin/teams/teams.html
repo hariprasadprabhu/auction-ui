@@ -58,6 +58,12 @@
           <span>✕</span> Reject Selected
         </button>
       </div>
+      <div class="batch-actions reset-actions" *ngIf="selectedPlayersForReset.size > 0">
+        <span class="selected-count">{{ selectedPlayersForReset.size }} selected for reset</span>
+        <button class="btn btn-reset" title="Reset Selected Players" (click)="resetSelectedPlayersAuctionStatus()" [disabled]="isResettingAuction">
+          <span>↺</span> Reset Selected
+        </button>
+      </div>
     </div>
     <button class="btn btn-back-light" title="Back to Dashboard" (click)="goBack()">
       ← Back To Dashboard
@@ -120,11 +126,36 @@
             </button>
           </td>
           <td>
-            <span class="status-badge" [ngClass]="'status-' + (player.status | lowercase)">
-              {{ player.status | titlecase }}
+            <span class="status-badge" [ngClass]="getStatusBadgeClass(player.status, player.id)">
+              {{ getDisplayPlayerStatus(player.status, player.id) | titlecase }}
             </span>
+            <div class="auction-status-info" *ngIf="getAuctionStatus(player.id)">
+              <span class="auction-badge" [ngClass]="'auction-' + getAuctionStatus(player.id)?.toLowerCase()">
+                {{ getAuctionStatus(player.id) }}
+              </span>
+              <ng-container *ngIf="getAuctionStatus(player.id) === 'SOLD'">
+                <span class="auction-team">{{ getAuctionTeamName(player.id) }}</span>
+                <span class="auction-price">₹{{ getAuctionPrice(player.id) }}L</span>
+              </ng-container>
+              <ng-container *ngIf="getAuctionStatus(player.id) === 'UNSOLD'">
+                <span class="base-price">Base: ₹{{ getBasePrice(player.id) }}L</span>
+              </ng-container>
+            </div>
           </td>
           <td class="delete-cell">
+            <input type="checkbox" 
+              [checked]="isPlayerSelectedForReset(player.id)"
+              (change)="onPlayerResetCheckboxChange(player.id, $event.target.checked)"
+              class="reset-checkbox"
+              [disabled]="!isResetAllowed(player.id, player.status)"
+              title="Select for reset (only for Sold/Unsold players)"
+            />
+            <button class="btn-reset-player" 
+              (click)="resetSinglePlayerAuctionStatus(player.id)"
+              [disabled]="!isResetAllowed(player.id, player.status)"
+              title="Reset this player's auction status (only for Sold/Unsold)">
+              ↺
+            </button>
             <button class="btn-edit" (click)="openEditPlayerModal(player)" title="Edit">✏️</button>
             <button class="btn-delete" (click)="deletePlayer(player.id)" title="Delete">🗑️</button>
           </td>
