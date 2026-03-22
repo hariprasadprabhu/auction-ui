@@ -547,16 +547,24 @@ export class Players implements OnInit {
                   const key = ap.playerId || ap.id;
                   this.auctionPlayerMap.set(key, ap);
                 });
-                this.isResettingAuction = false;
-                this.showLoadingModal = false;
-                this.openSuccessModal('Reset Successful', 'Player auction status has been reset to Available');
                 this.cdr.markForCheck();
+                // Wait a moment for the UI to update before closing the modal
+                setTimeout(() => {
+                  this.isResettingAuction = false;
+                  this.showLoadingModal = false;
+                  this.openSuccessModal('Reset Successful', 'Player auction status has been reset to Available');
+                  this.cdr.markForCheck();
+                }, 300);
               },
               error: () => {
-                this.isResettingAuction = false;
-                this.showLoadingModal = false;
-                this.openSuccessModal('Reset Successful', 'Player auction status has been reset to Available');
                 this.cdr.markForCheck();
+                // Wait a moment for the UI to update before closing the modal
+                setTimeout(() => {
+                  this.isResettingAuction = false;
+                  this.showLoadingModal = false;
+                  this.openSuccessModal('Reset Successful', 'Player auction status has been reset to Available');
+                  this.cdr.markForCheck();
+                }, 300);
               }
             });
           },
@@ -614,16 +622,24 @@ export class Players implements OnInit {
                   const key = ap.playerId || ap.id;
                   this.auctionPlayerMap.set(key, ap);
                 });
-                this.isResettingAuction = false;
-                this.showLoadingModal = false;
-                this.openSuccessModal('Reset Successful', `${auctionPlayerIds.length} player(s) auction status have been reset to Available`);
                 this.cdr.markForCheck();
+                // Wait a moment for the UI to update before closing the modal
+                setTimeout(() => {
+                  this.isResettingAuction = false;
+                  this.showLoadingModal = false;
+                  this.openSuccessModal('Reset Successful', `${auctionPlayerIds.length} player(s) auction status have been reset to Available`);
+                  this.cdr.markForCheck();
+                }, 300);
               },
               error: () => {
-                this.isResettingAuction = false;
-                this.showLoadingModal = false;
-                this.openSuccessModal('Reset Successful', `${auctionPlayerIds.length} player(s) auction status have been reset to Available`);
                 this.cdr.markForCheck();
+                // Wait a moment for the UI to update before closing the modal
+                setTimeout(() => {
+                  this.isResettingAuction = false;
+                  this.showLoadingModal = false;
+                  this.openSuccessModal('Reset Successful', `${auctionPlayerIds.length} player(s) auction status have been reset to Available`);
+                  this.cdr.markForCheck();
+                }, 300);
               }
             });
           },
