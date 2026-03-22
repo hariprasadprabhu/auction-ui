@@ -586,8 +586,8 @@ export class Players implements OnInit {
 
         this.auctionPlayerService.resetAuctionPlayers(this.tournamentId, auctionPlayerIds).subscribe({
           next: () => {
-            this.isResettingAuction = false;
-            this.showLoadingModal = false;
+            this.loadingMessage = `Updating player status...`;
+            this.cdr.markForCheck();
             this.selectedPlayersForReset.clear();
             // Refresh auction players after reset and show success after loading completes
             this.auctionPlayerService.getByTournament(this.tournamentId).subscribe({
@@ -597,10 +597,14 @@ export class Players implements OnInit {
                   const key = ap.playerId || ap.id;
                   this.auctionPlayerMap.set(key, ap);
                 });
+                this.isResettingAuction = false;
+                this.showLoadingModal = false;
                 this.openSuccessModal('Reset Successful', `${auctionPlayerIds.length} player(s) auction status have been reset to Available`);
                 this.cdr.markForCheck();
               },
               error: () => {
+                this.isResettingAuction = false;
+                this.showLoadingModal = false;
                 this.openSuccessModal('Reset Successful', `${auctionPlayerIds.length} player(s) auction status have been reset to Available`);
                 this.cdr.markForCheck();
               }
