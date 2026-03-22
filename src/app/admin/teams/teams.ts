@@ -579,23 +579,36 @@ export class Players implements OnInit {
           return;
         }
 
+        this.showLoadingModal = true;
+        this.loadingMessage = `Resetting ${auctionPlayerIds.length} player(s)...`;
         this.isResettingAuction = true;
-        this.resetMessage = `Resetting ${auctionPlayerIds.length} player(s)...`;
         this.cdr.markForCheck();
 
         this.auctionPlayerService.resetAuctionPlayers(this.tournamentId, auctionPlayerIds).subscribe({
           next: () => {
             this.isResettingAuction = false;
-            this.resetMessage = '';
+            this.showLoadingModal = false;
             this.selectedPlayersForReset.clear();
-            // Refresh auction players after reset
-            this.loadAuctionPlayers();
-            this.openSuccessModal('Reset Successful', `${auctionPlayerIds.length} player(s) auction status have been reset to Available`);
-            this.cdr.markForCheck();
+            // Refresh auction players after reset and show success after loading completes
+            this.auctionPlayerService.getByTournament(this.tournamentId).subscribe({
+              next: (auctionPlayers) => {
+                this.auctionPlayerMap.clear();
+                auctionPlayers.forEach(ap => {
+                  const key = ap.playerId || ap.id;
+                  this.auctionPlayerMap.set(key, ap);
+                });
+                this.openSuccessModal('Reset Successful', `${auctionPlayerIds.length} player(s) auction status have been reset to Available`);
+                this.cdr.markForCheck();
+              },
+              error: () => {
+                this.openSuccessModal('Reset Successful', `${auctionPlayerIds.length} player(s) auction status have been reset to Available`);
+                this.cdr.markForCheck();
+              }
+            });
           },
           error: (err) => {
             this.isResettingAuction = false;
-            this.resetMessage = '';
+            this.showLoadingModal = false;
             this.openErrorModal('Reset Failed', 'Failed to reset player auction status. ' + (err?.error?.message || ''));
             this.cdr.markForCheck();
           },
