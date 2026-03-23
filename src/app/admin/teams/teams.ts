@@ -529,23 +529,48 @@ export class Players implements OnInit {
           return;
         }
 
+        this.showLoadingModal = true;
+        this.loadingMessage = 'Resetting player...';
         this.isResettingAuction = true;
-        this.resetMessage = 'Resetting player...';
         this.cdr.markForCheck();
 
         // Pass the auction player ID to the reset endpoint
         this.auctionPlayerService.resetAuctionPlayers(this.tournamentId, [auctionPlayer.id]).subscribe({
           next: () => {
-            this.isResettingAuction = false;
-            this.resetMessage = '';
-            // Refresh auction players after reset
-            this.loadAuctionPlayers();
-            this.openSuccessModal('Reset Successful', 'Player auction status has been reset to Available');
+            this.loadingMessage = 'Updating player status...';
             this.cdr.markForCheck();
+            // Refresh auction players after reset
+            this.auctionPlayerService.getByTournament(this.tournamentId).subscribe({
+              next: (auctionPlayers) => {
+                this.auctionPlayerMap.clear();
+                auctionPlayers.forEach(ap => {
+                  const key = ap.playerId || ap.id;
+                  this.auctionPlayerMap.set(key, ap);
+                });
+                this.cdr.markForCheck();
+                // Wait a moment for the UI to update before closing the modal
+                setTimeout(() => {
+                  this.isResettingAuction = false;
+                  this.showLoadingModal = false;
+                  this.openSuccessModal('Reset Successful', 'Player auction status has been reset to Available');
+                  this.cdr.markForCheck();
+                }, 300);
+              },
+              error: () => {
+                this.cdr.markForCheck();
+                // Wait a moment for the UI to update before closing the modal
+                setTimeout(() => {
+                  this.isResettingAuction = false;
+                  this.showLoadingModal = false;
+                  this.openSuccessModal('Reset Successful', 'Player auction status has been reset to Available');
+                  this.cdr.markForCheck();
+                }, 300);
+              }
+            });
           },
           error: (err) => {
             this.isResettingAuction = false;
-            this.resetMessage = '';
+            this.showLoadingModal = false;
             this.openErrorModal('Reset Failed', 'Failed to reset player auction status. ' + (err?.error?.message || ''));
             this.cdr.markForCheck();
           },
@@ -589,7 +614,7 @@ export class Players implements OnInit {
             this.loadingMessage = `Updating player status...`;
             this.cdr.markForCheck();
             this.selectedPlayersForReset.clear();
-            // Refresh auction players after reset and show success after loading completes
+            // Refresh auction players after reset
             this.auctionPlayerService.getByTournament(this.tournamentId).subscribe({
               next: (auctionPlayers) => {
                 this.auctionPlayerMap.clear();
@@ -597,16 +622,38 @@ export class Players implements OnInit {
                   const key = ap.playerId || ap.id;
                   this.auctionPlayerMap.set(key, ap);
                 });
-                this.isResettingAuction = false;
-                this.showLoadingModal = false;
-                this.openSuccessModal('Reset Successful', `${auctionPlayerIds.length} player(s) auction status have been reset to Available`);
+                
+                // Update the status of reset players in local array to show as APPROVED
+                selectedPlayerIds.forEach((id) => {
+                  const player = this.players.find((p) => p.id === id);
+                  if (player) player.status = 'APPROVED';
+                });
+                
                 this.cdr.markForCheck();
+                
+                // Wait a moment for the UI to update before closing the modal
+                setTimeout(() => {
+                  this.isResettingAuction = false;
+                  this.showLoadingModal = false;
+                  this.openSuccessModal('Reset Successful', `${auctionPlayerIds.length} player(s) auction status have been reset to Available`);
+                  this.cdr.markForCheck();
+                }, 300);
               },
               error: () => {
-                this.isResettingAuction = false;
-                this.showLoadingModal = false;
-                this.openSuccessModal('Reset Successful', `${auctionPlayerIds.length} player(s) auction status have been reset to Available`);
+                // Even if refresh fails, update UI locally
+                selectedPlayerIds.forEach((id) => {
+                  const player = this.players.find((p) => p.id === id);
+                  if (player) player.status = 'APPROVED';
+                });
+                
                 this.cdr.markForCheck();
+                
+                setTimeout(() => {
+                  this.isResettingAuction = false;
+                  this.showLoadingModal = false;
+                  this.openSuccessModal('Reset Successful', `${auctionPlayerIds.length} player(s) auction status have been reset to Available`);
+                  this.cdr.markForCheck();
+                }, 300);
               }
             });
           },
