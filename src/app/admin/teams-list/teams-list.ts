@@ -348,7 +348,7 @@ export class TeamsListComponent implements OnInit {
   }
 
   /** Default Cloudinary URLs */
-  readonly DEFAULT_TEAM_LOGO = 'https://res.cloudinary.com/drytm0fl7/image/upload/v1774291008/default_player_lzyniw.png';
+  readonly DEFAULT_TEAM_LOGO = 'https://res.cloudinary.com/drytm0fl7/image/upload/v1774291007/default_logo_gknxbf.jpg';
 
   /** Get team logo URL with default fallback */
   getTeamLogoUrl(logoUrl: string | undefined): string {
