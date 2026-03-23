@@ -42,6 +42,9 @@ export class Auction implements OnInit {
   currentBid = 0;
   currentBiddingTeam: Team | null = null;
 
+  // Bid history for undo functionality
+  bidHistory: Array<{ bid: number; team: Team | null }> = [];
+
   showSoldOverlay = false;
   showUnsoldOverlay = false;
   overlayInteractive = false;
@@ -250,6 +253,7 @@ export class Auction implements OnInit {
     this.currentBid = this.currentPlayer?.basePrice ?? 0;
     this.currentBiddingTeam = null;
     this.validationError = null;
+    this.bidHistory = []; // Reset bid history for new player
   }
 
   placeBidForTeam(team: Team) {
@@ -269,6 +273,22 @@ export class Auction implements OnInit {
     if (!this.currentBiddingTeam || (!this.overlayInteractive && (this.showSoldOverlay || this.showUnsoldOverlay))) return;
     const proposedBid = this.currentBid + amount;
     this.validateAndApplyBid(this.currentBiddingTeam, proposedBid);
+  }
+
+  undoBid() {
+    if (this.bidHistory.length === 0) return;
+    
+    const previousState = this.bidHistory.pop();
+    if (!previousState) return;
+
+    this.currentBid = previousState.bid;
+    this.currentBiddingTeam = previousState.team;
+    this.validationError = null;
+    this.cdr.markForCheck();
+  }
+
+  canUndoBid(): boolean {
+    return this.bidHistory.length > 0;
   }
 
   markSold() {
@@ -490,6 +510,9 @@ export class Auction implements OnInit {
       this.cdr.markForCheck();
       return;
     }
+
+    // Store current state in history before updating
+    this.bidHistory.push({ bid: this.currentBid, team: this.currentBiddingTeam });
 
     this.currentBid = bidAmount;
     this.currentBiddingTeam = team;

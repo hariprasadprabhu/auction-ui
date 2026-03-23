@@ -839,6 +839,16 @@
     &:hover:not(:disabled) { background: rgba(247,201,72,0.22); box-shadow: 0 4px 16px rgba(247,201,72,0.25); }
   }
 
+  &.ctrl-undo {
+    background: rgba(0, 150, 200, 0.15);
+    color: #00d4ff;
+    border: 1.5px solid rgba(0, 150, 200, 0.4);
+    &:hover:not(:disabled) { 
+      background: rgba(0, 150, 200, 0.25);
+      box-shadow: 0 4px 16px rgba(0, 150, 200, 0.3);
+    }
+  }
+
   &.ctrl-exit {
     background: rgba(221,44,0,0.15);
     color: #ff5722;

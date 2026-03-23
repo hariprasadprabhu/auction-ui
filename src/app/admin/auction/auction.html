@@ -211,6 +211,9 @@
         ⚙ CONFIG
       </button>
       <ng-container *ngIf="!auctionComplete && !noUnsoldAvailable">
+        <button class="ctrl-btn ctrl-undo" (click)="undoBid()" [disabled]="!canUndoBid() || processingOverlay || showSoldOverlay || showUnsoldOverlay">
+          ↶ UNDO
+        </button>
         <button class="ctrl-btn ctrl-sold" (click)="markSold()"
           [disabled]="!currentBiddingTeam || processingOverlay || showSoldOverlay || showUnsoldOverlay">
           ✓ SOLD
