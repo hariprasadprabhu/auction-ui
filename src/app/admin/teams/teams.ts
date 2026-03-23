@@ -260,7 +260,7 @@ export class Players implements OnInit {
       dob: '',
       role: 'BATSMAN',
       photoUrl: this.DEFAULT_PLAYER_PHOTO,
-      paymentProofUrl: this.DEFAULT_PLAYER_PHOTO,
+      paymentProofUrl: '',
     };
     this.playerPhotoPreview = this.DEFAULT_PLAYER_PHOTO;
   }
@@ -280,7 +280,7 @@ export class Players implements OnInit {
   }
 
   /** Default Cloudinary URLs */
-  readonly DEFAULT_PLAYER_PHOTO = 'https://res.cloudinary.com/drytm0fl7/image/upload/v1774291007/default_logo_gknxbf.jpg';
+  readonly DEFAULT_PLAYER_PHOTO = 'https://res.cloudinary.com/drytm0fl7/image/upload/v1774291008/default_player_lzyniw.png';
 
   /** Get player photo URL with default fallback */
   getPlayerPhotoUrl(photoUrl: string | undefined): string {
@@ -392,7 +392,7 @@ export class Players implements OnInit {
         dob: this.newPlayer.dob || undefined,
         role: this.newPlayer.role,
         photo: this.newPlayer.photoUrl || this.DEFAULT_PLAYER_PHOTO,
-        paymentProof: this.newPlayer.paymentProofUrl || this.DEFAULT_PLAYER_PHOTO,
+        paymentProof: this.newPlayer.paymentProofUrl || undefined,
       })
       .subscribe({
         next: (p) => {
@@ -811,7 +811,7 @@ export class Players implements OnInit {
       dob: player.dob || '',
       role: player.role,
       photoUrl: player.photoUrl || this.DEFAULT_PLAYER_PHOTO,
-      paymentProofUrl: player.paymentProofUrl || this.DEFAULT_PLAYER_PHOTO,
+      paymentProofUrl: player.paymentProofUrl || '',
     };
     this.editPhotoPreview = player.photoUrl || this.DEFAULT_PLAYER_PHOTO;
     this.showEditPlayerModal = true;
@@ -882,7 +882,7 @@ export class Players implements OnInit {
         dob: this.editPlayerForm.dob || undefined,
         role: this.editPlayerForm.role,
         photo: this.editPlayerForm.photoUrl || this.editingPlayer?.photoUrl || this.DEFAULT_PLAYER_PHOTO,
-        paymentProof: this.editPlayerForm.paymentProofUrl || this.editingPlayer?.paymentProofUrl || this.DEFAULT_PLAYER_PHOTO,
+        paymentProof: this.editPlayerForm.paymentProofUrl || this.editingPlayer?.paymentProofUrl || undefined,
       })
       .subscribe({
         next: (updated) => {

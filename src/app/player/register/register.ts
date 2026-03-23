@@ -239,7 +239,7 @@ export class Register implements OnInit, OnDestroy {
       dob: this.form.dob,
       role: this.form.role,
       photo: this.photoUrl || this.DEFAULT_PLAYER_PHOTO,
-      paymentProof: this.paymentProofUrl || this.DEFAULT_PLAYER_PHOTO,
+      paymentProof: this.paymentProofUrl || undefined,
     }).subscribe({
       next: () => {
         // Record successful attempt
