@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Background -->
+  <rect width="200" height="200" fill="#f0f0f0"/>
+  
+  <!-- Head -->
+  <circle cx="100" cy="70" r="30" fill="#d0d0d0"/>
+  
+  <!-- Body -->
+  <rect x="75" y="105" width="50" height="50" rx="5" fill="#d0d0d0"/>
+  
+  <!-- Arms -->
+  <rect x="30" y="110" width="45" height="15" rx="7" fill="#d0d0d0"/>
+  <rect x="125" y="110" width="45" height="15" rx="7" fill="#d0d0d0"/>
+  
+  <!-- Text -->
+  <text x="100" y="185" font-size="14" text-anchor="middle" fill="#999">Player</text>
+</svg>

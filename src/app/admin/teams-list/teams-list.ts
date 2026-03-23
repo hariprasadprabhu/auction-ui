@@ -331,6 +331,11 @@ export class TeamsListComponent implements OnInit {
     return this.tournament.teamesAllowed - this.teams.length;
   }
 
+  /** Get team logo URL with default fallback */
+  getTeamLogoUrl(logoUrl: string | undefined): string {
+    return logoUrl || 'assets/images/default-team.svg';
+  }
+
   // ── Custom Modal Methods ──────────────────────────────────────────────────
 
   openConfirmModal(title: string, message: string, onConfirm: () => void) {

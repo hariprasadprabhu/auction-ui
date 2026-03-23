@@ -279,6 +279,16 @@ export class Players implements OnInit {
     return age.toString();
   }
 
+  /** Get player photo URL with default fallback */
+  getPlayerPhotoUrl(photoUrl: string | undefined): string {
+    return photoUrl || 'assets/images/default-player.svg';
+  }
+
+  /** Get payment proof URL with default fallback */
+  getPaymentProofUrl(proofUrl: string | undefined): string {
+    return proofUrl || 'assets/images/default-payment-proof.svg';
+  }
+
   deletePlayer(playerId: number) {
     const playerName = this.players.find((p) => p.id === playerId)?.firstName || 'Player';
     this.openConfirmModal(

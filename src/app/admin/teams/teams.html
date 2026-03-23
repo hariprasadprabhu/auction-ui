@@ -97,7 +97,7 @@
           <td>{{ player.playerNumber }}</td>
           <td class="photo-cell">
             <img 
-              [src]="player.photoUrl | normalizePhotoUrlCached | async" 
+              [src]="getPlayerPhotoUrl(player.photoUrl) | normalizePhotoUrlCached | async" 
               [alt]="player.firstName" 
               class="player-photo"
               (load)="onImageLoad()"
@@ -109,7 +109,7 @@
           <td>{{ calculateAge(player.dob) }}</td>
           <td class="proof-cell">
             <img
-              [src]="player.paymentProofUrl | authImageCached | async"
+              [src]="getPaymentProofUrl(player.paymentProofUrl) | authImageCached | async"
               [alt]="'Payment Proof for ' + player.firstName"
               class="payment-proof-thumbnail"
               (click)="openImageModal(player.paymentProofUrl, player.firstName, player.id)"
