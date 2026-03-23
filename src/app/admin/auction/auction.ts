@@ -593,6 +593,18 @@ export class Auction implements OnInit {
     return this.teams.find(t => t.id === teamId)?.name ?? 'Unknown Team';
   }
 
+  getSponsorList(): string[] {
+    // Default sponsors list - can be extended to pull from tournament data
+    return [
+      'Gold Sponsor',
+      'Silver Sponsor',
+      'Diamond Sponsor',
+      'Platinum Sponsor',
+      'Main Partner',
+      'Title Sponsor',
+    ];
+  }
+
   goBack() {
     this.confirmDialog = {
       message: 'Are you sure you want to exit the auction?',

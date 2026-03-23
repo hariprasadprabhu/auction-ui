@@ -63,6 +63,21 @@
     <div class="progress-fill" [style.width.%]="getProgressPercent()"></div>
   </div>
 
+  <!-- ═══ SPONSOR CAROUSEL ═══ -->
+  <section class="sponsor-banner-section" *ngIf="tournament && !auctionComplete && !noUnsoldAvailable">
+    <div class="sponsor-carousel-container">
+      <div class="sponsor-carousel">
+        <div class="sponsor-banner" *ngFor="let sponsor of getSponsorList()">
+          <span class="sponsor-name">{{ sponsor }}</span>
+        </div>
+        <!-- Duplicate for seamless loop -->
+        <div class="sponsor-banner" *ngFor="let sponsor of getSponsorList()">
+          <span class="sponsor-name">{{ sponsor }}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ═══ AUCTION COMPLETE ═══ -->
   <div class="auction-complete-screen" *ngIf="auctionComplete">
     <div class="complete-trophy">🏆</div>
@@ -154,16 +169,16 @@
       </ng-template>
 
       <div class="bid-amount-display" [class.active]="!!currentBiddingTeam">
-        <span class="bid-currency">₹</span>
+        <span class="bid-currency"></span>
         <span class="bid-value">{{ currentBid }}</span>
-        <span class="bid-unit">L</span>
+        <span class="bid-unit"></span>
       </div>
 
-      <div class="raise-bid-group">
+      <!-- <div class="raise-bid-group">
         <button class="raise-btn" (click)="raiseBid(nextIncrement)" [disabled]="!currentBiddingTeam || showSoldOverlay || showUnsoldOverlay || isValidatingBid || !canTeamPlaceNextBid(currentBiddingTeam!)">+₹{{ nextIncrement }}L</button>
         <button class="raise-btn" (click)="raiseBid(nextIncrement * 2)" [disabled]="!currentBiddingTeam || showSoldOverlay || showUnsoldOverlay || isValidatingBid || !canTeamPlaceNextBid(currentBiddingTeam!)">+₹{{ nextIncrement * 2 }}L</button>
         <button class="raise-btn raise-btn-lg" (click)="raiseBid(nextIncrement * 5)" [disabled]="!currentBiddingTeam || showSoldOverlay || showUnsoldOverlay || isValidatingBid || !canTeamPlaceNextBid(currentBiddingTeam!)">+₹{{ nextIncrement * 5 }}L</button>
-      </div>
+      </div> -->
 
       <p class="bid-validation-error" *ngIf="validationError">{{ validationError }}</p>
       <p class="budget-notice" *ngIf="budgetNotification">{{ budgetNotification }}</p>
