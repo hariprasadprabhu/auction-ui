@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { PlayerService } from '../../core/services/player.service';
 import { AuctionPlayerService } from '../../core/services/auction-player.service';
 import { TournamentService } from '../../core/services/tournament.service';
+import { CloudinaryImageService } from '../../core/services/cloudinary-image.service';
 import { Tournament, Player } from '../../models';
 import { AuthImageCachedPipe } from '../../core/pipes/auth-image-cached.pipe';
 import { NormalizePhotoUrlCachedPipe } from '../../core/pipes/normalize-photo-url-cached.pipe';
@@ -64,13 +65,15 @@ export class Players implements OnInit {
   // Add Player Form
   showAddPlayerModal = false;
   isAddingPlayer = false;
+  isUploadingPlayerPhoto = false;
+  isUploadingPlayerPaymentProof = false;
   newPlayer = {
     firstName: '',
     lastName: '',
     dob: '',
     role: 'BATSMAN',
-    photoFile: null as File | null,
-    paymentProofFile: null as File | null,
+    photoUrl: '' as string,
+    paymentProofUrl: '' as string,
   };
   playerPhotoPreview: string | null = null;
 
@@ -78,14 +81,16 @@ export class Players implements OnInit {
   showEditPlayerModal = false;
   isEditingPlayer = false;
   isDeletingPlayer = false;
+  isUploadingEditPhoto = false;
+  isUploadingEditPaymentProof = false;
   editingPlayer: Player | null = null;
   editPlayerForm = {
     firstName: '',
     lastName: '',
     dob: '',
     role: 'BATSMAN',
-    photoFile: null as File | null,
-    paymentProofFile: null as File | null,
+    photoUrl: '' as string,
+    paymentProofUrl: '' as string,
   };
   editPhotoPreview: string | null = null;
 
@@ -95,6 +100,7 @@ export class Players implements OnInit {
   private playerService = inject(PlayerService);
   private auctionPlayerService = inject(AuctionPlayerService);
   private tournamentService = inject(TournamentService);
+  private cloudinaryService = inject(CloudinaryImageService);
   private cdr = inject(ChangeDetectorRef);
 
   ngOnInit() {
@@ -253,8 +259,8 @@ export class Players implements OnInit {
       lastName: '',
       dob: '',
       role: 'BATSMAN',
-      photoFile: null,
-      paymentProofFile: null,
+      photoUrl: '',
+      paymentProofUrl: '',
     };
     this.playerPhotoPreview = null;
   }
@@ -300,19 +306,45 @@ export class Players implements OnInit {
   onPlayerPhotoSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
-      this.newPlayer.photoFile = file;
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.playerPhotoPreview = e.target.result;
-      };
-      reader.readAsDataURL(file);
+      this.isUploadingPlayerPhoto = true;
+      this.cdr.detectChanges();
+      
+      this.cloudinaryService.uploadImage(file).subscribe({
+        next: (response) => {
+          this.newPlayer.photoUrl = response.secure_url;
+          this.playerPhotoPreview = this.cloudinaryService.getTransformedUrl(response.secure_url);
+          this.isUploadingPlayerPhoto = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Photo upload failed:', err);
+          alert('Failed to upload photo. Please try again.');
+          this.isUploadingPlayerPhoto = false;
+          this.cdr.detectChanges();
+        },
+      });
     }
   }
 
   onPaymentProofSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
-      this.newPlayer.paymentProofFile = file;
+      this.isUploadingPlayerPaymentProof = true;
+      this.cdr.detectChanges();
+      
+      this.cloudinaryService.uploadImage(file).subscribe({
+        next: (response) => {
+          this.newPlayer.paymentProofUrl = response.secure_url;
+          this.isUploadingPlayerPaymentProof = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Payment proof upload failed:', err);
+          alert('Failed to upload payment proof. Please try again.');
+          this.isUploadingPlayerPaymentProof = false;
+          this.cdr.detectChanges();
+        },
+      });
     }
   }
 
@@ -330,8 +362,8 @@ export class Players implements OnInit {
         lastName: this.newPlayer.lastName || undefined,
         dob: this.newPlayer.dob || undefined,
         role: this.newPlayer.role,
-        photo: this.newPlayer.photoFile ?? undefined,
-        paymentProof: this.newPlayer.paymentProofFile ?? undefined,
+        photo: this.newPlayer.photoUrl || undefined,
+        paymentProof: this.newPlayer.paymentProofUrl || undefined,
       })
       .subscribe({
         next: (p) => {
@@ -749,8 +781,8 @@ export class Players implements OnInit {
       lastName: player.lastName || '',
       dob: player.dob || '',
       role: player.role,
-      photoFile: null,
-      paymentProofFile: null,
+      photoUrl: player.photoUrl || '',
+      paymentProofUrl: player.paymentProofUrl || '',
     };
     this.editPhotoPreview = player.photoUrl ?? null;
     this.showEditPlayerModal = true;
@@ -765,18 +797,45 @@ export class Players implements OnInit {
   onEditPhotoSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.editPhotoPreview = e.target.result;
-      };
-      reader.readAsDataURL(file);
+      this.isUploadingEditPhoto = true;
+      this.cdr.detectChanges();
+      
+      this.cloudinaryService.uploadImage(file).subscribe({
+        next: (response) => {
+          this.editPlayerForm.photoUrl = response.secure_url;
+          this.editPhotoPreview = this.cloudinaryService.getTransformedUrl(response.secure_url);
+          this.isUploadingEditPhoto = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Photo upload failed:', err);
+          alert('Failed to upload photo. Please try again.');
+          this.isUploadingEditPhoto = false;
+          this.cdr.detectChanges();
+        },
+      });
     }
   }
 
   onEditPaymentProofSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
-      this.editPlayerForm.paymentProofFile = file;
+      this.isUploadingEditPaymentProof = true;
+      this.cdr.detectChanges();
+      
+      this.cloudinaryService.uploadImage(file).subscribe({
+        next: (response) => {
+          this.editPlayerForm.paymentProofUrl = response.secure_url;
+          this.isUploadingEditPaymentProof = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Payment proof upload failed:', err);
+          alert('Failed to upload payment proof. Please try again.');
+          this.isUploadingEditPaymentProof = false;
+          this.cdr.detectChanges();
+        },
+      });
     }
   }
 
@@ -793,8 +852,8 @@ export class Players implements OnInit {
         lastName: this.editPlayerForm.lastName || undefined,
         dob: this.editPlayerForm.dob || undefined,
         role: this.editPlayerForm.role,
-        photo: this.editPlayerForm.photoFile ?? undefined,
-        paymentProof: this.editPlayerForm.paymentProofFile ?? undefined,
+        photo: this.editPlayerForm.photoUrl || undefined,
+        paymentProof: this.editPlayerForm.paymentProofUrl || undefined,
       })
       .subscribe({
         next: (updated) => {

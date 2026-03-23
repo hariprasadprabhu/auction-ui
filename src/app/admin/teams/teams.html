@@ -194,8 +194,10 @@
         <div class="form-group">
           <label for="editPlayerPhoto">Player Photo</label>
           <div class="file-upload-wrapper">
-            <input type="file" id="editPlayerPhoto" accept="image/*" (change)="onEditPhotoSelected($event)" name="editPlayerPhoto" />
-            <label for="editPlayerPhoto" class="file-upload-label">📷 Change Photo</label>
+            <input type="file" id="editPlayerPhoto" accept="image/*" (change)="onEditPhotoSelected($event)" name="editPlayerPhoto" [disabled]="isUploadingEditPhoto" />
+            <label for="editPlayerPhoto" class="file-upload-label" [class.disabled]="isUploadingEditPhoto">
+              {{ isUploadingEditPhoto ? '⏳ Uploading...' : '📷 Change Photo' }}
+            </label>
           </div>
           <div *ngIf="editPhotoPreview" class="photo-preview">
             <img [src]="editPhotoPreview" alt="Player preview" class="preview-img" />
@@ -232,11 +234,13 @@
         <div class="form-group">
           <label for="editPaymentProof">Payment Proof Screenshot</label>
           <div class="file-upload-wrapper">
-            <input type="file" id="editPaymentProof" accept="image/*" (change)="onEditPaymentProofSelected($event)" name="editPaymentProof" />
-            <label for="editPaymentProof" class="file-upload-label">📄 Upload Payment Screenshot</label>
+            <input type="file" id="editPaymentProof" accept="image/*" (change)="onEditPaymentProofSelected($event)" name="editPaymentProof" [disabled]="isUploadingEditPaymentProof" />
+            <label for="editPaymentProof" class="file-upload-label" [class.disabled]="isUploadingEditPaymentProof">
+              {{ isUploadingEditPaymentProof ? '⏳ Uploading...' : '📄 Upload Payment Screenshot' }}
+            </label>
           </div>
-          <div *ngIf="editPlayerForm.paymentProofFile" class="proof-selected">
-            <span>✅ Payment proof selected: {{ editPlayerForm.paymentProofFile.name }}</span>
+          <div *ngIf="editPlayerForm.paymentProofUrl" class="proof-selected">
+            <span>✅ Payment proof uploaded</span>
           </div>
         </div>
 
@@ -266,8 +270,10 @@
         <div class="form-group">
           <label for="playerPhoto">Player Photo *</label>
           <div class="file-upload-wrapper">
-            <input type="file" id="playerPhoto" accept="image/*" (change)="onPlayerPhotoSelected($event)" name="playerPhoto" required />
-            <label for="playerPhoto" class="file-upload-label">📷 Choose Photo</label>
+            <input type="file" id="playerPhoto" accept="image/*" (change)="onPlayerPhotoSelected($event)" name="playerPhoto" [disabled]="isUploadingPlayerPhoto" required />
+            <label for="playerPhoto" class="file-upload-label" [class.disabled]="isUploadingPlayerPhoto">
+              {{ isUploadingPlayerPhoto ? '⏳ Uploading...' : '📷 Choose Photo' }}
+            </label>
           </div>
           <div *ngIf="playerPhotoPreview" class="photo-preview">
             <img [src]="playerPhotoPreview" alt="Player preview" class="preview-img" />
@@ -305,11 +311,13 @@
         <div class="form-group">
           <label for="paymentProof">Payment Proof Screenshot</label>
           <div class="file-upload-wrapper">
-            <input type="file" id="paymentProof" accept="image/*" (change)="onPaymentProofSelected($event)" name="paymentProof" />
-            <label for="paymentProof" class="file-upload-label">📄 Upload Payment Screenshot</label>
+            <input type="file" id="paymentProof" accept="image/*" (change)="onPaymentProofSelected($event)" name="paymentProof" [disabled]="isUploadingPlayerPaymentProof" />
+            <label for="paymentProof" class="file-upload-label" [class.disabled]="isUploadingPlayerPaymentProof">
+              {{ isUploadingPlayerPaymentProof ? '⏳ Uploading...' : '📄 Upload Payment Screenshot' }}
+            </label>
           </div>
-          <div *ngIf="newPlayer.paymentProofFile" class="proof-selected">
-            <span>✅ Payment proof selected: {{ newPlayer.paymentProofFile.name }}</span>
+          <div *ngIf="newPlayer.paymentProofUrl" class="proof-selected">
+            <span>✅ Payment proof uploaded</span>
           </div>
         </div>
 
@@ -317,7 +325,7 @@
 
         <div class="form-actions">
           <button type="button" class="btn btn-secondary" (click)="closeAddPlayerModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Add Player</button>
+          <button type="submit" class="btn btn-primary" [disabled]="!newPlayer.firstName || !newPlayer.role || !newPlayer.photoUrl || isAddingPlayer || isUploadingPlayerPhoto || isUploadingPlayerPaymentProof">Add Player</button>
         </div>
       </form>
     </div>

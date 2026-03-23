@@ -75,7 +75,7 @@ export interface CreateTournamentRequest {
   basePrice: number;
   initialIncrementAmount: number;
   status?: TournamentStatus;
-  logo?: File;
+  logo?: File | string;
 }
 
 export type UpdateTournamentRequest = Partial<CreateTournamentRequest>;
@@ -97,7 +97,7 @@ export interface CreateTeamRequest {
   name: string;
   ownerName: string;
   mobileNumber: string;
-  logo?: File;
+  logo?: File | string;
 }
 
 export type UpdateTeamRequest = Partial<CreateTeamRequest>;
@@ -145,8 +145,8 @@ export interface PlayerRegistrationRequest {
   lastName?: string;
   dob?: string;
   role: string;
-  photo?: File | undefined;
-  paymentProof?: File | undefined;
+  photo?: File | string | undefined;
+  paymentProof?: File | string | undefined;
 }
 
 export interface AddToAuctionRequest {
@@ -190,7 +190,7 @@ export interface CreateAuctionPlayerRequest {
   bowlingStyle: string;
   role: string;
   basePrice: number;
-  photo?: File;
+  photo?: File | string;
 }
 
 export interface SellPlayerRequest {

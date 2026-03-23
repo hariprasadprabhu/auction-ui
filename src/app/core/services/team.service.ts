@@ -85,7 +85,12 @@ export class TeamService {
       fd.append('ownerName', request.ownerName);
     if (request.mobileNumber !== undefined)
       fd.append('mobileNumber', request.mobileNumber);
-    if (request.logo) fd.append('logo', request.logo);
+    // Support both File objects (for backward compatibility) and URLs (new Cloudinary approach)
+    if (request.logo instanceof File) {
+      fd.append('logo', request.logo);
+    } else if (request.logo && typeof request.logo === 'string') {
+      fd.append('logoUrl', request.logo);
+    }
     return fd;
   }
 

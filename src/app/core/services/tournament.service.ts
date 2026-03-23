@@ -64,7 +64,12 @@ export class TournamentService {
     if (request.initialIncrementAmount !== undefined)
       fd.append('initialIncrement', String(request.initialIncrementAmount));
     if (request.status !== undefined) fd.append('status', request.status);
-    if (request.logo) fd.append('logo', request.logo);
+    // Support both File objects (for backward compatibility) and URLs (new Cloudinary approach)
+    if (request.logo instanceof File) {
+      fd.append('logo', request.logo);
+    } else if (request.logo && typeof request.logo === 'string') {
+      fd.append('logoUrl', request.logo);
+    }
     return fd;
   }
 

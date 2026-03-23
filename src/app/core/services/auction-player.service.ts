@@ -124,7 +124,12 @@ export class AuctionPlayerService {
     if (request.role !== undefined) fd.append('role', request.role);
     if (request.basePrice !== undefined)
       fd.append('basePrice', String(request.basePrice));
-    if (request.photo) fd.append('photo', request.photo);
+    // Support both File objects (for backward compatibility) and URLs (new Cloudinary approach)
+    if (request.photo instanceof File) {
+      fd.append('photo', request.photo);
+    } else if (request.photo && typeof request.photo === 'string') {
+      fd.append('photoUrl', request.photo);
+    }
     return fd;
   }
 

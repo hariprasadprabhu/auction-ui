@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { TournamentService } from '../../core/services/tournament.service';
 import { AuctionPlayerService } from '../../core/services/auction-player.service';
 import { AuthService } from '../../core/services/auth.service';
+import { CloudinaryImageService } from '../../core/services/cloudinary-image.service';
 import { Tournament, TournamentStatus } from '../../models';
 
 @Component({
@@ -59,6 +60,7 @@ export class Dashboard implements OnInit {
   private tournamentService = inject(TournamentService);
   private auctionPlayerService = inject(AuctionPlayerService);
   private authService = inject(AuthService);
+  private cloudinaryService = inject(CloudinaryImageService);
   private cdr = inject(ChangeDetectorRef);
 
   ngOnInit() {
@@ -86,6 +88,7 @@ export class Dashboard implements OnInit {
   showCreateModal = false;
   createLogoPreview: string | null = null;
   isCreatingTournament = false;
+  isUploadingLogo = false;
 
   newTournament: {
     name: string;
@@ -98,7 +101,7 @@ export class Dashboard implements OnInit {
     basePrice: number;
     initialIncrementAmount: number;
     status: TournamentStatus;
-    logoFile: File | null;
+    logoUrl: string;
   } = this.blankForm();
 
   private blankForm() {
@@ -113,7 +116,7 @@ export class Dashboard implements OnInit {
       basePrice: 20000,
       initialIncrementAmount: 5,
       status: 'UPCOMING' as TournamentStatus,
-      logoFile: null as File | null,
+      logoUrl: '',
     };
   }
 
@@ -150,12 +153,23 @@ export class Dashboard implements OnInit {
   onLogoSelected(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
-    this.newTournament.logoFile = file;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      this.createLogoPreview = e.target?.result as string;
-    };
-    reader.readAsDataURL(file);
+    this.isUploadingLogo = true;
+    this.cdr.markForCheck();
+    
+    this.cloudinaryService.uploadImage(file).subscribe({
+      next: (response) => {
+        this.newTournament.logoUrl = response.secure_url;
+        this.createLogoPreview = this.cloudinaryService.getTransformedUrl(response.secure_url);
+        this.isUploadingLogo = false;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Logo upload failed:', err);
+        alert('Failed to upload logo. Please try again.');
+        this.isUploadingLogo = false;
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   createTournament(form: NgForm) {
@@ -177,7 +191,7 @@ export class Dashboard implements OnInit {
         basePrice: this.newTournament.basePrice,
         initialIncrementAmount: this.newTournament.initialIncrementAmount || 5,
         status: this.newTournament.status,
-        logo: this.newTournament.logoFile ?? undefined,
+        logo: this.newTournament.logoUrl || undefined,
       })
       .subscribe({
         next: (t) => {
@@ -273,6 +287,7 @@ export class Dashboard implements OnInit {
   editLogoPreview: string | null = null;
   editingTournamentId: number | null = null;
   isUpdatingTournament = false;
+  isUploadingEditLogo = false;
 
   editTournament: {
     name: string;
@@ -285,7 +300,7 @@ export class Dashboard implements OnInit {
     basePrice: number;
     initialIncrementAmount: number;
     status: TournamentStatus;
-    logoFile: File | null;
+    logoUrl: string;
   } = this.blankForm();
 
   openEditModal(tournament: Tournament) {
@@ -301,7 +316,7 @@ export class Dashboard implements OnInit {
       basePrice: tournament.basePrice,
       initialIncrementAmount: tournament.initialIncrementAmount,
       status: tournament.status,
-      logoFile: null,
+      logoUrl: tournament.logoUrl || '',
     };
     this.editLogoPreview = tournament.logoUrl ?? null;
     this.showEditModal = true;
@@ -315,12 +330,23 @@ export class Dashboard implements OnInit {
   onEditLogoSelected(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
-    this.editTournament.logoFile = file;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      this.editLogoPreview = e.target?.result as string;
-    };
-    reader.readAsDataURL(file);
+    this.isUploadingEditLogo = true;
+    this.cdr.markForCheck();
+    
+    this.cloudinaryService.uploadImage(file).subscribe({
+      next: (response) => {
+        this.editTournament.logoUrl = response.secure_url;
+        this.editLogoPreview = this.cloudinaryService.getTransformedUrl(response.secure_url);
+        this.isUploadingEditLogo = false;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Logo upload failed:', err);
+        alert('Failed to upload logo. Please try again.');
+        this.isUploadingEditLogo = false;
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   saveTournament(form: NgForm) {
@@ -343,7 +369,7 @@ export class Dashboard implements OnInit {
         basePrice: this.editTournament.basePrice,
         initialIncrementAmount: this.editTournament.initialIncrementAmount,
         status: this.editTournament.status,
-        logo: this.editTournament.logoFile ?? undefined,
+        logo: this.editTournament.logoUrl || undefined,
       })
       .subscribe({
         next: (updated) => {

@@ -128,8 +128,17 @@ export class PlayerService {
     if (request.lastName !== undefined) fd.append('lastName', request.lastName);
     if (request.dob !== undefined) fd.append('dob', request.dob);
     if (request.role !== undefined) fd.append('role', request.role);
-    if (request.photo) fd.append('photo', request.photo);
-    if (request.paymentProof) fd.append('paymentProof', request.paymentProof);
+    // Support both File objects (for backward compatibility) and URLs (new Cloudinary approach)
+    if (request.photo instanceof File) {
+      fd.append('photo', request.photo);
+    } else if (request.photo && typeof request.photo === 'string') {
+      fd.append('photoUrl', request.photo);
+    }
+    if (request.paymentProof instanceof File) {
+      fd.append('paymentProof', request.paymentProof);
+    } else if (request.paymentProof && typeof request.paymentProof === 'string') {
+      fd.append('paymentProofUrl', request.paymentProof);
+    }
     return fd;
   }
 

@@ -62,15 +62,17 @@
           <div class="photo-upload-area">
             <div class="photo-preview-circle" *ngIf="photoPreview">
               <img [src]="photoPreview" alt="Player photo" class="preview-circle-img" />
-              <button type="button" class="remove-photo" (click)="removePhoto()">✕</button>
+              <button type="button" class="remove-photo" (click)="removePhoto()" [disabled]="isUploadingPhoto">✕</button>
             </div>
             <div class="upload-placeholder" *ngIf="!photoPreview">
               <div class="placeholder-icon">📷</div>
-              <p>Upload your photo</p>
+              <p>{{ isUploadingPhoto ? 'Uploading...' : 'Upload your photo' }}</p>
             </div>
             <div class="file-upload-wrapper">
-              <input type="file" id="playerPhoto" accept="image/*" (change)="onPhotoSelected($event)" name="playerPhoto" />
-              <label for="playerPhoto" class="file-upload-label">{{ photoPreview ? '🔄 Change Photo' : '📷 Choose Photo' }}</label>
+              <input type="file" id="playerPhoto" accept="image/*" (change)="onPhotoSelected($event)" name="playerPhoto" [disabled]="isUploadingPhoto" />
+              <label for="playerPhoto" class="file-upload-label" [class.disabled]="isUploadingPhoto">
+                {{ isUploadingPhoto ? '⏳ Uploading...' : (photoPreview ? '🔄 Change Photo' : '📷 Choose Photo') }}
+              </label>
             </div>
           </div>
         </div>
@@ -131,8 +133,10 @@
           <h3 class="section-title">Payment Proof *</h3>
           <p class="section-hint">Upload a screenshot of your payment confirmation</p>
           <div class="file-upload-wrapper">
-            <input type="file" id="paymentProof" accept="image/*" (change)="onPaymentProofSelected($event)" name="paymentProof" required />
-            <label for="paymentProof" class="file-upload-label proof-label">{{ paymentProofPreview ? '✅ Payment Proof Selected — Click to Change' : '📄 Upload Payment Screenshot' }}</label>
+            <input type="file" id="paymentProof" accept="image/*" (change)="onPaymentProofSelected($event)" name="paymentProof" [disabled]="isUploadingPaymentProof" required />
+            <label for="paymentProof" class="file-upload-label proof-label" [class.disabled]="isUploadingPaymentProof">
+              {{ isUploadingPaymentProof ? '⏳ Uploading...' : (paymentProofPreview ? '✅ Payment Proof Selected — Click to Change' : '📄 Upload Payment Screenshot') }}
+            </label>
           </div>
           <div *ngIf="paymentProofPreview" class="proof-preview">
             <img [src]="paymentProofPreview" alt="Payment proof preview" class="proof-img" />
@@ -141,7 +145,7 @@
 
         <!-- Submit -->
         <div class="form-actions">
-          <button type="submit" class="btn-submit" [disabled]="!form.firstName || !form.role || !photoPreview || !paymentProofPreview || isSubmitting || isCooldownActive" [attr.data-cooldown]="isCooldownActive">
+          <button type="submit" class="btn-submit" [disabled]="!form.firstName || !form.role || !photoUrl || !paymentProofUrl || isSubmitting || isCooldownActive || isUploadingPhoto || isUploadingPaymentProof" [attr.data-cooldown]="isCooldownActive">
             {{ isSubmitting ? 'Registering...' : (isCooldownActive ? `Wait ${cooldownRemaining}s` : 'Register') }}
           </button>
           <p class="attempts-info" *ngIf="remainingAttempts > 0 && remainingAttempts < 3">{{ remainingAttempts }} registration attempt{{ remainingAttempts !== 1 ? 's' : '' }} remaining for this tournament</p>
