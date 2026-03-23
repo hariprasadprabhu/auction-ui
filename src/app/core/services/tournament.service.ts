@@ -94,9 +94,9 @@ export class TournamentService {
     if (request.basePrice !== undefined) obj.basePrice = request.basePrice;
     if (request.initialIncrementAmount !== undefined) obj.initialIncrementAmount = request.initialIncrementAmount;
     if (request.status !== undefined) obj.status = request.status;
-    // If logo is a string (Cloudinary URL), send it as logoUrl
+    // Attach Cloudinary URL directly to original field name
     if (request.logo && typeof request.logo === 'string') {
-      obj.logoUrl = request.logo;
+      obj.logo = request.logo;
     }
     return obj;
   }

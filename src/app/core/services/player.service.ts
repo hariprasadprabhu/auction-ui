@@ -148,11 +148,12 @@ export class PlayerService {
     if (request.lastName !== undefined) obj.lastName = request.lastName;
     if (request.dob !== undefined) obj.dob = request.dob;
     if (request.role !== undefined) obj.role = request.role;
+    // Attach Cloudinary URL directly to original field name
     if (request.photo && typeof request.photo === 'string') {
-      obj.photoUrl = request.photo;
+      obj.photo = request.photo;
     }
     if (request.paymentProof && typeof request.paymentProof === 'string') {
-      obj.paymentProofUrl = request.paymentProof;
+      obj.paymentProof = request.paymentProof;
     }
     return obj;
   }

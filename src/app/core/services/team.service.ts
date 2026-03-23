@@ -102,8 +102,9 @@ export class TeamService {
     if (request.name !== undefined) obj.name = request.name;
     if (request.ownerName !== undefined) obj.ownerName = request.ownerName;
     if (request.mobileNumber !== undefined) obj.mobileNumber = request.mobileNumber;
+    // Attach Cloudinary URL directly to original field name
     if (request.logo && typeof request.logo === 'string') {
-      obj.logoUrl = request.logo;
+      obj.logo = request.logo;
     }
     return obj;
   }

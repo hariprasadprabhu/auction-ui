@@ -146,8 +146,9 @@ export class AuctionPlayerService {
     if (request.bowlingStyle !== undefined) obj.bowlingStyle = request.bowlingStyle;
     if (request.role !== undefined) obj.role = request.role;
     if (request.basePrice !== undefined) obj.basePrice = request.basePrice;
+    // Attach Cloudinary URL directly to original field name
     if (request.photo && typeof request.photo === 'string') {
-      obj.photoUrl = request.photo;
+      obj.photo = request.photo;
     }
     return obj;
   }
