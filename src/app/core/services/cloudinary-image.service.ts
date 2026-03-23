@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
  * Handles image uploads to Cloudinary API and image URL transformations
  *
  * Features:
- * - Upload files to Cloudinary API
+ * - Upload files to Cloudinary API (bypasses auth interceptor to avoid CORS issues)
  * - Transform URLs with optimization parameters (f_auto, q_auto for WebP)
  * - Support lazy loading for images
  */
@@ -21,6 +21,8 @@ export class CloudinaryImageService {
 
   /**
    * Upload an image file to Cloudinary
+   * The auth interceptor will skip this request (Cloudinary doesn't accept Authorization headers)
+   * FormData is used - do NOT set Content-Type manually (browser handles it automatically)
    * @param file The image file to upload
    * @returns Observable with Cloudinary response containing the image URL
    */
@@ -29,6 +31,7 @@ export class CloudinaryImageService {
     formData.append('file', file);
     formData.append('upload_preset', this.UPLOAD_PRESET);
 
+    // Standard POST request - auth interceptor will skip this URL
     return this.http.post<CloudinaryUploadResponse>(this.CLOUDINARY_URL, formData);
   }
 
