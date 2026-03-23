@@ -114,9 +114,27 @@ export class TeamService {
   }
 
   private mapTeam(t: Team): Team {
+    const normalizeUrl = (url: string | undefined): string | undefined => {
+      if (!url) return undefined;
+      
+      // If already absolute URL (like Cloudinary), return as-is
+      if (url.startsWith('http')) {
+        return url;
+      }
+      
+      // If starts with /api, the backend already includes /api
+      // But our apiUrl also has /api, so we need the base URL without /api
+      if (url.startsWith('/api')) {
+        const baseUrl = this.apiUrl.replace(/\/api\/?$/, '');
+        return `${baseUrl}${url}`;
+      }
+      
+      // For other relative paths, prepend full apiUrl
+      return `${this.apiUrl}${url}`;
+    };
     return {
       ...t,
-      logoUrl: t.logoUrl ? `${this.apiUrl}${t.logoUrl}` : undefined,
+      logoUrl: normalizeUrl(t.logoUrl),
     };
   }
 
