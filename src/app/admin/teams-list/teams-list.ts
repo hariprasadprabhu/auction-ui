@@ -174,7 +174,7 @@ export class TeamsListComponent implements OnInit {
         name: this.newTeam.name,
         ownerName: this.newTeam.ownerName,
         mobileNumber: this.newTeam.mobileNumber,
-        logo: this.newTeam.logoUrl || undefined,
+        logo: this.newTeam.logoUrl || this.DEFAULT_TEAM_LOGO,
       })
       .subscribe({
         next: (t) => {
@@ -255,7 +255,7 @@ export class TeamsListComponent implements OnInit {
         name: this.editTeam.name,
         ownerName: this.editTeam.ownerName,
         mobileNumber: this.editTeam.mobileNumber,
-        logo: this.editTeam.logoUrl || undefined,
+        logo: this.editTeam.logoUrl || this.editingTeam?.logoUrl || this.DEFAULT_TEAM_LOGO,
       })
       .subscribe({
         next: (updated) => {
@@ -331,9 +331,12 @@ export class TeamsListComponent implements OnInit {
     return this.tournament.teamesAllowed - this.teams.length;
   }
 
+  /** Default Cloudinary URLs */
+  readonly DEFAULT_TEAM_LOGO = 'https://res.cloudinary.com/drytm0fl7/image/upload/v1774291008/default_player_lzyniw.png';
+
   /** Get team logo URL with default fallback */
   getTeamLogoUrl(logoUrl: string | undefined): string {
-    return logoUrl || 'assets/images/default-team.svg';
+    return logoUrl || this.DEFAULT_TEAM_LOGO;
   }
 
   // ── Custom Modal Methods ──────────────────────────────────────────────────

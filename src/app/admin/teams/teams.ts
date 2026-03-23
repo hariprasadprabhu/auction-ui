@@ -279,14 +279,18 @@ export class Players implements OnInit {
     return age.toString();
   }
 
+  /** Default Cloudinary URLs */
+  readonly DEFAULT_PLAYER_PHOTO = 'https://res.cloudinary.com/drytm0fl7/image/upload/v1774291007/default_logo_gknxbf.jpg';
+
   /** Get player photo URL with default fallback */
   getPlayerPhotoUrl(photoUrl: string | undefined): string {
-    return photoUrl || 'assets/images/default-player.svg';
+    return photoUrl || this.DEFAULT_PLAYER_PHOTO;
   }
 
   /** Get payment proof URL with default fallback */
   getPaymentProofUrl(proofUrl: string | undefined): string {
-    return proofUrl || 'assets/images/default-payment-proof.svg';
+    // For payment proof, we'll use player default if not provided
+    return proofUrl || this.DEFAULT_PLAYER_PHOTO;
   }
 
   deletePlayer(playerId: number) {
@@ -372,8 +376,8 @@ export class Players implements OnInit {
         lastName: this.newPlayer.lastName || undefined,
         dob: this.newPlayer.dob || undefined,
         role: this.newPlayer.role,
-        photo: this.newPlayer.photoUrl || undefined,
-        paymentProof: this.newPlayer.paymentProofUrl || undefined,
+        photo: this.newPlayer.photoUrl || this.DEFAULT_PLAYER_PHOTO,
+        paymentProof: this.newPlayer.paymentProofUrl || this.DEFAULT_PLAYER_PHOTO,
       })
       .subscribe({
         next: (p) => {
@@ -862,8 +866,8 @@ export class Players implements OnInit {
         lastName: this.editPlayerForm.lastName || undefined,
         dob: this.editPlayerForm.dob || undefined,
         role: this.editPlayerForm.role,
-        photo: this.editPlayerForm.photoUrl || undefined,
-        paymentProof: this.editPlayerForm.paymentProofUrl || undefined,
+        photo: this.editPlayerForm.photoUrl || this.editingPlayer?.photoUrl || this.DEFAULT_PLAYER_PHOTO,
+        paymentProof: this.editPlayerForm.paymentProofUrl || this.editingPlayer?.paymentProofUrl || this.DEFAULT_PLAYER_PHOTO,
       })
       .subscribe({
         next: (updated) => {

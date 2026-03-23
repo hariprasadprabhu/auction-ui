@@ -48,6 +48,9 @@ export class Register implements OnInit, OnDestroy {
   photoPreview: string | null = null;
   paymentProofPreview: string | null = null;
 
+  /** Default Cloudinary URLs */
+  readonly DEFAULT_PLAYER_PHOTO = 'https://res.cloudinary.com/drytm0fl7/image/upload/v1774291007/default_logo_gknxbf.jpg';
+
   private destroy$ = new Subject<void>();
   private formSubmit$ = new Subject<void>();
 
@@ -219,8 +222,8 @@ export class Register implements OnInit, OnDestroy {
       lastName: this.form.lastName,
       dob: this.form.dob,
       role: this.form.role,
-      photo: this.photoUrl,
-      paymentProof: this.paymentProofUrl,
+      photo: this.photoUrl || this.DEFAULT_PLAYER_PHOTO,
+      paymentProof: this.paymentProofUrl || this.DEFAULT_PLAYER_PHOTO,
     }).subscribe({
       next: () => {
         // Record successful attempt

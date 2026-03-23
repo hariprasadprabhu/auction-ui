@@ -63,6 +63,9 @@ export class Dashboard implements OnInit {
   private cloudinaryService = inject(CloudinaryImageService);
   private cdr = inject(ChangeDetectorRef);
 
+  /** Default Cloudinary URLs */
+  readonly DEFAULT_TEAM_LOGO = 'https://res.cloudinary.com/drytm0fl7/image/upload/v1774291008/default_player_lzyniw.png';
+
   ngOnInit() {
     this.currentUser = this.authService.getCurrentUser();
     this.loadTournaments();
@@ -191,7 +194,7 @@ export class Dashboard implements OnInit {
         basePrice: this.newTournament.basePrice,
         initialIncrementAmount: this.newTournament.initialIncrementAmount || 5,
         status: this.newTournament.status,
-        logo: this.newTournament.logoUrl || undefined,
+        logo: this.newTournament.logoUrl || this.DEFAULT_TEAM_LOGO,
       })
       .subscribe({
         next: (t) => {
@@ -369,7 +372,7 @@ export class Dashboard implements OnInit {
         basePrice: this.editTournament.basePrice,
         initialIncrementAmount: this.editTournament.initialIncrementAmount,
         status: this.editTournament.status,
-        logo: this.editTournament.logoUrl || undefined,
+        logo: this.editTournament.logoUrl || this.DEFAULT_TEAM_LOGO,
       })
       .subscribe({
         next: (updated) => {
