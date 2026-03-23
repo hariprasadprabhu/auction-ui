@@ -259,10 +259,10 @@ export class Players implements OnInit {
       lastName: '',
       dob: '',
       role: 'BATSMAN',
-      photoUrl: '',
-      paymentProofUrl: '',
+      photoUrl: this.DEFAULT_PLAYER_PHOTO,
+      paymentProofUrl: this.DEFAULT_PLAYER_PHOTO,
     };
-    this.playerPhotoPreview = null;
+    this.playerPhotoPreview = this.DEFAULT_PLAYER_PHOTO;
   }
 
   calculateAge(dob: string | undefined): string {
