@@ -23,16 +23,24 @@ export class TournamentService {
   }
 
   create(request: CreateTournamentRequest): Observable<Tournament> {
-    const formData = this.buildFormData(request);
+    // Use JSON for requests with only Cloudinary URLs, FormData for file uploads
+    const body = this.shouldUseFormData(request) 
+      ? this.buildFormData(request)
+      : this.buildRequestObject(request);
+    
     return this.http
-      .post<Tournament>(`${this.apiUrl}/tournaments`, formData)
+      .post<Tournament>(`${this.apiUrl}/tournaments`, body)
       .pipe(map((t) => this.mapTournament(t)));
   }
 
   update(id: number, request: UpdateTournamentRequest): Observable<Tournament> {
-    const formData = this.buildFormData(request);
+    // Use JSON for requests with only Cloudinary URLs, FormData for file uploads
+    const body = this.shouldUseFormData(request)
+      ? this.buildFormData(request)
+      : this.buildRequestObject(request);
+    
     return this.http
-      .put<Tournament>(`${this.apiUrl}/tournaments/${id}`, formData)
+      .put<Tournament>(`${this.apiUrl}/tournaments/${id}`, body)
       .pipe(map((t) => this.mapTournament(t)));
   }
 
@@ -64,13 +72,41 @@ export class TournamentService {
     if (request.initialIncrementAmount !== undefined)
       fd.append('initialIncrement', String(request.initialIncrementAmount));
     if (request.status !== undefined) fd.append('status', request.status);
-    // Support both File objects (for backward compatibility) and URLs (new Cloudinary approach)
+    // Only append to FormData if it's a File object
     if (request.logo instanceof File) {
       fd.append('logo', request.logo);
-    } else if (request.logo && typeof request.logo === 'string') {
-      fd.append('logoUrl', request.logo);
     }
     return fd;
+  }
+
+  /**
+   * Build a plain request object for JSON submission (used when no files)
+   */
+  private buildRequestObject(request: CreateTournamentRequest | UpdateTournamentRequest): any {
+    const obj: any = {};
+    if (request.name !== undefined) obj.name = request.name;
+    if (request.date !== undefined) obj.date = request.date;
+    if (request.sport !== undefined) obj.sport = request.sport;
+    if (request.totalTeams !== undefined) obj.totalTeams = request.totalTeams;
+    if (request.totalPlayers !== undefined) obj.totalPlayers = request.totalPlayers;
+    if (request.purseAmount !== undefined) obj.purseAmount = request.purseAmount;
+    if (request.playersPerTeam !== undefined) obj.playersPerTeam = request.playersPerTeam;
+    if (request.basePrice !== undefined) obj.basePrice = request.basePrice;
+    if (request.initialIncrementAmount !== undefined) obj.initialIncrementAmount = request.initialIncrementAmount;
+    if (request.status !== undefined) obj.status = request.status;
+    // If logo is a string (Cloudinary URL), send it as logoUrl
+    if (request.logo && typeof request.logo === 'string') {
+      obj.logoUrl = request.logo;
+    }
+    return obj;
+  }
+
+  /**
+   * Check if request contains File objects (should use FormData)
+   * If all files are URLs (strings), use JSON instead
+   */
+  private shouldUseFormData(request: CreateTournamentRequest | UpdateTournamentRequest): boolean {
+    return request.logo instanceof File;
   }
 
   /** Resolve relative logoUrl to full URL */

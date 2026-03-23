@@ -50,19 +50,23 @@ export class TeamService {
   }
 
   create(tournamentId: number, request: CreateTeamRequest): Observable<Team> {
-    const formData = this.buildFormData(request);
+    const body = this.shouldUseFormData(request)
+      ? this.buildFormData(request)
+      : this.buildRequestObject(request);
     return this.http
       .post<Team>(
         `${this.apiUrl}/tournaments/${tournamentId}/teams`,
-        formData,
+        body,
       )
       .pipe(map((t) => this.mapTeam(t)));
   }
 
   update(id: number, request: UpdateTeamRequest): Observable<Team> {
-    const formData = this.buildFormData(request);
+    const body = this.shouldUseFormData(request)
+      ? this.buildFormData(request)
+      : this.buildRequestObject(request);
     return this.http
-      .put<Team>(`${this.apiUrl}/teams/${id}`, formData)
+      .put<Team>(`${this.apiUrl}/teams/${id}`, body)
       .pipe(map((t) => this.mapTeam(t)));
   }
 
@@ -85,13 +89,27 @@ export class TeamService {
       fd.append('ownerName', request.ownerName);
     if (request.mobileNumber !== undefined)
       fd.append('mobileNumber', request.mobileNumber);
-    // Support both File objects (for backward compatibility) and URLs (new Cloudinary approach)
+    // Only append to FormData if it's a File object
     if (request.logo instanceof File) {
       fd.append('logo', request.logo);
-    } else if (request.logo && typeof request.logo === 'string') {
-      fd.append('logoUrl', request.logo);
     }
     return fd;
+  }
+
+  private buildRequestObject(request: CreateTeamRequest | UpdateTeamRequest): any {
+    const obj: any = {};
+    if (request.teamNumber !== undefined) obj.teamNumber = request.teamNumber;
+    if (request.name !== undefined) obj.name = request.name;
+    if (request.ownerName !== undefined) obj.ownerName = request.ownerName;
+    if (request.mobileNumber !== undefined) obj.mobileNumber = request.mobileNumber;
+    if (request.logo && typeof request.logo === 'string') {
+      obj.logoUrl = request.logo;
+    }
+    return obj;
+  }
+
+  private shouldUseFormData(request: CreateTeamRequest | UpdateTeamRequest): boolean {
+    return request.logo instanceof File;
   }
 
   private mapTeam(t: Team): Team {

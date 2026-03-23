@@ -28,11 +28,13 @@ export class AuctionPlayerService {
     tournamentId: number,
     request: CreateAuctionPlayerRequest,
   ): Observable<AuctionPlayer> {
-    const formData = this.buildFormData(request);
+    const body = this.shouldUseFormData(request)
+      ? this.buildFormData(request)
+      : this.buildRequestObject(request);
     return this.http
       .post<AuctionPlayer>(
         `${this.apiUrl}/tournaments/${tournamentId}/auction-players`,
-        formData,
+        body,
       )
       .pipe(map((p) => this.mapPlayer(p)));
   }
@@ -47,11 +49,13 @@ export class AuctionPlayerService {
     id: number,
     request: Partial<CreateAuctionPlayerRequest>,
   ): Observable<AuctionPlayer> {
-    const formData = this.buildFormData(request);
+    const body = this.shouldUseFormData(request)
+      ? this.buildFormData(request)
+      : this.buildRequestObject(request);
     return this.http
       .put<AuctionPlayer>(
         `${this.apiUrl}/auction-players/${id}`,
-        formData,
+        body,
       )
       .pipe(map((p) => this.mapPlayer(p)));
   }
@@ -124,13 +128,32 @@ export class AuctionPlayerService {
     if (request.role !== undefined) fd.append('role', request.role);
     if (request.basePrice !== undefined)
       fd.append('basePrice', String(request.basePrice));
-    // Support both File objects (for backward compatibility) and URLs (new Cloudinary approach)
+    // Only append to FormData if it's a File object
     if (request.photo instanceof File) {
       fd.append('photo', request.photo);
-    } else if (request.photo && typeof request.photo === 'string') {
-      fd.append('photoUrl', request.photo);
     }
     return fd;
+  }
+
+  private buildRequestObject(request: Partial<CreateAuctionPlayerRequest>): any {
+    const obj: any = {};
+    if (request.playerNumber !== undefined) obj.playerNumber = request.playerNumber;
+    if (request.firstName !== undefined) obj.firstName = request.firstName;
+    if (request.lastName !== undefined) obj.lastName = request.lastName;
+    if (request.age !== undefined) obj.age = request.age;
+    if (request.city !== undefined) obj.city = request.city;
+    if (request.battingStyle !== undefined) obj.battingStyle = request.battingStyle;
+    if (request.bowlingStyle !== undefined) obj.bowlingStyle = request.bowlingStyle;
+    if (request.role !== undefined) obj.role = request.role;
+    if (request.basePrice !== undefined) obj.basePrice = request.basePrice;
+    if (request.photo && typeof request.photo === 'string') {
+      obj.photoUrl = request.photo;
+    }
+    return obj;
+  }
+
+  private shouldUseFormData(request: Partial<CreateAuctionPlayerRequest>): boolean {
+    return request.photo instanceof File;
   }
 
   private mapPlayer(p: any): AuctionPlayer {
