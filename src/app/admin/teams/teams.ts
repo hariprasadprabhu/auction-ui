@@ -614,7 +614,7 @@ export class Players implements OnInit {
             this.loadingMessage = `Updating player status...`;
             this.cdr.markForCheck();
             this.selectedPlayersForReset.clear();
-            // Refresh auction players after reset and show success after loading completes
+            // Refresh auction players after reset
             this.auctionPlayerService.getByTournament(this.tournamentId).subscribe({
               next: (auctionPlayers) => {
                 this.auctionPlayerMap.clear();
@@ -622,7 +622,15 @@ export class Players implements OnInit {
                   const key = ap.playerId || ap.id;
                   this.auctionPlayerMap.set(key, ap);
                 });
+                
+                // Update the status of reset players in local array to show as APPROVED
+                selectedPlayerIds.forEach((id) => {
+                  const player = this.players.find((p) => p.id === id);
+                  if (player) player.status = 'APPROVED';
+                });
+                
                 this.cdr.markForCheck();
+                
                 // Wait a moment for the UI to update before closing the modal
                 setTimeout(() => {
                   this.isResettingAuction = false;
@@ -632,8 +640,14 @@ export class Players implements OnInit {
                 }, 300);
               },
               error: () => {
+                // Even if refresh fails, update UI locally
+                selectedPlayerIds.forEach((id) => {
+                  const player = this.players.find((p) => p.id === id);
+                  if (player) player.status = 'APPROVED';
+                });
+                
                 this.cdr.markForCheck();
-                // Wait a moment for the UI to update before closing the modal
+                
                 setTimeout(() => {
                   this.isResettingAuction = false;
                   this.showLoadingModal = false;
