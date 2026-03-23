@@ -139,6 +139,14 @@ export class Register implements OnInit, OnDestroy {
       this.isUploadingPhoto = true;
       this.cdr.detectChanges();
       
+      // Show preview immediately
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.photoPreview = e.target.result;
+        this.cdr.detectChanges();
+      };
+      reader.readAsDataURL(file);
+      
       this.cloudinaryService.uploadImage(file).pipe(takeUntil(this.destroy$)).subscribe({
         next: (response) => {
           this.photoUrl = response.secure_url;
@@ -166,6 +174,14 @@ export class Register implements OnInit, OnDestroy {
     if (file) {
       this.isUploadingPaymentProof = true;
       this.cdr.detectChanges();
+      
+      // Show preview immediately
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.paymentProofPreview = e.target.result;
+        this.cdr.detectChanges();
+      };
+      reader.readAsDataURL(file);
       
       this.cloudinaryService.uploadImage(file).pipe(takeUntil(this.destroy$)).subscribe({
         next: (response) => {

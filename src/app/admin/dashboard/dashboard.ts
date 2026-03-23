@@ -119,13 +119,13 @@ export class Dashboard implements OnInit {
       basePrice: 20000,
       initialIncrementAmount: 5,
       status: 'UPCOMING' as TournamentStatus,
-      logoUrl: '',
+      logoUrl: this.DEFAULT_TEAM_LOGO,
     };
   }
 
   openCreateModal() {
     this.newTournament = this.blankForm();
-    this.createLogoPreview = null;
+    this.createLogoPreview = this.DEFAULT_TEAM_LOGO;
     this.showCreateModal = true;
   }
 
@@ -319,9 +319,9 @@ export class Dashboard implements OnInit {
       basePrice: tournament.basePrice,
       initialIncrementAmount: tournament.initialIncrementAmount,
       status: tournament.status,
-      logoUrl: tournament.logoUrl || '',
+      logoUrl: tournament.logoUrl || this.DEFAULT_TEAM_LOGO,
     };
-    this.editLogoPreview = tournament.logoUrl ?? null;
+    this.editLogoPreview = tournament.logoUrl || this.DEFAULT_TEAM_LOGO;
     this.showEditModal = true;
   }
 
@@ -335,6 +335,14 @@ export class Dashboard implements OnInit {
     if (!file) return;
     this.isUploadingEditLogo = true;
     this.cdr.markForCheck();
+    
+    // Show preview immediately
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      this.editLogoPreview = e.target.result;
+      this.cdr.markForCheck();
+    };
+    reader.readAsDataURL(file);
     
     this.cloudinaryService.uploadImage(file).subscribe({
       next: (response) => {

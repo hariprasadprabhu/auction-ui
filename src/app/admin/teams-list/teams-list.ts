@@ -131,9 +131,9 @@ export class TeamsListComponent implements OnInit {
       name: '',
       ownerName: '',
       mobileNumber: '',
-      logoUrl: '',
+      logoUrl: this.DEFAULT_TEAM_LOGO,
     };
-    this.teamLogoPreview = null;
+    this.teamLogoPreview = this.DEFAULT_TEAM_LOGO;
   }
 
   onTeamLogoSelected(event: any) {
@@ -141,6 +141,14 @@ export class TeamsListComponent implements OnInit {
     if (file) {
       this.isUploadingTeamLogo = true;
       this.cdr.detectChanges();
+      
+      // Show preview immediately
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.teamLogoPreview = e.target.result;
+        this.cdr.detectChanges();
+      };
+      reader.readAsDataURL(file);
       
       this.cloudinaryService.uploadImage(file).subscribe({
         next: (response) => {
@@ -208,9 +216,9 @@ export class TeamsListComponent implements OnInit {
       name: team.name,
       ownerName: team.ownerName,
       mobileNumber: team.mobileNumber,
-      logoUrl: team.logoUrl || '',
+      logoUrl: team.logoUrl || this.DEFAULT_TEAM_LOGO,
     };
-    this.editLogoPreview = team.logoUrl ?? null;
+    this.editLogoPreview = team.logoUrl || this.DEFAULT_TEAM_LOGO;
     this.showEditTeamModal = true;
   }
 
@@ -225,6 +233,14 @@ export class TeamsListComponent implements OnInit {
     if (file) {
       this.isUploadingEditLogo = true;
       this.cdr.detectChanges();
+      
+      // Show preview immediately
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.editLogoPreview = e.target.result;
+        this.cdr.detectChanges();
+      };
+      reader.readAsDataURL(file);
       
       this.cloudinaryService.uploadImage(file).subscribe({
         next: (response) => {

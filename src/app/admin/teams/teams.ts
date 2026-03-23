@@ -323,6 +323,14 @@ export class Players implements OnInit {
       this.isUploadingPlayerPhoto = true;
       this.cdr.detectChanges();
       
+      // Show preview immediately
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.playerPhotoPreview = e.target.result;
+        this.cdr.detectChanges();
+      };
+      reader.readAsDataURL(file);
+      
       this.cloudinaryService.uploadImage(file).subscribe({
         next: (response) => {
           this.newPlayer.photoUrl = response.secure_url;
@@ -345,6 +353,13 @@ export class Players implements OnInit {
     if (file) {
       this.isUploadingPlayerPaymentProof = true;
       this.cdr.detectChanges();
+      
+      // Show preview immediately
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        // For payment proof, just trigger upload
+      };
+      reader.readAsDataURL(file);
       
       this.cloudinaryService.uploadImage(file).subscribe({
         next: (response) => {
@@ -795,10 +810,10 @@ export class Players implements OnInit {
       lastName: player.lastName || '',
       dob: player.dob || '',
       role: player.role,
-      photoUrl: player.photoUrl || '',
-      paymentProofUrl: player.paymentProofUrl || '',
+      photoUrl: player.photoUrl || this.DEFAULT_PLAYER_PHOTO,
+      paymentProofUrl: player.paymentProofUrl || this.DEFAULT_PLAYER_PHOTO,
     };
-    this.editPhotoPreview = player.photoUrl ?? null;
+    this.editPhotoPreview = player.photoUrl || this.DEFAULT_PLAYER_PHOTO;
     this.showEditPlayerModal = true;
   }
 
