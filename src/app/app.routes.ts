@@ -48,4 +48,9 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./admin/owner-view/owner-view').then(m => m.OwnerView)
   },
+  {
+    path: 'admin/sponsors/:tournamentId',
+    canActivate: [authGuard],
+    loadComponent: () => import('./admin/sponsors/sponsors').then(m => m.Sponsors)
+  },
 ];

@@ -1,0 +1,85 @@
+<div class="sponsors-container">
+  <!-- Header -->
+  <div class="sponsors-header">
+    <div class="header-left">
+      <button class="btn-back" (click)="goBack()">
+        ← Back to Dashboard
+      </button>
+      <h1>{{ tournamentName }} - Sponsors</h1>
+    </div>
+    <div class="header-right">
+      <button class="btn-add-sponsor" (click)="openForm()">
+        ➕ Add Sponsor
+      </button>
+    </div>
+  </div>
+
+  <!-- Sponsors Grid -->
+  <div class="sponsors-content">
+    <div class="sponsors-grid">
+      <div class="sponsor-card" *ngFor="let sponsor of sponsors">
+        <div class="sponsor-image-wrapper">
+          <img [src]="sponsor.imageUrl" [alt]="sponsor.name" class="sponsor-image" />
+        </div>
+        <div class="sponsor-details">
+          <h3>{{ sponsor.name }}</h3>
+          <p class="subtitle">{{ sponsor.subTitle }}</p>
+        </div>
+        <div class="sponsor-actions">
+          <button class="btn-edit" (click)="openForm(sponsor.id)" [disabled]="isSaving">
+            ✏️ Edit
+          </button>
+          <button class="btn-delete" (click)="deleteSponsor(sponsor.id)" [disabled]="isSaving">
+            🗑️ Delete
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="no-sponsors" *ngIf="sponsors.length === 0">
+      <p>No sponsors yet. Click "Add Sponsor" to get started!</p>
+    </div>
+  </div>
+
+  <!-- Add/Edit Form Modal -->
+  <div class="form-modal-overlay" *ngIf="showForm" (click)="closeForm()"></div>
+  <div class="form-modal" *ngIf="showForm" (click)="$event.stopPropagation()">
+    <div class="form-modal-header">
+      <h2>{{ editingId ? 'Edit Sponsor' : 'Add New Sponsor' }}</h2>
+      <button class="modal-close" (click)="closeForm()">✕</button>
+    </div>
+
+    <div class="form-modal-body">
+      <div class="form-group">
+        <label>Sponsor Name *</label>
+        <input type="text" [(ngModel)]="formData.name" placeholder="e.g. TechCorp" [disabled]="isSaving" />
+      </div>
+
+      <div class="form-group">
+        <label>Subtitle *</label>
+        <input type="text" [(ngModel)]="formData.subTitle" placeholder="e.g. Technology Solutions" [disabled]="isSaving" />
+      </div>
+
+      <div class="form-group">
+        <label>Sponsor Logo/Image *</label>
+        <div class="image-upload-area">
+          <div class="image-preview-wrapper" *ngIf="imagePreview">
+            <img [src]="imagePreview" [alt]="formData.name" class="preview-image" />
+          </div>
+          <input type="file" accept="image/*" (change)="onImageSelected($event)" [disabled]="isSaving" />
+          <p class="upload-hint">Click to upload or paste image URL below</p>
+        </div>
+        <input type="text" [(ngModel)]="formData.imageUrl" placeholder="https://example.com/image.png" class="url-input" [disabled]="isSaving" />
+      </div>
+    </div>
+
+    <div class="form-modal-footer">
+      <button class="btn btn-secondary" (click)="closeForm()" [disabled]="isSaving">
+        Cancel
+      </button>
+      <button class="btn btn-primary" (click)="saveSponsor()" [disabled]="isSaving">
+        {{ isSaving ? '💾 Saving...' : '💾 Save Sponsor' }}
+      </button>
+    </div>
+  </div>
+</div>

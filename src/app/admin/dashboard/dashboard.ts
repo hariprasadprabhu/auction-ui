@@ -558,11 +558,8 @@ export class Dashboard implements OnInit {
   }
 
   openSponsorsGridModal(tournamentId: number, tournamentName: string) {
-    this.currentTournamentId = tournamentId;
-    this.currentTournamentName = tournamentName;
-    this.sponsors = this.getExampleSponsors();
-    this.showSponsorsGridModal = true;
-    this.cdr.markForCheck();
+    // Navigate to the dedicated sponsors component
+    this.router.navigate(['/admin/sponsors', tournamentId], { queryParams: { name: tournamentName } });
   }
 
   closeSponsorsGridModal() {
