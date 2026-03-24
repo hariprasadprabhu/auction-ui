@@ -182,6 +182,7 @@
   font-size: 2rem;
   border: 2px solid rgba(247, 201, 72, 0.4);
   flex-shrink: 0;
+  overflow: hidden;
 
   &.logo-left  { background: radial-gradient(circle at 40% 40%, #172040, #0b1225); box-shadow: 0 0 20px rgba(102,126,234,0.25); }
   &.logo-right { background: radial-gradient(circle at 40% 40%, #2a1800, #150d00); box-shadow: 0 0 20px rgba(247,201,72,0.25); }
