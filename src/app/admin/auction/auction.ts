@@ -499,6 +499,7 @@ export class Auction implements OnInit {
     const purse = this.teamPurseByTeamId.get(team.id);
     if (!purse) {
       this.validationError = `Purse data not available for ${team.name}. Please refresh and try again.`;
+      console.warn('[validateAndApplyBid] No purse data:', team.name);
       this.isValidatingBid = false;
       this.cdr.markForCheck();
       return;
@@ -507,10 +508,13 @@ export class Auction implements OnInit {
     const error = this.getBidValidationError(bidAmount, purse);
     if (error) {
       this.validationError = error;
+      console.warn('[validateAndApplyBid] Validation error:', error);
       this.isValidatingBid = false;
       this.cdr.markForCheck();
       return;
     }
+
+    console.log(`[validateAndApplyBid] Bid accepted: ${team.name} bidding ${bidAmount}L`);
 
     // Store current state in history before updating
     this.bidHistory.push({ bid: this.currentBid, team: this.currentBiddingTeam });
