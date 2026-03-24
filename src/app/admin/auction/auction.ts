@@ -254,6 +254,7 @@ export class Auction implements OnInit {
     this.currentBiddingTeam = null;
     this.validationError = null;
     this.bidHistory = []; // Reset bid history for new player
+    this.cdr.markForCheck();
   }
 
   placeBidForTeam(team: Team) {
