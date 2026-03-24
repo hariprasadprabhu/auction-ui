@@ -129,7 +129,7 @@
         </div>
 
         <!-- Payment Proof -->
-        <div class="form-section">
+        <div class="form-section" *ngIf="!tournament?.isPaidTournament">
           <h3 class="section-title">Payment Proof *</h3>
           <p class="section-hint">Upload a screenshot of your payment confirmation</p>
           <div class="file-upload-wrapper">
@@ -145,7 +145,7 @@
 
         <!-- Submit -->
         <div class="form-actions">
-          <button type="submit" class="btn-submit" [disabled]="!form.firstName || !form.role || !photoUrl || !paymentProofUrl || isSubmitting || isCooldownActive || isUploadingPhoto || isUploadingPaymentProof" [attr.data-cooldown]="isCooldownActive">
+          <button type="submit" class="btn-submit" [disabled]="!form.firstName || !form.role || !photoUrl || (!tournament?.isPaidTournament && !paymentProofUrl) || isSubmitting || isCooldownActive || isUploadingPhoto || isUploadingPaymentProof" [attr.data-cooldown]="isCooldownActive">
             {{ isSubmitting ? 'Registering...' : (isCooldownActive ? `Wait ${cooldownRemaining}s` : 'Register') }}
           </button>
           <p class="attempts-info" *ngIf="remainingAttempts > 0 && remainingAttempts < 3">{{ remainingAttempts }} registration attempt{{ remainingAttempts !== 1 ? 's' : '' }} remaining for this tournament</p>

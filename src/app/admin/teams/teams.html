@@ -83,7 +83,7 @@
           <th>Name</th>
           <th>Last Name</th>
           <th>Age</th>
-          <th>Payment Proof</th>
+          <th *ngIf="!tournament?.isPaidTournament">Payment Proof</th>
           <th>Action</th>
           <th>Status</th>
           <th>Actions</th>
@@ -107,7 +107,7 @@
           <td>{{ player.firstName }}</td>
           <td>{{ player.lastName || 'N/A' }}</td>
           <td>{{ calculateAge(player.dob) }}</td>
-          <td class="proof-cell">
+          <td class="proof-cell" *ngIf="!tournament?.isPaidTournament">
             <img
               [src]="getPaymentProofUrl(player.paymentProofUrl) | authImageCached | async"
               [alt]="'Payment Proof for ' + player.firstName"
@@ -231,7 +231,7 @@
           </div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group" *ngIf="!tournament?.isPaidTournament">
           <label for="editPaymentProof">Payment Proof Screenshot</label>
           <div class="file-upload-wrapper">
             <input type="file" id="editPaymentProof" accept="image/*" (change)="onEditPaymentProofSelected($event)" name="editPaymentProof" [disabled]="isUploadingEditPaymentProof" />
@@ -308,7 +308,7 @@
           </div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group" *ngIf="!tournament?.isPaidTournament">
           <label for="paymentProof">Payment Proof Screenshot</label>
           <div class="file-upload-wrapper">
             <input type="file" id="paymentProof" accept="image/*" (change)="onPaymentProofSelected($event)" name="paymentProof" [disabled]="isUploadingPlayerPaymentProof" />
@@ -325,7 +325,7 @@
 
         <div class="form-actions">
           <button type="button" class="btn btn-secondary" (click)="closeAddPlayerModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary" [disabled]="!newPlayer.firstName || !newPlayer.role || !newPlayer.photoUrl || isAddingPlayer || isUploadingPlayerPhoto || isUploadingPlayerPaymentProof">Add Player</button>
+          <button type="submit" class="btn btn-primary" [disabled]="!newPlayer.firstName || !newPlayer.role || !newPlayer.photoUrl || (!tournament?.isPaidTournament && !newPlayer.paymentProofUrl) || isAddingPlayer || isUploadingPlayerPhoto || isUploadingPlayerPaymentProof">Add Player</button>
         </div>
       </form>
     </div>

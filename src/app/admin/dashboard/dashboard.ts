@@ -105,6 +105,7 @@ export class Dashboard implements OnInit {
     initialIncrementAmount: number;
     status: TournamentStatus;
     logoUrl: string;
+    isPaidTournament: boolean;
   } = this.blankForm();
 
   private blankForm() {
@@ -120,6 +121,7 @@ export class Dashboard implements OnInit {
       initialIncrementAmount: 5,
       status: 'UPCOMING' as TournamentStatus,
       logoUrl: this.DEFAULT_TEAM_LOGO,
+      isPaidTournament: false,
     };
   }
 
