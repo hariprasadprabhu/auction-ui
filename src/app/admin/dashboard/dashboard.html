@@ -9,6 +9,7 @@
       </div>
     </div>
     <div class="header-right">
+      <button class="btn-sponsors" (click)="openSponsorsModal()">🎯 Manage Sponsors</button>
       <button class="btn-create" (click)="openCreateModal()">＋ Create Tournament</button>
       <button class="btn-logout" (click)="logout()">Logout</button>
     </div>
@@ -530,6 +531,86 @@
       <div class="modal-footer confirm-footer">
         <button class="btn btn-secondary" (click)="closeConfirmModal()">Cancel</button>
         <button class="btn btn-primary" (click)="confirmAction()">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sponsors Management Modal -->
+  <div class="modal-overlay" *ngIf="showSponsorsModal" (click)="closeSponsorsModal()">
+    <div class="modal-content sponsors-modal" (click)="$event.stopPropagation()">
+      <div class="sponsors-modal-header">
+        <h2>🎯 Manage Sponsors</h2>
+        <button class="modal-close" (click)="closeSponsorsModal()">✕</button>
+      </div>
+
+      <div class="sponsors-modal-body">
+        <!-- Sponsors List -->
+        <div class="sponsors-list">
+          <h3>Current Sponsors</h3>
+          <div class="sponsors-grid">
+            <div class="sponsor-card" *ngFor="let sponsor of sponsors">
+              <div class="sponsor-image-wrapper">
+                <img [src]="sponsor.imageUrl" [alt]="sponsor.name" class="sponsor-image" />
+              </div>
+              <div class="sponsor-info">
+                <h4>{{ sponsor.name }}</h4>
+                <p>{{ sponsor.subTitle }}</p>
+              </div>
+              <div class="sponsor-actions">
+                <button class="btn-edit" (click)="editSponsor(sponsor.id)" [disabled]="isSavingSponsor">✏️ Edit</button>
+                <button class="btn-delete" (click)="deleteSponsor(sponsor.id)" [disabled]="isSavingSponsor">🗑️ Delete</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Add New Sponsor Button -->
+          <div class="add-sponsor-section">
+            <button class="btn-add-sponsor" (click)="editingSponsorId = -1; resetSponsorForm();" [disabled]="editingSponsorId !== null && editingSponsorId !== -1">
+              ➕ Add New Sponsor
+            </button>
+          </div>
+        </div>
+
+        <!-- Sponsor Form -->
+        <div class="sponsor-form-section" *ngIf="editingSponsorId !== null">
+          <h3>{{ editingSponsorId === -1 ? 'Add New Sponsor' : 'Edit Sponsor' }}</h3>
+          
+          <div class="form-group">
+            <label>Sponsor Name *</label>
+            <input type="text" [(ngModel)]="sponsorForm.name" placeholder="e.g. TechCorp" />
+          </div>
+
+          <div class="form-group">
+            <label>Subtitle *</label>
+            <input type="text" [(ngModel)]="sponsorForm.subTitle" placeholder="e.g. Technology Solutions" />
+          </div>
+
+          <div class="form-group">
+            <label>Sponsor Image *</label>
+            <div class="image-upload-wrapper">
+              <div class="image-preview" *ngIf="sponsorImagePreview">
+                <img [src]="sponsorImagePreview" [alt]="sponsorForm.name" />
+              </div>
+              <input type="file" accept="image/*" (change)="onSponsorImageSelected($event)" />
+              <p class="upload-hint">Or paste image URL below</p>
+            </div>
+            <input type="text" [(ngModel)]="sponsorForm.imageUrl" placeholder="https://example.com/sponsor.png" />
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn-secondary" (click)="editingSponsorId = null; resetSponsorForm();" [disabled]="isSavingSponsor">
+              Cancel
+            </button>
+            <button class="btn btn-primary" (click)="saveSponsor()" [disabled]="isSavingSponsor">
+              {{ isSavingSponsor ? '💾 Saving...' : '💾 Save Sponsor' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="sponsors-modal-footer">
+        <p class="info-text">💡 Sponsors are displayed in the auction carousel</p>
+        <button class="btn btn-secondary" (click)="closeSponsorsModal()">Close</button>
       </div>
     </div>
   </div>

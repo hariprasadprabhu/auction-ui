@@ -511,5 +511,141 @@ export class Dashboard implements OnInit {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
+
+  // ── Sponsor Management Modal ─────────────────────────────────────────────
+  showSponsorsModal = false;
+  sponsors: Array<{ id: number; name: string; imageUrl: string; subTitle: string }> = [];
+  editingSponsorId: number | null = null;
+  sponsorForm = {
+    name: '',
+    imageUrl: '',
+    subTitle: '',
+  };
+  isSavingSponsor = false;
+  sponsorImagePreview: string | null = null;
+  nextSponsorId = 0;
+
+  private getExampleSponsors() {
+    return [
+      {
+        id: 1,
+        name: 'TechCorp',
+        imageUrl: 'https://via.placeholder.com/150x80?text=TechCorp',
+        subTitle: 'Technology Solutions',
+      },
+      {
+        id: 2,
+        name: 'InnovateLabs',
+        imageUrl: 'https://via.placeholder.com/150x80?text=Innovate',
+        subTitle: 'Innovation Hub',
+      },
+      {
+        id: 3,
+        name: 'Digital Solutions',
+        imageUrl: 'https://via.placeholder.com/150x80?text=DigitalSol',
+        subTitle: 'Digital Excellence',
+      },
+      {
+        id: 4,
+        name: 'FutureTech',
+        imageUrl: 'https://via.placeholder.com/150x80?text=FutureTech',
+        subTitle: 'The Future is Here',
+      },
+    ];
+  }
+
+  openSponsorsModal() {
+    this.sponsors = this.getExampleSponsors();
+    this.nextSponsorId = Math.max(...this.sponsors.map((s) => s.id), 0) + 1;
+    this.showSponsorsModal = true;
+    this.editingSponsorId = null;
+    this.resetSponsorForm();
+    this.cdr.markForCheck();
+  }
+
+  closeSponsorsModal() {
+    this.showSponsorsModal = false;
+    this.editingSponsorId = null;
+    this.resetSponsorForm();
+    this.cdr.markForCheck();
+  }
+
+  resetSponsorForm() {
+    this.sponsorForm = {
+      name: '',
+      imageUrl: '',
+      subTitle: '',
+    };
+    this.sponsorImagePreview = null;
+  }
+
+  editSponsor(sponsorId: number) {
+    const sponsor = this.sponsors.find((s) => s.id === sponsorId);
+    if (!sponsor) return;
+    this.editingSponsorId = sponsorId;
+    this.sponsorForm = {
+      name: sponsor.name,
+      imageUrl: sponsor.imageUrl,
+      subTitle: sponsor.subTitle,
+    };
+    this.sponsorImagePreview = sponsor.imageUrl;
+    this.cdr.markForCheck();
+  }
+
+  deleteSponsor(sponsorId: number) {
+    this.sponsors = this.sponsors.filter((s) => s.id !== sponsorId);
+    this.cdr.markForCheck();
+  }
+
+  saveSponsor() {
+    if (!this.sponsorForm.name.trim() || !this.sponsorForm.imageUrl.trim() || !this.sponsorForm.subTitle.trim()) {
+      alert('Please fill in all fields');
+      return;
+    }
+
+    this.isSavingSponsor = true;
+    this.cdr.markForCheck();
+
+    // Simulate API call with timeout
+    setTimeout(() => {
+      if (this.editingSponsorId !== null) {
+        // Edit existing sponsor
+        const sponsor = this.sponsors.find((s) => s.id === this.editingSponsorId);
+        if (sponsor) {
+          sponsor.name = this.sponsorForm.name;
+          sponsor.imageUrl = this.sponsorForm.imageUrl;
+          sponsor.subTitle = this.sponsorForm.subTitle;
+        }
+        this.editingSponsorId = null;
+      } else {
+        // Add new sponsor
+        this.sponsors.push({
+          id: this.nextSponsorId,
+          name: this.sponsorForm.name,
+          imageUrl: this.sponsorForm.imageUrl,
+          subTitle: this.sponsorForm.subTitle,
+        });
+        this.nextSponsorId++;
+      }
+
+      this.isSavingSponsor = false;
+      this.resetSponsorForm();
+      this.cdr.markForCheck();
+    }, 500);
+  }
+
+  onSponsorImageSelected(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      this.sponsorImagePreview = e.target?.result as string;
+      this.sponsorForm.imageUrl = this.sponsorImagePreview;
+      this.cdr.markForCheck();
+    };
+    reader.readAsDataURL(file);
+  }
 }
+
 
