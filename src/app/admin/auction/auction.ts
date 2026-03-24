@@ -329,11 +329,6 @@ export class Auction implements OnInit {
           this.overlayInteractive = false;
           this.auctionEventService.notifyAuctionUpdate(this.tournamentId);
           
-          // Auto-advance after 2 seconds
-          setTimeout(() => {
-            this.nextPlayer();
-          }, 2000);
-          
           this.cdr.markForCheck();
         },
         error: (err: HttpErrorResponse) => {
