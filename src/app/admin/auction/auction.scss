@@ -840,6 +840,13 @@
     &:hover:not(:disabled) { background: rgba(247,201,72,0.22); box-shadow: 0 4px 16px rgba(247,201,72,0.25); }
   }
 
+  &.ctrl-search {
+    background: rgba(79, 195, 247, 0.12);
+    color: #4fc3f7;
+    border: 1.5px solid rgba(79, 195, 247, 0.35);
+    &:hover:not(:disabled) { background: rgba(79, 195, 247, 0.22); box-shadow: 0 4px 16px rgba(79, 195, 247, 0.25); }
+  }
+
   &.ctrl-undo {
     background: rgba(0, 150, 200, 0.15);
     color: #00d4ff;
@@ -937,6 +944,217 @@
   .config-action-icon { font-size: 1.3rem; flex-shrink: 0; }
   .config-action-label { font-size: 0.88rem; font-weight: 600; line-height: 1.3; }
 }
+
+// Search Panel Styles
+.search-panel-backdrop {
+  position: fixed !important;
+  inset: 0;
+  z-index: 9999 !important;
+  background: rgba(0,0,0,0.55);
+}
+
+.search-panel {
+  position: fixed !important;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10001 !important;
+  background: linear-gradient(145deg, #0d1f3c, #081428);
+  border: 1.5px solid rgba(247,201,72,0.3);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 80vh;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(247,201,72,0.08);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideUp 0.3s ease-out;
+}
+
+.search-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(247,201,72,0.15);
+  flex-shrink: 0;
+}
+
+.search-panel-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #f7c948;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.search-close-btn {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.4);
+  font-size: 1rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+  &:hover { color: white; background: rgba(255,255,255,0.1); }
+}
+
+.search-panel-body {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  gap: 12px;
+  overflow-y: auto;
+  flex: 1;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.2);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(247,201,72,0.3);
+    border-radius: 4px;
+    
+    &:hover {
+      background: rgba(247,201,72,0.5);
+    }
+  }
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(247,201,72,0.25);
+  border-radius: 10px;
+  color: white;
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+
+  &::placeholder {
+    color: rgba(255,255,255,0.4);
+  }
+
+  &:focus {
+    outline: none;
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(247,201,72,0.5);
+    box-shadow: 0 0 12px rgba(247,201,72,0.15);
+  }
+}
+
+.search-results {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.search-no-results {
+  text-align: center;
+  padding: 20px;
+  color: rgba(255,255,255,0.5);
+  font-size: 0.95rem;
+}
+
+.search-result-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+
+  &:hover {
+    background: rgba(247,201,72,0.08);
+    border-color: rgba(247,201,72,0.3);
+    transform: translateX(2px);
+  }
+
+  .result-item-photo {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: rgba(0,0,0,0.3);
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .result-item-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .result-item-name {
+    font-weight: 600;
+    color: white;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .result-item-details {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+    font-size: 0.8rem;
+  }
+
+  .result-item-badge {
+    background: rgba(0,230,118,0.15);
+    color: #00e676;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .result-item-status {
+    color: rgba(255,255,255,0.6);
+    font-size: 0.75rem;
+
+    &.status-available {
+      color: #4fc3f7;
+    }
+
+    &.status-sold {
+      color: #f7c948;
+    }
+
+    &.status-unsold {
+      color: #e57373;
+    }
+  }
+
+  .result-item-number {
+    background: rgba(247,201,72,0.15);
+    color: #f7c948;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+}
+
 .confirm-dialog {
   position: fixed !important;
   top: 50%;

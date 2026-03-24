@@ -5,6 +5,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuctionPlayerService } from '../../core/services/auction-player.service';
@@ -26,7 +27,7 @@ import {
 @Component({
   selector: 'app-auction',
   standalone: true,
-  imports: [CommonModule, NormalizePhotoUrlCachedPipe],
+  imports: [CommonModule, NormalizePhotoUrlCachedPipe, FormsModule],
   templateUrl: './auction.html',
   styleUrls: ['./auction.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -46,6 +47,11 @@ export class Auction implements OnInit {
 
   // Bid history for undo functionality
   bidHistory: Array<{ bid: number; team: Team | null }> = [];
+
+  // Search functionality
+  searchTerm: string = '';
+  showSearchPanel: boolean = false;
+  filteredPlayers: AuctionPlayer[] = [];
 
   showSoldOverlay = false;
   showUnsoldOverlay = false;
@@ -719,6 +725,60 @@ export class Auction implements OnInit {
   getAuthority(): boolean {
     // Authority check for making modifications
     return !this.showSoldOverlay && !this.showUnsoldOverlay && !this.processingOverlay;
+  }
+
+  /**
+   * Search players by name
+   */
+  searchPlayers(): void {
+    if (!this.searchTerm.trim()) {
+      this.filteredPlayers = [];
+      return;
+    }
+
+    const term = this.searchTerm.toLowerCase();
+    this.filteredPlayers = this.players.filter(
+      (p) =>
+        p.firstName.toLowerCase().includes(term) ||
+        (p.lastName && p.lastName.toLowerCase().includes(term)) ||
+        (`${p.firstName} ${p.lastName || ''}`).toLowerCase().includes(term)
+    );
+  }
+
+  /**
+   * Jump to a specific player in the auction
+   */
+  jumpToPlayer(player: AuctionPlayer): void {
+    const index = this.players.indexOf(player);
+    if (index !== -1) {
+      this.currentIndex = index;
+      this.initBid();
+      this.closeSearchPanel();
+      this.cdr.markForCheck();
+    }
+  }
+
+  /**
+   * Close the search panel
+   */
+  closeSearchPanel(): void {
+    this.showSearchPanel = false;
+    this.searchTerm = '';
+    this.filteredPlayers = [];
+    this.cdr.markForCheck();
+  }
+
+  /**
+   * Get status label for a player
+   */
+  getPlayerStatus(player: AuctionPlayer): string {
+    if (player.auctionStatus === 'AVAILABLE') {
+      return 'Available';
+    } else if (player.auctionStatus === 'SOLD') {
+      return `Sold to ${player.soldToTeamName}`;
+    } else {
+      return 'Unsold';
+    }
   }
 
   private getMockSponsors(): Sponsor[] {

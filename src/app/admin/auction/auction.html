@@ -247,6 +247,9 @@
       <button class="ctrl-btn ctrl-config" (click)="showConfigModal = true">
         ⚙ CONFIG
       </button>
+      <button class="ctrl-btn ctrl-search" (click)="showSearchPanel = true" [disabled]="!auctionStarted">
+        🔍 SEARCH
+      </button>
       <ng-container *ngIf="!auctionComplete && !noUnsoldAvailable">
         <button class="ctrl-btn ctrl-undo" (click)="undoBid()" [disabled]="!auctionStarted || !canUndoBid() || processingOverlay || showSoldOverlay || showUnsoldOverlay">
           ↶ UNDO
@@ -278,6 +281,48 @@
         <span class="config-action-icon">🔄</span>
         <span class="config-action-label">Mark all UNSOLD players available for Auction</span>
       </button>
+    </div>
+  </div>
+
+  <!-- Search Panel -->
+  <div class="search-panel-backdrop" *ngIf="showSearchPanel" (click)="closeSearchPanel()"></div>
+  <div class="search-panel" *ngIf="showSearchPanel">
+    <div class="search-panel-header">
+      <span class="search-panel-title">🔍 Find a Player</span>
+      <button class="search-close-btn" (click)="closeSearchPanel()">✕</button>
+    </div>
+    <div class="search-panel-body">
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        (keyup)="searchPlayers()"
+        placeholder="Type player name..."
+        class="search-input"
+        (keydown.escape)="closeSearchPanel()"
+        autofocus
+      />
+      
+      <div class="search-results">
+        <div *ngIf="searchTerm && filteredPlayers.length === 0" class="search-no-results">
+          No players found matching "{{ searchTerm }}"
+        </div>
+
+        <div *ngFor="let player of filteredPlayers" class="search-result-item" (click)="jumpToPlayer(player)">
+          <div class="result-item-photo">
+            <img [src]="player.photoUrl | normalizePhotoUrlCached | async" [alt]="player.firstName" />
+          </div>
+          <div class="result-item-info">
+            <div class="result-item-name">{{ player.firstName }} {{ player.lastName }}</div>
+            <div class="result-item-details">
+              <span class="result-item-badge">{{ player.role }}</span>
+              <span class="result-item-status" [ngClass]="'status-' + player.auctionStatus.toLowerCase()">
+                {{ getPlayerStatus(player) }}
+              </span>
+            </div>
+          </div>
+          <div class="result-item-number">{{ player.playerNumber }}</div>
+        </div>
+      </div>
     </div>
   </div>
 
