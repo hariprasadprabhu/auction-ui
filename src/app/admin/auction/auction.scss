@@ -21,8 +21,6 @@
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   position: relative;
 
-  &::before { display: none; }
-
   > * { position: relative; z-index: 1; }
 }
 .auction-loading-screen {
@@ -39,8 +37,6 @@
   background: radial-gradient(ellipse at 65% 45%, #0d1f3c 0%, #050c1a 55%, #020810 100%);
   z-index: 100;
   backdrop-filter: blur(4px);
-
-  &::before { display: none; }
 }
 
 .loading-content {
