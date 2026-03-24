@@ -54,6 +54,7 @@ export class Auction implements OnInit {
   auctionComplete = false;
   noUnsoldAvailable = false;
   isValidatingBid = false;
+  auctionStarted = false;
 
   // Processing state for sold/unsold actions
   processingOverlay = false;
@@ -678,6 +679,31 @@ export class Auction implements OnInit {
 
   cancelConfirm() {
     this.confirmDialog = null;
+  }
+
+  startAuction() {
+    // Shuffle players in random order
+    this.shuffleArray(this.players);
+    
+    // Reset auction state and find first available player
+    this.currentIndex = 0;
+    const firstAvailableIndex = this.players.findIndex(p => p.auctionStatus === 'AVAILABLE');
+    if (firstAvailableIndex !== -1) {
+      this.currentIndex = firstAvailableIndex;
+      this.initBid();
+    }
+    
+    // Mark auction as started
+    this.auctionStarted = true;
+    this.cdr.markForCheck();
+  }
+
+  private shuffleArray<T>(array: T[]): void {
+    // Fisher-Yates shuffle algorithm
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
   }
 
   private getMockSponsors(): Sponsor[] {
