@@ -148,7 +148,7 @@
   box-shadow: 0 0 10px rgba(0, 230, 118, 0.8);
 }
 .auction-header {
-  height: 76px;
+  height: 95px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -170,13 +170,13 @@
 }
 
 .header-logo-badge {
-  width: 50px;
-  height: 50px;
+  width: 65px;
+  height: 65px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: 2rem;
   border: 2px solid rgba(247, 201, 72, 0.4);
   flex-shrink: 0;
 
@@ -213,7 +213,7 @@
 }
 
 .tournament-title {
-  font-size: 1.35rem;
+  font-size: 1.65rem;
   font-weight: 800;
   color: #f7c948;
   letter-spacing: 1px;
