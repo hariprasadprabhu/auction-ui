@@ -20,6 +20,7 @@ import {
   AuctionPlayer,
   IncrementRule,
   TeamPurse,
+  Sponsor,
 } from '../../models';
 
 @Component({
@@ -35,6 +36,7 @@ export class Auction implements OnInit {
   teams: Team[] = [];
   players: AuctionPlayer[] = [];
   teamPurses: TeamPurse[] = [];
+  sponsors: Sponsor[] = this.getMockSponsors();
 
   incrementRules: IncrementRule[] = [];
 
@@ -676,6 +678,19 @@ export class Auction implements OnInit {
 
   cancelConfirm() {
     this.confirmDialog = null;
+  }
+
+  private getMockSponsors(): Sponsor[] {
+    return [
+      { id: 1, name: 'Sponsor 1', logoUrl: 'https://via.placeholder.com/120x60?text=Sponsor+1' },
+      { id: 2, name: 'Sponsor 2', logoUrl: 'https://via.placeholder.com/120x60?text=Sponsor+2' },
+      { id: 3, name: 'Sponsor 3', logoUrl: 'https://via.placeholder.com/120x60?text=Sponsor+3' },
+      { id: 4, name: 'Sponsor 4', logoUrl: 'https://via.placeholder.com/120x60?text=Sponsor+4' },
+      { id: 5, name: 'Sponsor 5', logoUrl: 'https://via.placeholder.com/120x60?text=Sponsor+5' },
+      { id: 6, name: 'Sponsor 6', logoUrl: 'https://via.placeholder.com/120x60?text=Sponsor+6' },
+      { id: 7, name: 'Sponsor 7', logoUrl: 'https://via.placeholder.com/120x60?text=Sponsor+7' },
+      { id: 8, name: 'Sponsor 8', logoUrl: 'https://via.placeholder.com/120x60?text=Sponsor+8' },
+    ];
   }
 }
 

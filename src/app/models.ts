@@ -264,3 +264,13 @@ export interface OwnerViewTeamStats {
     soldPrice: number;
   }[];
 }
+
+// ── Sponsor ──────────────────────────────────────────────────────────────────
+
+export interface Sponsor {
+  id: number;
+  name: string;
+  logoUrl: string;
+  websiteUrl?: string;
+  tournamentId?: number;
+}

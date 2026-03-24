@@ -20,6 +20,27 @@
       <div class="header-logo-badge logo-right">🏆</div>
     </div>
   </header>
+
+  <!-- ═══ SPONSOR CAROUSEL ═══ -->
+  <div class="sponsor-carousel-container">
+    <div class="sponsor-carousel-track">
+      <ng-container *ngFor="let sponsor of sponsors; let i = index">
+        <div class="sponsor-item">
+          <img [src]="sponsor.logoUrl" [alt]="sponsor.name" class="sponsor-logo" />
+          <div class="sponsor-divider"></div>
+        </div>
+      </ng-container>
+      <!-- Duplicate sponsors for seamless looping -->
+      <ng-container *ngFor="let sponsor of sponsors; let i = index">
+        <div class="sponsor-item">
+          <img [src]="sponsor.logoUrl" [alt]="sponsor.name" class="sponsor-logo" />
+          <div class="sponsor-divider"></div>
+        </div>
+      </ng-container>
+    </div>
+    <div class="sponsor-center-line"></div>
+  </div>
+
   <!-- ═══ LOADING SCREEN ═══ -->
   <div class="auction-loading-screen" *ngIf="isLoading">
     <div class="loading-content">
