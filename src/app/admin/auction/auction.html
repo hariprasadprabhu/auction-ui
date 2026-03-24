@@ -20,7 +20,7 @@
         <span class="counter-lbl">Players</span>
       </div>
       <div class="header-logo-badge logo-right">
-        <img src="https://res.cloudinary.com/drytm0fl7/image/upload/v1774345684/logo1_upk5kp.png" alt="Auction Logo" class="header-logo-img" />
+        <img *ngIf="tournament?.logoUrl" [src]="tournament?.logoUrl | normalizePhotoUrlCached | async" [alt]="tournament?.name" class="header-logo-img" />
       </div>
     </div>
   </header>
