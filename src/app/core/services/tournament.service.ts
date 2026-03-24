@@ -92,7 +92,7 @@ export class TournamentService {
     if (request.purseAmount !== undefined) obj.purseAmount = request.purseAmount;
     if (request.playersPerTeam !== undefined) obj.playersPerTeam = request.playersPerTeam;
     if (request.basePrice !== undefined) obj.basePrice = request.basePrice;
-    if (request.initialIncrementAmount !== undefined) obj.initialIncrementAmount = request.initialIncrementAmount;
+    if (request.initialIncrementAmount !== undefined) obj.initialIncrement = request.initialIncrementAmount;
     if (request.status !== undefined) obj.status = request.status;
     // Attach Cloudinary URL directly to original field name
     if (request.logo && typeof request.logo === 'string') {
