@@ -682,14 +682,14 @@ export class Auction implements OnInit {
 
   private getMockSponsors(): Sponsor[] {
     return [
-      { id: 1, name: 'Sponsor 1', logoUrl: 'https://via.placeholder.com/120x60?text=Sponsor+1' },
-      { id: 2, name: 'Sponsor 2', logoUrl: 'https://via.placeholder.com/120x60?text=Sponsor+2' },
-      { id: 3, name: 'Sponsor 3', logoUrl: 'https://via.placeholder.com/120x60?text=Sponsor+3' },
-      { id: 4, name: 'Sponsor 4', logoUrl: 'https://via.placeholder.com/120x60?text=Sponsor+4' },
-      { id: 5, name: 'Sponsor 5', logoUrl: 'https://via.placeholder.com/120x60?text=Sponsor+5' },
-      { id: 6, name: 'Sponsor 6', logoUrl: 'https://via.placeholder.com/120x60?text=Sponsor+6' },
-      { id: 7, name: 'Sponsor 7', logoUrl: 'https://via.placeholder.com/120x60?text=Sponsor+7' },
-      { id: 8, name: 'Sponsor 8', logoUrl: 'https://via.placeholder.com/120x60?text=Sponsor+8' },
+      { id: 1, name: 'TechCorp', logoUrl: 'https://via.placeholder.com/100x60?text=TechCorp', personName: 'Raj Kumar', personImageUrl: 'https://i.pravatar.cc/150?img=1' },
+      { id: 2, name: 'InnovateLabs', logoUrl: 'https://via.placeholder.com/100x60?text=Innovate', personName: 'Priya Singh', personImageUrl: 'https://i.pravatar.cc/150?img=5' },
+      { id: 3, name: 'Digital Solutions', logoUrl: 'https://via.placeholder.com/100x60?text=DigitalSol', personName: 'Arjun Patel', personImageUrl: 'https://i.pravatar.cc/150?img=8' },
+      { id: 4, name: 'FutureTech', logoUrl: 'https://via.placeholder.com/100x60?text=FutureTech', personName: 'Neha Sharma', personImageUrl: 'https://i.pravatar.cc/150?img=12' },
+      { id: 5, name: 'CloudVision', logoUrl: 'https://via.placeholder.com/100x60?text=CloudVision', personName: 'Vikram Singh', personImageUrl: 'https://i.pravatar.cc/150?img=15' },
+      { id: 6, name: 'ByteFlow', logoUrl: 'https://via.placeholder.com/100x60?text=ByteFlow', personName: 'Anjali Gupta', personImageUrl: 'https://i.pravatar.cc/150?img=20' },
+      { id: 7, name: 'DataStream', logoUrl: 'https://via.placeholder.com/100x60?text=DataStream', personName: 'Rohan Reddy', personImageUrl: 'https://i.pravatar.cc/150?img=25' },
+      { id: 8, name: 'NexGen AI', logoUrl: 'https://via.placeholder.com/100x60?text=NexGenAI', personName: 'Sophia Mehta', personImageUrl: 'https://i.pravatar.cc/150?img=30' },
     ];
   }
 }

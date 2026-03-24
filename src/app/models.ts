@@ -271,6 +271,8 @@ export interface Sponsor {
   id: number;
   name: string;
   logoUrl: string;
+  personName?: string;
+  personImageUrl?: string;
   websiteUrl?: string;
   tournamentId?: number;
 }

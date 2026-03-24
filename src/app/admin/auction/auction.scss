@@ -250,9 +250,9 @@
 // ── Sponsor Carousel ──────────────────────────────────────────────────────────
 .sponsor-carousel-container {
   position: relative;
-  height: 80px;
+  height: 100px;
   background: rgba(0, 0, 0, 0.3);
-  border-bottom: 1px solid rgba(247, 201, 72, 0.2);
+  border-bottom: 1px solid rgba(247, 201, 72, 0.1);
   overflow: hidden;
   flex-shrink: 0;
   display: flex;
@@ -277,22 +277,63 @@
   flex-shrink: 0;
   height: 80px;
 
-  .sponsor-logo {
-    height: 60px;
-    object-fit: contain;
-    padding: 0 20px;
-    filter: brightness(0.9);
-    transition: filter 0.3s ease;
+  .sponsor-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 16px;
+    height: 100%;
+  }
 
-    &:hover {
-      filter: brightness(1.1);
+  .sponsor-logo {
+    height: 50px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+
+  .sponsor-person {
+    flex-shrink: 0;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid rgba(247, 201, 72, 0.3);
+
+    .person-image {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+    }
+  }
+
+  .sponsor-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    min-width: 120px;
+
+    .sponsor-company-name {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: rgba(247, 201, 72, 0.9);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sponsor-person-name {
+      font-size: 0.65rem;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.7);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
 
   .sponsor-divider {
-    width: 2px;
-    height: 40px;
-    background: linear-gradient(180deg, transparent, rgba(247, 201, 72, 0.5), transparent);
+    width: 1px;
+    height: 50px;
+    background: rgba(247, 201, 72, 0.2);
     flex-shrink: 0;
   }
 }
