@@ -63,21 +63,6 @@
     <div class="progress-fill" [style.width.%]="getProgressPercent()"></div>
   </div>
 
-  <!-- ═══ SPONSOR CAROUSEL ═══ -->
-  <section class="sponsor-banner-section" *ngIf="tournament && !auctionComplete && !noUnsoldAvailable">
-    <div class="sponsor-carousel-container">
-      <div class="sponsor-carousel">
-        <div class="sponsor-banner" *ngFor="let sponsor of getSponsorList()">
-          <span class="sponsor-name">{{ sponsor }}</span>
-        </div>
-        <!-- Duplicate for seamless loop -->
-        <div class="sponsor-banner" *ngFor="let sponsor of getSponsorList()">
-          <span class="sponsor-name">{{ sponsor }}</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- ═══ AUCTION COMPLETE ═══ -->
   <div class="auction-complete-screen" *ngIf="auctionComplete">
     <div class="complete-trophy">🏆</div>
