@@ -681,9 +681,19 @@ export class Auction implements OnInit {
     this.confirmDialog = null;
   }
 
+  hasAnyPlayerBeenAuctioned(): boolean {
+    return this.players.some(p => p.auctionStatus !== 'AVAILABLE');
+  }
+
+  getStartButtonText(): string {
+    return this.hasAnyPlayerBeenAuctioned() ? 'Resume Auction' : 'Start Auction';
+  }
+
   startAuction() {
-    // Shuffle players in random order
-    this.shuffleArray(this.players);
+    // Only shuffle if this is a fresh start (no players auctioned yet)
+    if (!this.hasAnyPlayerBeenAuctioned()) {
+      this.shuffleArray(this.players);
+    }
     
     // Reset auction state and find first available player
     this.currentIndex = 0;
@@ -704,6 +714,11 @@ export class Auction implements OnInit {
       const j = Math.floor(Math.random() * (i + 1));
       [array[i], array[j]] = [array[j], array[i]];
     }
+  }
+
+  getAuthority(): boolean {
+    // Authority check for making modifications
+    return !this.showSoldOverlay && !this.showUnsoldOverlay && !this.processingOverlay;
   }
 
   private getMockSponsors(): Sponsor[] {

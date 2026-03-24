@@ -125,7 +125,7 @@
       <h2 class="start-title">We Are All Set to Start the Auction</h2>
       <p class="start-subtitle">{{ players.length }} players are ready to be auctioned</p>
       <button class="btn-start-auction" (click)="startAuction()">
-        <span class="btn-text">Start Auction</span>
+        <span class="btn-text">{{ getStartButtonText() }}</span>
         <span class="btn-icon">▶</span>
       </button>
     </div>
@@ -232,7 +232,7 @@
         (click)="placeBidForTeam(team)"
         [class.team-btn-active]="currentBiddingTeam?.id === team.id"
         [class.team-btn-out-of-budget]="isTeamOutOfBudget(team)"
-        [disabled]="showSoldOverlay || showUnsoldOverlay || isTeamOutOfBudget(team) || !canTeamPlaceNextBid(team) || isValidatingBid"
+        [disabled]="!auctionStarted || showSoldOverlay || showUnsoldOverlay || isTeamOutOfBudget(team) || !canTeamPlaceNextBid(team) || isValidatingBid"
       >
         <img [src]="team.logoUrl | normalizePhotoUrlCached | async" [alt]="team.name" class="team-btn-logo" />
         <span class="team-btn-abbr">{{ getAbbr(team.name) }}</span>
@@ -248,18 +248,18 @@
         ⚙ CONFIG
       </button>
       <ng-container *ngIf="!auctionComplete && !noUnsoldAvailable">
-        <button class="ctrl-btn ctrl-undo" (click)="undoBid()" [disabled]="!canUndoBid() || processingOverlay || showSoldOverlay || showUnsoldOverlay">
+        <button class="ctrl-btn ctrl-undo" (click)="undoBid()" [disabled]="!auctionStarted || !canUndoBid() || processingOverlay || showSoldOverlay || showUnsoldOverlay">
           ↶ UNDO
         </button>
         <button class="ctrl-btn ctrl-sold" (click)="markSold()"
-          [disabled]="!currentBiddingTeam || processingOverlay || showSoldOverlay || showUnsoldOverlay">
+          [disabled]="!auctionStarted || !currentBiddingTeam || processingOverlay || showSoldOverlay || showUnsoldOverlay">
           ✓ SOLD
         </button>
         <button class="ctrl-btn ctrl-unsold" (click)="markUnsold()"
-          [disabled]="processingOverlay || showSoldOverlay || showUnsoldOverlay">
+          [disabled]="!auctionStarted || processingOverlay || showSoldOverlay || showUnsoldOverlay">
           ✗ UNSOLD
         </button>
-        <button class="ctrl-btn ctrl-next" (click)="nextPlayer()">
+        <button class="ctrl-btn ctrl-next" (click)="nextPlayer()" [disabled]="!auctionStarted">
           NEXT ▶
         </button>
       </ng-container>
