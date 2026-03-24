@@ -9,7 +9,6 @@
       </div>
     </div>
     <div class="header-right">
-      <button class="btn-sponsors" (click)="openSponsorsModal()">🎯 Manage Sponsors</button>
       <button class="btn-create" (click)="openCreateModal()">＋ Create Tournament</button>
       <button class="btn-logout" (click)="logout()">Logout</button>
     </div>
@@ -91,6 +90,10 @@
           <button class="action-btn" (click)="viewOwnerView(tournament.id)">
             <span class="icon">👑</span>
             <span class="tooltip">Owner View</span>
+          </button>
+          <button class="action-btn" (click)="openSponsorsGridModal(tournament.id, tournament.name)">
+            <span class="icon">🎯</span>
+            <span class="tooltip">Sponsors</span>
           </button>
           <button class="action-btn">
             <span class="icon">📊</span>
@@ -535,11 +538,44 @@
     </div>
   </div>
 
+  <!-- Sponsors Grid Modal -->
+  <div class="modal-overlay" *ngIf="showSponsorsGridModal" (click)="closeSponsorsGridModal()">
+    <div class="modal-content sponsors-grid-modal" (click)="$event.stopPropagation()">
+      <div class="sponsors-grid-header">
+        <h2>🎯 {{ currentTournamentName }} - Sponsors</h2>
+        <button class="modal-close" (click)="closeSponsorsGridModal()">✕</button>
+      </div>
+
+      <div class="sponsors-grid-body">
+        <div class="sponsors-grid-display">
+          <div class="sponsor-grid-card" *ngFor="let sponsor of sponsors">
+            <div class="sponsor-grid-image">
+              <img [src]="sponsor.imageUrl" [alt]="sponsor.name" />
+            </div>
+            <div class="sponsor-grid-info">
+              <h4>{{ sponsor.name }}</h4>
+              <p>{{ sponsor.subTitle }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="sponsors.length === 0" class="no-sponsors">
+          <p>No sponsors yet</p>
+        </div>
+      </div>
+
+      <div class="sponsors-grid-footer">
+        <button class="btn btn-secondary" (click)="closeSponsorsGridModal()">Close</button>
+        <button class="btn btn-primary" (click)="openSponsorsManageModal(currentTournamentId!, currentTournamentName)">⚙ Manage Sponsors</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Sponsors Management Modal -->
   <div class="modal-overlay" *ngIf="showSponsorsModal" (click)="closeSponsorsModal()">
     <div class="modal-content sponsors-modal" (click)="$event.stopPropagation()">
       <div class="sponsors-modal-header">
-        <h2>🎯 Manage Sponsors</h2>
+        <h2>⚙ Manage Sponsors - {{ currentTournamentName }}</h2>
         <button class="modal-close" (click)="closeSponsorsModal()">✕</button>
       </div>
 

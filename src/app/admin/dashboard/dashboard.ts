@@ -514,6 +514,9 @@ export class Dashboard implements OnInit {
 
   // ── Sponsor Management Modal ─────────────────────────────────────────────
   showSponsorsModal = false;
+  showSponsorsGridModal = false;
+  currentTournamentId: number | null = null;
+  currentTournamentName = '';
   sponsors: Array<{ id: number; name: string; imageUrl: string; subTitle: string }> = [];
   editingSponsorId: number | null = null;
   sponsorForm = {
@@ -554,7 +557,24 @@ export class Dashboard implements OnInit {
     ];
   }
 
-  openSponsorsModal() {
+  openSponsorsGridModal(tournamentId: number, tournamentName: string) {
+    this.currentTournamentId = tournamentId;
+    this.currentTournamentName = tournamentName;
+    this.sponsors = this.getExampleSponsors();
+    this.showSponsorsGridModal = true;
+    this.cdr.markForCheck();
+  }
+
+  closeSponsorsGridModal() {
+    this.showSponsorsGridModal = false;
+    this.currentTournamentId = null;
+    this.currentTournamentName = '';
+    this.cdr.markForCheck();
+  }
+
+  openSponsorsManageModal(tournamentId: number, tournamentName: string) {
+    this.currentTournamentId = tournamentId;
+    this.currentTournamentName = tournamentName;
     this.sponsors = this.getExampleSponsors();
     this.nextSponsorId = Math.max(...this.sponsors.map((s) => s.id), 0) + 1;
     this.showSponsorsModal = true;
@@ -565,6 +585,8 @@ export class Dashboard implements OnInit {
 
   closeSponsorsModal() {
     this.showSponsorsModal = false;
+    this.currentTournamentId = null;
+    this.currentTournamentName = '';
     this.editingSponsorId = null;
     this.resetSponsorForm();
     this.cdr.markForCheck();
