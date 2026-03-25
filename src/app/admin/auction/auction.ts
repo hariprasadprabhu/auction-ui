@@ -14,6 +14,7 @@ import { IncrementRuleService } from '../../core/services/increment-rule.service
 import { TeamService } from '../../core/services/team.service';
 import { TournamentService } from '../../core/services/tournament.service';
 import { ImageCacheService } from '../../core/services/image-cache.service';
+import { SponsorsService } from '../../core/services/sponsors.service';
 import { NormalizePhotoUrlCachedPipe } from '../../core/pipes/normalize-photo-url-cached.pipe';
 import {
   Tournament,
@@ -37,7 +38,7 @@ export class Auction implements OnInit {
   teams: Team[] = [];
   players: AuctionPlayer[] = [];
   teamPurses: TeamPurse[] = [];
-  sponsors: Sponsor[] = this.getMockSponsors();
+  sponsors: Sponsor[] = [];
 
   incrementRules: IncrementRule[] = [];
 
@@ -97,6 +98,7 @@ export class Auction implements OnInit {
     private http: HttpClient,
     private imageCacheService: ImageCacheService,
     private cdr: ChangeDetectorRef,
+    private sponsorsService: SponsorsService,
   ) {}
 
   ngOnInit() {
@@ -161,6 +163,19 @@ export class Auction implements OnInit {
         },
       });
       this.startRequest();
+
+      // Load Sponsors
+      this.sponsorsService.getByTournament(id).subscribe({
+        next: (sponsors) => {
+          this.sponsors = sponsors;
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          console.error('Failed to load sponsors:', err);
+          this.sponsors = [];
+          this.cdr.markForCheck();
+        },
+      });
     }
   }
 
@@ -776,17 +791,5 @@ export class Auction implements OnInit {
     }
   }
 
-  private getMockSponsors(): Sponsor[] {
-    return [
-      { id: 1, name: 'TechCorp', logoUrl: 'https://via.placeholder.com/100x60?text=TechCorp', personName: 'Raj Kumar', personImageUrl: 'https://i.pravatar.cc/150?img=1' },
-      { id: 2, name: 'InnovateLabs', logoUrl: 'https://via.placeholder.com/100x60?text=Innovate', personName: 'Priya Singh', personImageUrl: 'https://i.pravatar.cc/150?img=5' },
-      { id: 3, name: 'Digital Solutions', logoUrl: 'https://via.placeholder.com/100x60?text=DigitalSol', personName: 'Arjun Patel', personImageUrl: 'https://i.pravatar.cc/150?img=8' },
-      { id: 4, name: 'FutureTech', logoUrl: 'https://via.placeholder.com/100x60?text=FutureTech', personName: 'Neha Sharma', personImageUrl: 'https://i.pravatar.cc/150?img=12' },
-      { id: 5, name: 'CloudVision', logoUrl: 'https://via.placeholder.com/100x60?text=CloudVision', personName: 'Vikram Singh', personImageUrl: 'https://i.pravatar.cc/150?img=15' },
-      { id: 6, name: 'ByteFlow', logoUrl: 'https://via.placeholder.com/100x60?text=ByteFlow', personName: 'Anjali Gupta', personImageUrl: 'https://i.pravatar.cc/150?img=20' },
-      { id: 7, name: 'DataStream', logoUrl: 'https://via.placeholder.com/100x60?text=DataStream', personName: 'Rohan Reddy', personImageUrl: 'https://i.pravatar.cc/150?img=25' },
-      { id: 8, name: 'NexGen AI', logoUrl: 'https://via.placeholder.com/100x60?text=NexGenAI', personName: 'Sophia Mehta', personImageUrl: 'https://i.pravatar.cc/150?img=30' },
-    ];
-  }
 }
 

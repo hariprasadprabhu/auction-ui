@@ -26,7 +26,7 @@
   </header>
 
   <!-- ═══ SPONSOR CAROUSEL ═══ -->
-  <div class="sponsor-carousel-container">
+  <div class="sponsor-carousel-container" *ngIf="sponsors.length > 0">
     <div class="sponsor-carousel-track">
       <ng-container *ngFor="let sponsor of sponsors; let i = index">
         <div class="sponsor-item">
