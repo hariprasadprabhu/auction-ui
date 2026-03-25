@@ -458,6 +458,9 @@ export class Auction implements OnInit {
     const purse = this.teamPurseByTeamId.get(team.id);
     if (!purse) return false;
 
+    // If team has no remaining slots, they cannot bid
+    if (purse.remainingSlots <= 0) return false;
+
     // If this team is currently bidding, they can raise (unless they hit their max)
     if (this.currentBiddingTeam?.id === team.id) {
       const nextBid = this.currentBid + this.nextIncrement;
