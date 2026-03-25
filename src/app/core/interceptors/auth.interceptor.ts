@@ -13,6 +13,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     return next(req);
   }
 
+  // Skip adding auth headers for owner-view requests (public access)
+  if (router.url.includes('owner-view')) {
+    return next(req);
+  }
+
   const token = authService.getToken();
 
   // Clone request and attach JWT token if present
