@@ -125,8 +125,9 @@
 
 .bp-logo {
   height: 60px;
-  width: auto;
-  object-fit: contain;
+  width: 60px;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 .bp-text {
@@ -183,8 +184,9 @@
 
   .auction-logo {
     height: 50px;
-    width: auto;
-    object-fit: contain;
+    width: 50px;
+    object-fit: cover;
+    border-radius: 50%;
   }
 
   .auction-title {
