@@ -202,7 +202,11 @@ export class Register implements OnInit, OnDestroy {
 
   submitForm() {
     // Check basic validation
-    if (!this.form.firstName || !this.form.role || !this.photoUrl || !this.paymentProofUrl || !this.tournamentId || this.isSubmitting) {
+    if (!this.form.firstName || !this.form.role || !this.photoUrl || !this.tournamentId || this.isSubmitting) {
+      return;
+    }
+    // Only require paymentProofUrl if payment proof is required
+    if (this.tournament?.paymentProofRequired && !this.paymentProofUrl) {
       return;
     }
 

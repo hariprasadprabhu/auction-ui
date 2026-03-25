@@ -133,7 +133,7 @@
           <h3 class="section-title">Payment Proof *</h3>
           <p class="section-hint">Upload a screenshot of your payment confirmation</p>
           <div class="file-upload-wrapper">
-            <input type="file" id="paymentProof" accept="image/*" (change)="onPaymentProofSelected($event)" name="paymentProof" [disabled]="isUploadingPaymentProof" required />
+            <input type="file" id="paymentProof" accept="image/*" (change)="onPaymentProofSelected($event)" name="paymentProof" [disabled]="isUploadingPaymentProof" [required]="tournament?.paymentProofRequired" />
             <label for="paymentProof" class="file-upload-label proof-label" [class.disabled]="isUploadingPaymentProof">
               {{ isUploadingPaymentProof ? '⏳ Uploading...' : (paymentProofPreview ? '✅ Payment Proof Selected — Click to Change' : '📄 Upload Payment Screenshot') }}
             </label>
