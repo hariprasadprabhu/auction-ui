@@ -45,7 +45,6 @@ export const routes: Routes = [
   },
   {
     path: 'admin/owner-view/:tournamentId',
-    canActivate: [authGuard],
     loadComponent: () => import('./admin/owner-view/owner-view').then(m => m.OwnerView)
   },
   {
