@@ -105,8 +105,7 @@ export class Dashboard implements OnInit {
     initialIncrementAmount: number;
     status: TournamentStatus;
     logoUrl: string;
-    isPaidTournament: boolean;
-    paymentProofRequired: boolean;
+    paymentMode: 'free-no-proof' | 'free-with-proof' | 'paid-no-proof' | 'paid-with-proof';
   } = this.blankForm();
 
   private blankForm() {
@@ -122,8 +121,7 @@ export class Dashboard implements OnInit {
       initialIncrementAmount: 5,
       status: 'UPCOMING' as TournamentStatus,
       logoUrl: this.DEFAULT_TEAM_LOGO,
-      isPaidTournament: false,
-      paymentProofRequired: false,
+      paymentMode: 'free-no-proof' as 'free-no-proof' | 'free-with-proof' | 'paid-no-proof' | 'paid-with-proof',
     };
   }
 
@@ -186,6 +184,9 @@ export class Dashboard implements OnInit {
     }
     this.isCreatingTournament = true;
     this.cdr.markForCheck();
+    
+    const { isPaidTournament, paymentProofRequired } = this.getPaymentSettingsFromMode(this.newTournament.paymentMode);
+    
     this.tournamentService
       .create({
         name: this.newTournament.name,
@@ -199,7 +200,8 @@ export class Dashboard implements OnInit {
         initialIncrementAmount: this.newTournament.initialIncrementAmount || 5,
         status: this.newTournament.status,
         logo: this.newTournament.logoUrl || this.DEFAULT_TEAM_LOGO,
-        paymentProofRequired: this.newTournament.paymentProofRequired,
+        isPaidTournament,
+        paymentProofRequired,
       })
       .subscribe({
         next: (t) => {
@@ -309,12 +311,15 @@ export class Dashboard implements OnInit {
     initialIncrementAmount: number;
     status: TournamentStatus;
     logoUrl: string;
-    isPaidTournament?: boolean;
-    paymentProofRequired?: boolean;
+    paymentMode: 'free-no-proof' | 'free-with-proof' | 'paid-no-proof' | 'paid-with-proof';
   } = this.blankForm();
 
   openEditModal(tournament: Tournament) {
     this.editingTournamentId = tournament.id;
+    const paymentMode = this.getPaymentModeFromSettings(
+      tournament.isPaidTournament || false,
+      tournament.paymentProofRequired || false
+    );
     this.editTournament = {
       name: tournament.name,
       date: tournament.date,
@@ -327,8 +332,7 @@ export class Dashboard implements OnInit {
       initialIncrementAmount: tournament.initialIncrementAmount,
       status: tournament.status,
       logoUrl: tournament.logoUrl || this.DEFAULT_TEAM_LOGO,
-      isPaidTournament: tournament.isPaidTournament || false,
-      paymentProofRequired: tournament.paymentProofRequired || false,
+      paymentMode,
     };
     this.editLogoPreview = tournament.logoUrl || this.DEFAULT_TEAM_LOGO;
     this.showEditModal = true;
@@ -377,6 +381,9 @@ export class Dashboard implements OnInit {
     if (this.editingTournamentId === null) return;
     this.isUpdatingTournament = true;
     this.cdr.markForCheck();
+    
+    const { isPaidTournament, paymentProofRequired } = this.getPaymentSettingsFromMode(this.editTournament.paymentMode);
+    
     this.tournamentService
       .update(this.editingTournamentId, {
         name: this.editTournament.name,
@@ -390,7 +397,8 @@ export class Dashboard implements OnInit {
         initialIncrementAmount: this.editTournament.initialIncrementAmount,
         status: this.editTournament.status,
         logo: this.editTournament.logoUrl || this.DEFAULT_TEAM_LOGO,
-        paymentProofRequired: this.editTournament.paymentProofRequired,
+        isPaidTournament,
+        paymentProofRequired,
       })
       .subscribe({
         next: (updated) => {
@@ -515,6 +523,31 @@ export class Dashboard implements OnInit {
       this.confirmCallback();
     }
     this.closeConfirmModal();
+  }
+
+  /** Convert paymentMode string to isPaidTournament and paymentProofRequired booleans */
+  private getPaymentSettingsFromMode(mode: 'free-no-proof' | 'free-with-proof' | 'paid-no-proof' | 'paid-with-proof'): { isPaidTournament: boolean; paymentProofRequired: boolean } {
+    switch (mode) {
+      case 'free-no-proof':
+        return { isPaidTournament: false, paymentProofRequired: false };
+      case 'free-with-proof':
+        return { isPaidTournament: false, paymentProofRequired: true };
+      case 'paid-no-proof':
+        return { isPaidTournament: true, paymentProofRequired: false };
+      case 'paid-with-proof':
+        return { isPaidTournament: true, paymentProofRequired: true };
+      default:
+        return { isPaidTournament: false, paymentProofRequired: false };
+    }
+  }
+
+  /** Convert isPaidTournament and paymentProofRequired booleans to paymentMode string */
+  private getPaymentModeFromSettings(isPaidTournament: boolean, paymentProofRequired: boolean): 'free-no-proof' | 'free-with-proof' | 'paid-no-proof' | 'paid-with-proof' {
+    if (isPaidTournament) {
+      return paymentProofRequired ? 'paid-with-proof' : 'paid-no-proof';
+    } else {
+      return paymentProofRequired ? 'free-with-proof' : 'free-no-proof';
+    }
   }
 
   logout() {

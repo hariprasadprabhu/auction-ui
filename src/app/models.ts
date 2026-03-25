@@ -78,6 +78,7 @@ export interface CreateTournamentRequest {
   initialIncrementAmount: number;
   status?: TournamentStatus;
   logo?: File | string;
+  isPaidTournament?: boolean;
   paymentProofRequired?: boolean;
 }
 
