@@ -72,6 +72,8 @@ export class TournamentService {
     if (request.initialIncrementAmount !== undefined)
       fd.append('initialIncrement', String(request.initialIncrementAmount));
     if (request.status !== undefined) fd.append('status', request.status);
+    if (request.paymentProofRequired !== undefined)
+      fd.append('paymentProofRequired', String(request.paymentProofRequired));
     // Only append to FormData if it's a File object
     if (request.logo instanceof File) {
       fd.append('logo', request.logo);
@@ -94,6 +96,7 @@ export class TournamentService {
     if (request.basePrice !== undefined) obj.basePrice = request.basePrice;
     if (request.initialIncrementAmount !== undefined) obj.initialIncrement = request.initialIncrementAmount;
     if (request.status !== undefined) obj.status = request.status;
+    if (request.paymentProofRequired !== undefined) obj.paymentProofRequired = request.paymentProofRequired;
     // Attach Cloudinary URL directly to original field name
     if (request.logo && typeof request.logo === 'string') {
       obj.logo = request.logo;

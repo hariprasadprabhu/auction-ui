@@ -63,6 +63,7 @@ export interface Tournament {
   logoUrl?: string;
   teamesAllowed?: number;
   isPaidTournament?: boolean;
+  paymentProofRequired?: boolean;
 }
 
 export interface CreateTournamentRequest {
@@ -77,6 +78,7 @@ export interface CreateTournamentRequest {
   initialIncrementAmount: number;
   status?: TournamentStatus;
   logo?: File | string;
+  paymentProofRequired?: boolean;
 }
 
 export type UpdateTournamentRequest = Partial<CreateTournamentRequest>;

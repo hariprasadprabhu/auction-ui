@@ -106,6 +106,7 @@ export class Dashboard implements OnInit {
     status: TournamentStatus;
     logoUrl: string;
     isPaidTournament: boolean;
+    paymentProofRequired: boolean;
   } = this.blankForm();
 
   private blankForm() {
@@ -122,6 +123,7 @@ export class Dashboard implements OnInit {
       status: 'UPCOMING' as TournamentStatus,
       logoUrl: this.DEFAULT_TEAM_LOGO,
       isPaidTournament: false,
+      paymentProofRequired: false,
     };
   }
 
@@ -197,6 +199,7 @@ export class Dashboard implements OnInit {
         initialIncrementAmount: this.newTournament.initialIncrementAmount || 5,
         status: this.newTournament.status,
         logo: this.newTournament.logoUrl || this.DEFAULT_TEAM_LOGO,
+        paymentProofRequired: this.newTournament.paymentProofRequired,
       })
       .subscribe({
         next: (t) => {
@@ -306,6 +309,8 @@ export class Dashboard implements OnInit {
     initialIncrementAmount: number;
     status: TournamentStatus;
     logoUrl: string;
+    isPaidTournament?: boolean;
+    paymentProofRequired?: boolean;
   } = this.blankForm();
 
   openEditModal(tournament: Tournament) {
@@ -322,6 +327,8 @@ export class Dashboard implements OnInit {
       initialIncrementAmount: tournament.initialIncrementAmount,
       status: tournament.status,
       logoUrl: tournament.logoUrl || this.DEFAULT_TEAM_LOGO,
+      isPaidTournament: tournament.isPaidTournament || false,
+      paymentProofRequired: tournament.paymentProofRequired || false,
     };
     this.editLogoPreview = tournament.logoUrl || this.DEFAULT_TEAM_LOGO;
     this.showEditModal = true;
@@ -383,6 +390,7 @@ export class Dashboard implements OnInit {
         initialIncrementAmount: this.editTournament.initialIncrementAmount,
         status: this.editTournament.status,
         logo: this.editTournament.logoUrl || this.DEFAULT_TEAM_LOGO,
+        paymentProofRequired: this.editTournament.paymentProofRequired,
       })
       .subscribe({
         next: (updated) => {

@@ -234,6 +234,18 @@
           </div>
         </div>
 
+        <!-- Payment Proof Required -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="tPaymentProof">Require Payment Proof from Players?</label>
+            <select id="tPaymentProof" [(ngModel)]="newTournament.paymentProofRequired" name="tPaymentProof">
+              <option [value]="false">No - Optional</option>
+              <option [value]="true">Yes - Mandatory</option>
+            </select>
+            <span class="form-hint">Whether players must upload payment proof during registration</span>
+          </div>
+        </div>
+
         <div class="form-actions">
           <button type="button" class="btn btn-secondary" (click)="closeCreateModal()" [disabled]="isCreatingTournament">Cancel</button>
           <button type="submit" class="btn btn-primary" [disabled]="isCreatingTournament">{{ isCreatingTournament ? '🔄 Creating...' : 'Create Tournament' }}</button>
@@ -345,6 +357,18 @@
               <option value="ONGOING">Ongoing</option>
               <option value="COMPLETED">Completed</option>
             </select>
+          </div>
+        </div>
+
+        <!-- Payment Proof Required -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="ePaymentProof">Require Payment Proof from Players?</label>
+            <select id="ePaymentProof" [(ngModel)]="editTournament.paymentProofRequired" name="ePaymentProof">
+              <option [value]="false">No - Optional</option>
+              <option [value]="true">Yes - Mandatory</option>
+            </select>
+            <span class="form-hint">Whether players must upload payment proof during registration</span>
           </div>
         </div>
 
