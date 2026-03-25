@@ -2,14 +2,12 @@
   <!-- Header -->
   <div class="sponsors-header">
     <div class="header-left">
-      <button class="btn-back" (click)="goBack()">
-        ← Back to Dashboard
-      </button>
-      <h1>{{ tournamentName }} - Sponsors</h1>
+      <h1>{{ tournamentName }}</h1>
+      <p class="sponsors-subtitle">Sponsors</p>
     </div>
     <div class="header-right">
       <button class="btn-add-sponsor" (click)="openForm()">
-        ➕ Add Sponsor
+        + Add Sponsor
       </button>
     </div>
   </div>
@@ -21,30 +19,33 @@
 
   <!-- Sponsors Table -->
   <div class="sponsors-content">
+    <button class="btn btn-back-light" (click)="goBack()" title="Back to Dashboard">← Back To Dashboard</button>
+    <div class="action-buttons">
+      <!-- Add sponsor actions here if needed -->
+    </div>
+
     <div class="table-wrapper" *ngIf="sponsors.length > 0">
       <table class="sponsors-table">
         <thead>
           <tr>
+            <th>#</th>
+            <th>Logo</th>
             <th>Sponsor Name</th>
             <th>Person Name</th>
-            <th>Image</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let sponsor of sponsors; let i = index" [class.alternate]="i % 2 === 1">
-            <td class="sponsor-name">{{ sponsor.name }}</td>
-            <td class="person-name">{{ sponsor.personName }}</td>
-            <td class="image-cell">
+          <tr *ngFor="let sponsor of sponsors; let i = index">
+            <td class="sponsor-number">{{ i + 1 }}</td>
+            <td class="logo-cell">
               <img [src]="sponsor.personImageUrl" [alt]="sponsor.personName" class="sponsor-thumbnail" />
             </td>
+            <td class="sponsor-name">{{ sponsor.name }}</td>
+            <td class="person-name">{{ sponsor.personName }}</td>
             <td class="actions-cell">
-              <button class="btn-edit" (click)="openForm(sponsor.id)" [disabled]="isSaving" title="Edit">
-                ✏️
-              </button>
-              <button class="btn-delete" (click)="deleteSponsor(sponsor.id)" [disabled]="isSaving" title="Delete">
-                🗑️
-              </button>
+              <button class="btn-edit" (click)="openForm(sponsor.id)" [disabled]="isSaving" title="Edit">✏️</button>
+              <button class="btn-delete" (click)="deleteSponsor(sponsor.id)" [disabled]="isSaving" title="Delete">🗑️</button>
             </td>
           </tr>
         </tbody>
