@@ -31,7 +31,7 @@
             <th>#</th>
             <th>Logo</th>
             <th>Sponsor Name</th>
-            <th>Person Name</th>
+            <th>Sub Title</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -72,16 +72,16 @@
 
       <div class="form-group">
         <label>Sponsor Name *</label>
-        <input type="text" [(ngModel)]="formData.name" placeholder="e.g. TechCorp" [disabled]="isSaving" />
+        <input type="text" [(ngModel)]="formData.name" placeholder="e.g. Rocky / Amul" [disabled]="isSaving" />
       </div>
 
       <div class="form-group">
-        <label>Person Name *</label>
-        <input type="text" [(ngModel)]="formData.personName" placeholder="e.g. John Doe" [disabled]="isSaving" />
+        <label>Sub Title</label>
+        <input type="text" [(ngModel)]="formData.personName" placeholder="e.g. CEO, India / Taste of India" [disabled]="isSaving" />
       </div>
 
       <div class="form-group">
-        <label>Person Image *</label>
+        <label>Person / Brand Image *</label>
         <div class="image-upload-area">
           <div class="image-preview-wrapper" *ngIf="imagePreview">
             <img [src]="imagePreview" [alt]="formData.personName" class="preview-image" />
@@ -93,15 +93,8 @@
             [disabled]="isSaving || isUploadingImage" 
           />
           <p class="upload-hint" *ngIf="!isUploadingImage">Click to upload image or paste URL below</p>
-          <p class="upload-hint uploading" *ngIf="isUploadingImage">⏳ Uploading image to Cloudinary...</p>
+          <p class="upload-hint uploading" *ngIf="isUploadingImage">⏳ Uploading image please wait...</p>
         </div>
-        <input 
-          type="text" 
-          [(ngModel)]="formData.personImageUrl" 
-          placeholder="Image URL will appear here after upload" 
-          class="url-input" 
-          [disabled]="true"
-        />
       </div>
     </div>
 
