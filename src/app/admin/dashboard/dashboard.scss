@@ -1417,6 +1417,18 @@
   }
 }
 
+.brand-logo {
+    height: 50px;
+    width: 50px;
+    object-fit: cover;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+
 .sponsors-grid-body {
   overflow-y: auto;
   padding: 24px;
