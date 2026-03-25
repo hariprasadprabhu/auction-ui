@@ -2,13 +2,8 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-
-interface Sponsor {
-  id: number;
-  name: string;
-  imageUrl: string;
-  subTitle: string;
-}
+import { SponsorsService } from '../../core/services/sponsors.service';
+import { Sponsor } from '../../models';
 
 @Component({
   selector: 'app-sponsors',
@@ -28,17 +23,18 @@ export class Sponsors implements OnInit {
   editingId: number | null = null;
   formData = {
     name: '',
-    imageUrl: '',
-    subTitle: '',
+    personName: '',
+    personImageUrl: '',
   };
   imagePreview: string | null = null;
-  nextId = 1;
   isSaving = false;
+  errorMessage: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private cdr: ChangeDetectorRef,
+    private sponsorsService: SponsorsService,
   ) {}
 
   ngOnInit() {
@@ -48,36 +44,19 @@ export class Sponsors implements OnInit {
   }
 
   private loadSponsors() {
-    // TODO: Replace with API call
-    // For now, load example data
-    this.sponsors = [
-      {
-        id: 1,
-        name: 'TechCorp',
-        imageUrl: 'https://via.placeholder.com/150x80?text=TechCorp',
-        subTitle: 'Technology Solutions',
+    if (!this.tournamentId) return;
+    
+    this.sponsorsService.getByTournament(this.tournamentId).subscribe({
+      next: (sponsors) => {
+        this.sponsors = sponsors;
+        this.cdr.markForCheck();
       },
-      {
-        id: 2,
-        name: 'InnovateLabs',
-        imageUrl: 'https://via.placeholder.com/150x80?text=Innovate',
-        subTitle: 'Innovation Hub',
+      error: (err) => {
+        console.error('Failed to load sponsors:', err);
+        this.errorMessage = 'Failed to load sponsors. Please try again.';
+        this.cdr.markForCheck();
       },
-      {
-        id: 3,
-        name: 'Digital Solutions',
-        imageUrl: 'https://via.placeholder.com/150x80?text=DigitalSol',
-        subTitle: 'Digital Excellence',
-      },
-      {
-        id: 4,
-        name: 'FutureTech',
-        imageUrl: 'https://via.placeholder.com/150x80?text=FutureTech',
-        subTitle: 'The Future is Here',
-      },
-    ];
-    this.nextId = Math.max(...this.sponsors.map((s) => s.id), 0) + 1;
-    this.cdr.markForCheck();
+    });
   }
 
   goBack() {
@@ -92,10 +71,10 @@ export class Sponsors implements OnInit {
         this.editingId = sponsorId;
         this.formData = {
           name: sponsor.name,
-          imageUrl: sponsor.imageUrl,
-          subTitle: sponsor.subTitle,
+          personName: sponsor.personName,
+          personImageUrl: sponsor.personImageUrl,
         };
-        this.imagePreview = sponsor.imageUrl;
+        this.imagePreview = sponsor.personImageUrl;
       }
     } else {
       // Add mode
@@ -115,10 +94,11 @@ export class Sponsors implements OnInit {
   resetForm() {
     this.formData = {
       name: '',
-      imageUrl: '',
-      subTitle: '',
+      personName: '',
+      personImageUrl: '',
     };
     this.imagePreview = null;
+    this.errorMessage = null;
   }
 
   onImageSelected(event: Event) {
@@ -128,46 +108,57 @@ export class Sponsors implements OnInit {
     const reader = new FileReader();
     reader.onload = (e) => {
       this.imagePreview = e.target?.result as string;
-      this.formData.imageUrl = this.imagePreview;
+      this.formData.personImageUrl = this.imagePreview;
       this.cdr.markForCheck();
     };
     reader.readAsDataURL(file);
   }
 
   saveSponsor() {
-    if (!this.formData.name.trim() || !this.formData.imageUrl.trim() || !this.formData.subTitle.trim()) {
-      alert('Please fill in all fields');
+    if (!this.formData.name.trim() || !this.formData.personName.trim() || !this.formData.personImageUrl.trim()) {
+      this.errorMessage = 'Please fill in all fields';
+      this.cdr.markForCheck();
+      return;
+    }
+
+    if (!this.tournamentId) {
+      this.errorMessage = 'Tournament ID is missing';
+      this.cdr.markForCheck();
       return;
     }
 
     this.isSaving = true;
+    this.errorMessage = null;
     this.cdr.markForCheck();
 
-    // Simulate API call
-    setTimeout(() => {
-      if (this.editingId !== null) {
-        // Edit
-        const sponsor = this.sponsors.find((s) => s.id === this.editingId);
-        if (sponsor) {
-          sponsor.name = this.formData.name;
-          sponsor.imageUrl = this.formData.imageUrl;
-          sponsor.subTitle = this.formData.subTitle;
-        }
-      } else {
-        // Add
-        this.sponsors.push({
-          id: this.nextId,
-          name: this.formData.name,
-          imageUrl: this.formData.imageUrl,
-          subTitle: this.formData.subTitle,
-        });
-        this.nextId++;
-      }
+    // For now, only handle adding new sponsors via API
+    if (this.editingId === null) {
+      const sponsorRequest = {
+        name: this.formData.name,
+        personName: this.formData.personName,
+        personImageUrl: this.formData.personImageUrl,
+      };
 
+      this.sponsorsService.create(this.tournamentId, [sponsorRequest]).subscribe({
+        next: () => {
+          this.isSaving = false;
+          this.closeForm();
+          this.loadSponsors();
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          console.error('Failed to save sponsor:', err);
+          this.errorMessage = 'Failed to save sponsor. Please try again.';
+          this.isSaving = false;
+          this.cdr.markForCheck();
+        },
+      });
+    } else {
+      // Edit mode not yet implemented on backend
+      this.errorMessage = 'Editing sponsors is not yet supported';
       this.isSaving = false;
-      this.closeForm();
       this.cdr.markForCheck();
-    }, 500);
+    }
   }
 
   deleteSponsor(id: number) {

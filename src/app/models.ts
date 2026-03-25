@@ -271,9 +271,14 @@ export interface OwnerViewTeamStats {
 export interface Sponsor {
   id: number;
   name: string;
-  logoUrl: string;
-  personName?: string;
-  personImageUrl?: string;
+  personName: string;
+  personImageUrl: string;
   websiteUrl?: string;
   tournamentId?: number;
+}
+
+export interface CreateSponsorRequest {
+  name: string;
+  personName: string;
+  personImageUrl: string;
 }

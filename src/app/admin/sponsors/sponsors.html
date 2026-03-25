@@ -14,26 +14,41 @@
     </div>
   </div>
 
-  <!-- Sponsors Grid -->
+  <!-- Error Message -->
+  <div class="error-message" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Sponsors Table -->
   <div class="sponsors-content">
-    <div class="sponsors-grid">
-      <div class="sponsor-card" *ngFor="let sponsor of sponsors">
-        <div class="sponsor-image-wrapper">
-          <img [src]="sponsor.imageUrl" [alt]="sponsor.name" class="sponsor-image" />
-        </div>
-        <div class="sponsor-details">
-          <h3>{{ sponsor.name }}</h3>
-          <p class="subtitle">{{ sponsor.subTitle }}</p>
-        </div>
-        <div class="sponsor-actions">
-          <button class="btn-edit" (click)="openForm(sponsor.id)" [disabled]="isSaving">
-            ✏️ Edit
-          </button>
-          <button class="btn-delete" (click)="deleteSponsor(sponsor.id)" [disabled]="isSaving">
-            🗑️ Delete
-          </button>
-        </div>
-      </div>
+    <div class="table-wrapper" *ngIf="sponsors.length > 0">
+      <table class="sponsors-table">
+        <thead>
+          <tr>
+            <th>Sponsor Name</th>
+            <th>Person Name</th>
+            <th>Image</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let sponsor of sponsors; let i = index" [class.alternate]="i % 2 === 1">
+            <td class="sponsor-name">{{ sponsor.name }}</td>
+            <td class="person-name">{{ sponsor.personName }}</td>
+            <td class="image-cell">
+              <img [src]="sponsor.personImageUrl" [alt]="sponsor.personName" class="sponsor-thumbnail" />
+            </td>
+            <td class="actions-cell">
+              <button class="btn-edit" (click)="openForm(sponsor.id)" [disabled]="isSaving" title="Edit">
+                ✏️
+              </button>
+              <button class="btn-delete" (click)="deleteSponsor(sponsor.id)" [disabled]="isSaving" title="Delete">
+                🗑️
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
     <div class="no-sponsors" *ngIf="sponsors.length === 0">
@@ -50,26 +65,30 @@
     </div>
 
     <div class="form-modal-body">
+      <div *ngIf="errorMessage" class="form-error">
+        {{ errorMessage }}
+      </div>
+
       <div class="form-group">
         <label>Sponsor Name *</label>
         <input type="text" [(ngModel)]="formData.name" placeholder="e.g. TechCorp" [disabled]="isSaving" />
       </div>
 
       <div class="form-group">
-        <label>Subtitle *</label>
-        <input type="text" [(ngModel)]="formData.subTitle" placeholder="e.g. Technology Solutions" [disabled]="isSaving" />
+        <label>Person Name *</label>
+        <input type="text" [(ngModel)]="formData.personName" placeholder="e.g. John Doe" [disabled]="isSaving" />
       </div>
 
       <div class="form-group">
-        <label>Sponsor Logo/Image *</label>
+        <label>Person Image *</label>
         <div class="image-upload-area">
           <div class="image-preview-wrapper" *ngIf="imagePreview">
-            <img [src]="imagePreview" [alt]="formData.name" class="preview-image" />
+            <img [src]="imagePreview" [alt]="formData.personName" class="preview-image" />
           </div>
           <input type="file" accept="image/*" (change)="onImageSelected($event)" [disabled]="isSaving" />
           <p class="upload-hint">Click to upload or paste image URL below</p>
         </div>
-        <input type="text" [(ngModel)]="formData.imageUrl" placeholder="https://example.com/image.png" class="url-input" [disabled]="isSaving" />
+        <input type="text" [(ngModel)]="formData.personImageUrl" placeholder="https://example.com/image.png" class="url-input" [disabled]="isSaving" />
       </div>
     </div>
 

@@ -66,6 +66,16 @@
   }
 }
 
+.error-message {
+  background: #fee;
+  color: #c33;
+  padding: 12px 40px;
+  border-bottom: 1px solid #fcc;
+  font-size: 0.95rem;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
 .sponsors-content {
   flex: 1;
   overflow-y: auto;
@@ -75,102 +85,116 @@
   width: 100%;
 }
 
-.sponsors-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 24px;
-  margin-bottom: 40px;
+.table-wrapper {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 }
 
-.sponsor-card {
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s;
-  display: flex;
-  flex-direction: column;
+.sponsors-table {
+  width: 100%;
+  border-collapse: collapse;
 
-  &:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.15);
-  }
+  thead {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-weight: 600;
 
-  .sponsor-image-wrapper {
-    width: 100%;
-    height: 180px;
-    background: #f9f9f9;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    border-bottom: 1px solid #f0f0f0;
-
-    .sponsor-image {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      padding: 12px;
+    th {
+      padding: 16px;
+      text-align: left;
+      font-size: 0.95rem;
+      letter-spacing: 0.5px;
     }
   }
 
-  .sponsor-details {
-    padding: 20px;
-    flex: 1;
+  tbody {
+    tr {
+      border-bottom: 1px solid #f0f0f0;
+      transition: background-color 0.2s;
 
-    h3 {
-      font-size: 1.2rem;
-      color: #333;
-      margin: 0 0 6px;
-      font-weight: 700;
-    }
-
-    .subtitle {
-      font-size: 0.9rem;
-      color: #999;
-      margin: 0;
-    }
-  }
-
-  .sponsor-actions {
-    display: flex;
-    gap: 8px;
-    padding: 0 20px 20px;
-
-    .btn-edit,
-    .btn-delete {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-
-      &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
+      &:hover {
+        background-color: #f9f9f9;
       }
-    }
 
-    .btn-edit {
-      background: #e3f2fd;
-      color: #1976d2;
+      &.alternate {
+        background-color: #fafafa;
 
-      &:hover:not(:disabled) {
-        background: #1976d2;
-        color: white;
+        &:hover {
+          background-color: #f5f5f5;
+        }
       }
-    }
 
-    .btn-delete {
-      background: #ffebee;
-      color: #d32f2f;
+      td {
+        padding: 16px;
+        font-size: 0.95rem;
+        color: #333;
+      }
 
-      &:hover:not(:disabled) {
-        background: #d32f2f;
-        color: white;
+      .sponsor-name {
+        font-weight: 600;
+        color: #333;
+      }
+
+      .person-name {
+        color: #666;
+      }
+
+      .image-cell {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        .sponsor-thumbnail {
+          width: 50px;
+          height: 50px;
+          border-radius: 6px;
+          object-fit: cover;
+          background: #f0f0f0;
+        }
+      }
+
+      .actions-cell {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+
+        .btn-edit,
+        .btn-delete {
+          padding: 8px 12px;
+          border: none;
+          border-radius: 6px;
+          font-size: 0.95rem;
+          cursor: pointer;
+          transition: all 0.2s;
+          background: none;
+
+          &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+          }
+
+          &:hover:not(:disabled) {
+            transform: scale(1.15);
+          }
+        }
+
+        .btn-edit {
+          color: #1976d2;
+
+          &:hover:not(:disabled) {
+            background: #e3f2fd;
+          }
+        }
+
+        .btn-delete {
+          color: #d32f2f;
+
+          &:hover:not(:disabled) {
+            background: #ffebee;
+          }
+        }
       }
     }
   }
@@ -246,6 +270,17 @@
   padding: 24px;
   overflow-y: auto;
   flex: 1;
+}
+
+.form-error {
+  background: #fee;
+  color: #c33;
+  padding: 12px;
+  border: 1px solid #fcc;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 
 .form-group {
