@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SponsorsService } from '../../core/services/sponsors.service';
+import { CloudinaryImageService } from '../../core/services/cloudinary-image.service';
 import { Sponsor } from '../../models';
 
 @Component({
@@ -28,6 +29,7 @@ export class Sponsors implements OnInit {
   };
   imagePreview: string | null = null;
   isSaving = false;
+  isUploadingImage = false;
   errorMessage: string | null = null;
 
   constructor(
@@ -35,6 +37,7 @@ export class Sponsors implements OnInit {
     private router: Router,
     private cdr: ChangeDetectorRef,
     private sponsorsService: SponsorsService,
+    private cloudinaryService: CloudinaryImageService,
   ) {}
 
   ngOnInit() {
@@ -105,13 +108,25 @@ export class Sponsors implements OnInit {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      this.imagePreview = e.target?.result as string;
-      this.formData.personImageUrl = this.imagePreview;
-      this.cdr.markForCheck();
-    };
-    reader.readAsDataURL(file);
+    this.isUploadingImage = true;
+    this.errorMessage = null;
+    this.cdr.markForCheck();
+
+    this.cloudinaryService.uploadImage(file).subscribe({
+      next: (response) => {
+        // Store the Cloudinary URL in the form data
+        this.formData.personImageUrl = response.secure_url;
+        this.imagePreview = response.secure_url;
+        this.isUploadingImage = false;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Failed to upload image to Cloudinary:', err);
+        this.isUploadingImage = false;
+        this.errorMessage = 'Failed to upload image. Please try again.';
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   saveSponsor() {

@@ -85,10 +85,22 @@
           <div class="image-preview-wrapper" *ngIf="imagePreview">
             <img [src]="imagePreview" [alt]="formData.personName" class="preview-image" />
           </div>
-          <input type="file" accept="image/*" (change)="onImageSelected($event)" [disabled]="isSaving" />
-          <p class="upload-hint">Click to upload or paste image URL below</p>
+          <input 
+            type="file" 
+            accept="image/*" 
+            (change)="onImageSelected($event)" 
+            [disabled]="isSaving || isUploadingImage" 
+          />
+          <p class="upload-hint" *ngIf="!isUploadingImage">Click to upload image or paste URL below</p>
+          <p class="upload-hint uploading" *ngIf="isUploadingImage">⏳ Uploading image to Cloudinary...</p>
         </div>
-        <input type="text" [(ngModel)]="formData.personImageUrl" placeholder="https://example.com/image.png" class="url-input" [disabled]="isSaving" />
+        <input 
+          type="text" 
+          [(ngModel)]="formData.personImageUrl" 
+          placeholder="Image URL will appear here after upload" 
+          class="url-input" 
+          [disabled]="true"
+        />
       </div>
     </div>
 
