@@ -118,6 +118,7 @@ export interface TeamPurse {
   availableForBidding: number;
   playersBought: number;
   remainingSlots: number;
+  logoUrl?: string;
 }
 
 // ── Player ───────────────────────────────────────────────────────────────────
