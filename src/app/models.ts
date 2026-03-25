@@ -62,7 +62,6 @@ export interface Tournament {
   initialIncrementAmount: number;
   logoUrl?: string;
   teamesAllowed?: number;
-  isPaidTournament?: boolean;
   paymentProofRequired?: boolean;
 }
 
@@ -78,7 +77,6 @@ export interface CreateTournamentRequest {
   initialIncrementAmount: number;
   status?: TournamentStatus;
   logo?: File | string;
-  isPaidTournament?: boolean;
   paymentProofRequired?: boolean;
 }
 

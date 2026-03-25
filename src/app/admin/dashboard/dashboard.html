@@ -222,17 +222,14 @@
           </div>
         </div>
 
-        <!-- Payment Mode (Paid Tournament + Payment Proof) -->
+        <!-- Payment Proof Required -->
         <div class="form-row">
           <div class="form-group">
-            <label for="tPaymentMode">Payment Settings *</label>
-            <select id="tPaymentMode" [(ngModel)]="newTournament.paymentMode" name="tPaymentMode" required>
-              <option value="free-no-proof">Free tournament, no payment proof required</option>
-              <option value="free-with-proof">Free tournament, payment proof required</option>
-              <option value="paid-no-proof">Paid tournament, payment proof optional</option>
-              <option value="paid-with-proof">Paid tournament, payment proof required</option>
+            <label for="tPaymentProof">Require Payment Proof from Players?</label>
+            <select id="tPaymentProof" [(ngModel)]="newTournament.paymentProofRequired" name="tPaymentProof">
+              <option [value]="false">No - Payment proof is optional</option>
+              <option [value]="true">Yes - Payment proof is required</option>
             </select>
-            <span class="form-hint">Choose whether tournament is paid and if payment proof uploads are required/optional during player registration</span>
           </div>
         </div>
 
@@ -350,17 +347,14 @@
           </div>
         </div>
 
-        <!-- Payment Mode (Paid Tournament + Payment Proof) -->
+        <!-- Payment Proof Required -->
         <div class="form-row">
           <div class="form-group">
-            <label for="ePaymentMode">Payment Settings</label>
-            <select id="ePaymentMode" [(ngModel)]="editTournament.paymentMode" name="ePaymentMode">
-              <option value="free-no-proof">Free tournament, no payment proof required</option>
-              <option value="free-with-proof">Free tournament, payment proof required</option>
-              <option value="paid-no-proof">Paid tournament, payment proof optional</option>
-              <option value="paid-with-proof">Paid tournament, payment proof required</option>
+            <label for="ePaymentProof">Require Payment Proof from Players?</label>
+            <select id="ePaymentProof" [(ngModel)]="editTournament.paymentProofRequired" name="ePaymentProof">
+              <option [value]="false">No - Payment proof is optional</option>
+              <option [value]="true">Yes - Payment proof is required</option>
             </select>
-            <span class="form-hint">Choose whether tournament is paid and if payment proof uploads are required/optional during player registration</span>
           </div>
         </div>
 
