@@ -28,34 +28,22 @@
   <!-- ═══ SPONSOR CAROUSEL ═══ -->
   <div class="sponsor-carousel-container" *ngIf="sponsors.length > 0">
     <div class="sponsor-carousel-track">
-      <ng-container *ngFor="let sponsor of sponsors; let i = index">
-        <div class="sponsor-item">
-          <div class="sponsor-card">
-            <div class="sponsor-person">
-              <img [src]="sponsor.personImageUrl" [alt]="sponsor.personName" class="person-image" />
+      <!-- Repeat sponsor list 10 times for continuous scrolling -->
+      <ng-container *ngFor="let repetition of [0,1,2,3,4,5,6,7,8,9]">
+        <ng-container *ngFor="let sponsor of sponsors; let i = index">
+          <div class="sponsor-item">
+            <div class="sponsor-card">
+              <div class="sponsor-person">
+                <img [src]="sponsor.personImageUrl" [alt]="sponsor.personName" class="person-image" />
+              </div>
+              <div class="sponsor-info">
+                <div class="sponsor-company-name">{{ sponsor.name }}</div>
+                <div class="sponsor-person-name">{{ sponsor.personName }}</div>
+              </div>
             </div>
-            <div class="sponsor-info">
-              <div class="sponsor-company-name">{{ sponsor.name }}</div>
-              <div class="sponsor-person-name">{{ sponsor.personName }}</div>
-            </div>
+            <div class="sponsor-divider"></div>
           </div>
-          <div class="sponsor-divider"></div>
-        </div>
-      </ng-container>
-      <!-- Duplicate sponsors for seamless looping -->
-      <ng-container *ngFor="let sponsor of sponsors; let i = index">
-        <div class="sponsor-item">
-          <div class="sponsor-card">
-            <div class="sponsor-person">
-              <img [src]="sponsor.personImageUrl" [alt]="sponsor.personName" class="person-image" />
-            </div>
-            <div class="sponsor-info">
-              <div class="sponsor-company-name">{{ sponsor.name }}</div>
-              <div class="sponsor-person-name">{{ sponsor.personName }}</div>
-            </div>
-          </div>
-          <div class="sponsor-divider"></div>
-        </div>
+        </ng-container>
       </ng-container>
     </div>
   </div>
