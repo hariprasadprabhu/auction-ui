@@ -2,7 +2,8 @@
 
   <!-- Top Nav Brand Bar -->
   <div class="brand-bar">
-    <img src="assets/images/logo_final.png" alt="AuctionDeck Logo" class="brand-logo-small" />
+    <img src="https://res.cloudinary.com/drytm0fl7/image/upload/v1774417151/logo_resized_xnddqz.jpg" alt="AuctionDeck Logo" class="brand-logo" />
+    <span class="brand-name">Bid Players</span>
   </div>
 
   <!-- Tournament Banner -->
@@ -10,7 +11,10 @@
     <div class="banner-content">
       <div class="banner-info">
         <p class="banner-label">Player Registration</p>
-        <h1>{{ tournament.name }}</h1>
+        <div class="tournament-title-row">
+          <img *ngIf="tournament.logoUrl" [src]="tournament.logoUrl" alt="Tournament Logo" class="tournament-logo" />
+          <h1>{{ tournament.name }}</h1>
+        </div>
         <p class="banner-sport">
           <span class="sport-badge">{{ tournament.sport }}</span>
         </p>
