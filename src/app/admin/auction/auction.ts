@@ -794,5 +794,14 @@ export class Auction implements OnInit {
     }
   }
 
+  // Utility: Duplicate sponsors to fill the screen
+  get sponsorsForCarousel(): Sponsor[] {
+    if (!this.sponsors || this.sponsors.length === 0) return [];
+    // Estimate how many times to repeat based on a minimum count (e.g., 12)
+    const minCount = 12;
+    const repeats = Math.ceil(minCount / this.sponsors.length);
+    return Array(repeats).fill(this.sponsors).flat();
+  }
+
 }
 
