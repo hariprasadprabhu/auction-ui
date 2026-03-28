@@ -289,6 +289,12 @@
   will-change: transform;
 }
 
+.sponsor-carousel-track::after {
+  content: '';
+  display: block;
+  min-width: 1px;
+}
+
 @keyframes scroll-sponsors {
   0% {
     transform: translateX(0);
