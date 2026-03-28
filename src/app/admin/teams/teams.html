@@ -26,7 +26,8 @@
 
   <!-- Main Content -->
   <div [class.blur-content]="!isLoading && pendingImages > 0" class="teams-content">
-  <!-- Header -->
+
+  <!-- Header + Stats -->
   <div class="teams-header">
     <div class="header-content">
       <div class="tournament-info">
@@ -34,6 +35,17 @@
         <p class="sub-header">Players</p>
       </div>
       <div class="tournament-date">{{ tournament?.date | date: 'MMM dd, yyyy' }}</div>
+    </div>
+    <div class="player-stats-bar">
+      <span>Total Players: <b>{{ totalPlayers }}</b></span>
+      <span>Total Approved Players: <b>{{ totalApprovedPlayers }}</b></span>
+    </div>
+    <div class="search-sort-bar">
+      <input type="text" [(ngModel)]="searchTerm" placeholder="Search by name..." class="search-input" />
+      <span class="sort-label">Sort by:</span>
+      <button (click)="setSort('playerNumber')" [class.active]="sortField==='playerNumber'"># <span *ngIf="sortField==='playerNumber'">{{sortDirection==='asc'?'▲':'▼'}}</span></button>
+      <button (click)="setSort('firstName')" [class.active]="sortField==='firstName'">First Name <span *ngIf="sortField==='firstName'">{{sortDirection==='asc'?'▲':'▼'}}</span></button>
+      <button (click)="setSort('lastName')" [class.active]="sortField==='lastName'">Last Name <span *ngIf="sortField==='lastName'">{{sortDirection==='asc'?'▲':'▼'}}</span></button>
     </div>
   </div>
 
@@ -90,7 +102,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let player of players">
+        <tr *ngFor="let player of filteredAndSortedPlayers">
           <td class="checkbox-col">
             <input type="checkbox" [checked]="selectedPlayers.has(player.id)" (change)="onPlayerCheckboxChange(player.id, $any($event).target.checked)" />
           </td>

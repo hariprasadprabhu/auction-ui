@@ -1,3 +1,47 @@
+.player-stats-bar {
+  display: flex;
+  gap: 32px;
+  margin: 10px 0 0 0;
+  font-size: 1.1rem;
+  color: #333;
+  b { color: #764ba2; }
+}
+
+.search-sort-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0 0 0;
+}
+
+.search-input {
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  min-width: 180px;
+}
+
+.sort-label {
+  font-size: 1rem;
+  color: #555;
+  margin-left: 10px;
+}
+
+.search-sort-bar button {
+  background: #f3f3f3;
+  border: 1px solid #bbb;
+  border-radius: 5px;
+  padding: 4px 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.search-sort-bar button.active, .search-sort-bar button:hover {
+  background: #764ba2;
+  color: #fff;
+  border-color: #764ba2;
+}
 * {
   margin: 0;
   padding: 0;

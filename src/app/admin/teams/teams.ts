@@ -1,3 +1,4 @@
+
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -22,6 +23,59 @@ import { NormalizePhotoUrlCachedPipe } from '../../core/pipes/normalize-photo-ur
   styleUrls: ['./teams.scss'],
 })
 export class Players implements OnInit {
+    // Search and Sort
+    public searchTerm = '';
+    public sortField: 'playerNumber' | 'firstName' | 'lastName' = 'playerNumber';
+    public sortDirection: 'asc' | 'desc' = 'asc';
+
+    get filteredAndSortedPlayers(): Player[] {
+      let filtered = this.players;
+      if (this.searchTerm && this.searchTerm.trim()) {
+        const term = this.searchTerm.trim().toLowerCase();
+        filtered = filtered.filter((p: Player) =>
+          (p.firstName && p.firstName.toLowerCase().includes(term)) ||
+          (p.lastName && p.lastName.toLowerCase().includes(term))
+        );
+      }
+      let sorted = [...filtered];
+      sorted.sort((a: Player, b: Player) => {
+        let aVal: string | number = '';
+        let bVal: string | number = '';
+        if (this.sortField === 'playerNumber') {
+          aVal = Number(a.playerNumber);
+          bVal = Number(b.playerNumber);
+        } else {
+          aVal = (a[this.sortField] || '').toString().toLowerCase();
+          bVal = (b[this.sortField] || '').toString().toLowerCase();
+        }
+        if (aVal < bVal) return this.sortDirection === 'asc' ? -1 : 1;
+        if (aVal > bVal) return this.sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+      return sorted;
+    }
+
+    setSort(field: 'playerNumber' | 'firstName' | 'lastName') {
+      if (this.sortField === field) {
+        this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        this.sortField = field;
+        this.sortDirection = 'asc';
+      }
+    }
+
+    get totalPlayers(): number {
+      return this.players.length;
+    }
+
+    get totalApprovedPlayers(): number {
+      return this.players.filter((p: Player) => p.status === 'APPROVED' && this.isApprovedStatus(p.id)).length;
+    }
+
+    isApprovedStatus(playerId: number): boolean {
+      const auctionStatus = this.getPlayerAuctionStatus(playerId);
+      return auctionStatus === 'SOLD' || auctionStatus === 'UNSOLD' || auctionStatus === 'APPROVED';
+    }
   tournament: Tournament | null = null;
   players: Player[] = [];
   auctionPlayerMap = new Map<number, any>(); // Map player ID to auction player data
