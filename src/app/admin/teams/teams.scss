@@ -1,3 +1,12 @@
+.sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s;
+}
+.sortable.active, .sortable:hover {
+  color: #764ba2;
+  text-decoration: underline;
+}
 .player-stats-bar {
   display: flex;
   gap: 32px;

@@ -42,10 +42,6 @@
     </div>
     <div class="search-sort-bar">
       <input type="text" [(ngModel)]="searchTerm" placeholder="Search by name..." class="search-input" />
-      <span class="sort-label">Sort by:</span>
-      <button (click)="setSort('playerNumber')" [class.active]="sortField==='playerNumber'"># <span *ngIf="sortField==='playerNumber'">{{sortDirection==='asc'?'▲':'▼'}}</span></button>
-      <button (click)="setSort('firstName')" [class.active]="sortField==='firstName'">First Name <span *ngIf="sortField==='firstName'">{{sortDirection==='asc'?'▲':'▼'}}</span></button>
-      <button (click)="setSort('lastName')" [class.active]="sortField==='lastName'">Last Name <span *ngIf="sortField==='lastName'">{{sortDirection==='asc'?'▲':'▼'}}</span></button>
     </div>
   </div>
 
@@ -90,14 +86,24 @@
           <th class="checkbox-col">
             <input type="checkbox" [checked]="selectAllChecked" (change)="onSelectAllChange($any($event).target.checked)" title="Select All" />
           </th>
-          <th>Player #</th>
+          <th (click)="setSort('playerNumber')" class="sortable" [class.active]="sortField==='playerNumber'">
+            Player # <span *ngIf="sortField==='playerNumber'">{{sortDirection==='asc'?'▲':'▼'}}</span>
+          </th>
           <th>Photo</th>
-          <th>Name</th>
-          <th>Last Name</th>
-          <th>Age</th>
+          <th (click)="setSort('firstName')" class="sortable" [class.active]="sortField==='firstName'">
+            Name <span *ngIf="sortField==='firstName'">{{sortDirection==='asc'?'▲':'▼'}}</span>
+          </th>
+          <th (click)="setSort('lastName')" class="sortable" [class.active]="sortField==='lastName'">
+            Last Name <span *ngIf="sortField==='lastName'">{{sortDirection==='asc'?'▲':'▼'}}</span>
+          </th>
+          <th (click)="setSort('age')" class="sortable" [class.active]="sortField==='age'">
+            Age <span *ngIf="sortField==='age'">{{sortDirection==='asc'?'▲':'▼'}}</span>
+          </th>
           <th *ngIf="tournament?.paymentProofRequired">Payment Proof</th>
           <th>Action</th>
-          <th>Status</th>
+          <th (click)="setSort('status')" class="sortable" [class.active]="sortField==='status'">
+            Status <span *ngIf="sortField==='status'">{{sortDirection==='asc'?'▲':'▼'}}</span>
+          </th>
           <th>Actions</th>
         </tr>
       </thead>

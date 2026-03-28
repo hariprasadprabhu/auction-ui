@@ -25,7 +25,7 @@ import { NormalizePhotoUrlCachedPipe } from '../../core/pipes/normalize-photo-ur
 export class Players implements OnInit {
     // Search and Sort
     public searchTerm = '';
-    public sortField: 'playerNumber' | 'firstName' | 'lastName' = 'playerNumber';
+    public sortField: 'playerNumber' | 'firstName' | 'lastName' | 'age' | 'status' = 'playerNumber';
     public sortDirection: 'asc' | 'desc' = 'asc';
 
     get filteredAndSortedPlayers(): Player[] {
@@ -41,12 +41,27 @@ export class Players implements OnInit {
       sorted.sort((a: Player, b: Player) => {
         let aVal: string | number = '';
         let bVal: string | number = '';
-        if (this.sortField === 'playerNumber') {
-          aVal = Number(a.playerNumber);
-          bVal = Number(b.playerNumber);
-        } else {
-          aVal = (a[this.sortField] || '').toString().toLowerCase();
-          bVal = (b[this.sortField] || '').toString().toLowerCase();
+        switch (this.sortField) {
+          case 'playerNumber':
+            aVal = Number(a.playerNumber);
+            bVal = Number(b.playerNumber);
+            break;
+          case 'firstName':
+            aVal = (a.firstName || '').toLowerCase();
+            bVal = (b.firstName || '').toLowerCase();
+            break;
+          case 'lastName':
+            aVal = (a.lastName || '').toLowerCase();
+            bVal = (b.lastName || '').toLowerCase();
+            break;
+          case 'age':
+            aVal = Number(this.calculateAge(a.dob));
+            bVal = Number(this.calculateAge(b.dob));
+            break;
+          case 'status':
+            aVal = (a.status || '').toLowerCase();
+            bVal = (b.status || '').toLowerCase();
+            break;
         }
         if (aVal < bVal) return this.sortDirection === 'asc' ? -1 : 1;
         if (aVal > bVal) return this.sortDirection === 'asc' ? 1 : -1;
@@ -55,7 +70,7 @@ export class Players implements OnInit {
       return sorted;
     }
 
-    setSort(field: 'playerNumber' | 'firstName' | 'lastName') {
+    setSort(field: 'playerNumber' | 'firstName' | 'lastName' | 'age' | 'status') {
       if (this.sortField === field) {
         this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
       } else {
