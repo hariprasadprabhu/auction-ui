@@ -86,7 +86,7 @@ export class Players implements OnInit {
     }
 
     get totalApprovedPlayers(): number {
-      return this.players.filter((p: Player) => this.isApprovedStatus(p.id)).length;
+      return this.players.filter((p: Player) => p.status === 'APPROVED').length;
     }
 
     isApprovedStatus(playerId: number): boolean {
