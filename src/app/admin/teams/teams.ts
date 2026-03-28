@@ -91,7 +91,7 @@ export class Players implements OnInit {
 
     isApprovedStatus(playerId: number): boolean {
       const auctionStatus = this.getPlayerAuctionStatus(playerId);
-      return auctionStatus === 'SOLD' || auctionStatus === 'UNSOLD' || auctionStatus === 'Approved';
+      return auctionStatus === 'SOLD' || auctionStatus === 'UNSOLD' || auctionStatus === 'APPROVED';
     }
   tournament: Tournament | null = null;
   players: Player[] = [];
