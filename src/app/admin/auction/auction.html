@@ -28,8 +28,8 @@
   <!-- ═══ SPONSOR CAROUSEL ═══ -->
   <div class="sponsor-carousel-container" *ngIf="sponsors.length > 0">
     <div class="sponsor-carousel-track">
-      <!-- Repeat sponsor list 10 times for continuous scrolling -->
-      <ng-container *ngFor="let repetition of [0,1,2,3,4,5,6,7,8,9]">
+      <!-- Repeat sponsors list twice for seamless infinite scroll -->
+      <ng-container *ngFor="let repetition of [0,1]">
         <ng-container *ngFor="let sponsor of sponsors; let i = index">
           <div class="sponsor-item">
             <div class="sponsor-card">

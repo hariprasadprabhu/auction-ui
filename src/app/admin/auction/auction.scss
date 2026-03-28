@@ -284,9 +284,18 @@
 .sponsor-carousel-track {
   display: flex;
   gap: 0;
-  width: fit-content;
-  animation: scroll-sponsors 100s linear infinite;
+  width: max-content;
+  animation: scroll-sponsors 40s linear infinite;
   will-change: transform;
+}
+
+@keyframes scroll-sponsors {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
 .sponsor-item {
