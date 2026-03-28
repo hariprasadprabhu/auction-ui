@@ -140,7 +140,7 @@
 
         <div class="player-info-col">
           <div class="player-full-name">
-            <span class="first-name">{{ currentPlayer.firstName }}</span>
+            <span class="first-name" [ngClass]="{'long-name': currentPlayer.firstName.length > 8}">{{ currentPlayer.firstName }}</span>
             <span class="last-name">{{ currentPlayer.lastName }}</span>
           </div>
 

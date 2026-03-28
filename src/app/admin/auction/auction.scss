@@ -455,6 +455,9 @@
     text-transform: uppercase;
     text-shadow: 0 2px 25px rgba(247,201,72,0.35);
     line-height: 1;
+    &.long-name {
+      font-size: 2rem;
+    }
   }
 
   .last-name {
