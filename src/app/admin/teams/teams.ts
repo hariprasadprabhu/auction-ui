@@ -42,10 +42,12 @@ export class Players implements OnInit {
         let aVal: string | number = '';
         let bVal: string | number = '';
         switch (this.sortField) {
-          case 'playerNumber':
-            aVal = Number(a.playerNumber);
-            bVal = Number(b.playerNumber);
+          case 'playerNumber': {
+            // Alphanumeric sort (e.g., P001, P002, P010)
+            aVal = (a.playerNumber || '').toString();
+            bVal = (b.playerNumber || '').toString();
             break;
+          }
           case 'firstName':
             aVal = (a.firstName || '').toLowerCase();
             bVal = (b.firstName || '').toLowerCase();
