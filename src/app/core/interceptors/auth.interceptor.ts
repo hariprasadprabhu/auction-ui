@@ -8,6 +8,16 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
+  // Skip adding auth headers for Cloudinary requests (CORS issues)
+  if (req.url.includes('cloudinary.com')) {
+    return next(req);
+  }
+
+  // Skip adding auth headers for owner-view requests (public access)
+  if (router.url.includes('owner-view')) {
+    return next(req);
+  }
+
   const token = authService.getToken();
 
   // Clone request and attach JWT token if present

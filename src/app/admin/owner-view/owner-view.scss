@@ -107,6 +107,49 @@
   width: 100%;
 }
 
+// ── Bid Player Branding Header ───────────────────────────────────────────────
+
+.bp-branding-header {
+  background: white;
+  border-radius: 12px;
+  padding: 20px 30px;
+  margin-bottom: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.bp-logo-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.bp-logo {
+  height: 60px;
+  width: 60px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.bp-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bp-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+}
+
+.bp-tagline {
+  font-size: 0.85rem;
+  color: #666;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
 // ── Header ───────────────────────────────────────────────────────────────────
 
 .ov-header {
@@ -121,18 +164,34 @@
   flex-wrap: wrap;
   gap: 16px;
 
-  h1 {
-    font-size: 2rem;
+  h2 {
+    font-size: 1.8rem;
     color: #333;
     font-weight: 700;
+    margin: 0;
   }
 
-  .header-left { flex: 1; min-width: 250px; }
+  .header-left { 
+    flex: 1; 
+    min-width: 250px; 
+  }
 
-  .ov-subtitle {
-    font-size: 0.9rem;
-    color: #767676;
-    margin-top: 6px;
+  .auction-header-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .auction-logo {
+    height: 50px;
+    width: 50px;
+    object-fit: cover;
+    border-radius: 50%;
+  }
+
+  .auction-title {
+    display: inline;
+    margin: 0;
   }
 
   .tournament-date {

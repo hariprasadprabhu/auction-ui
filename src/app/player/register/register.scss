@@ -17,6 +17,17 @@
   padding-bottom: 60px;
 }
 
+.brand-logo {
+    height: 50px;
+    width: 50px;
+    object-fit: cover;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
 /* Brand Bar */
 .brand-bar {
   display: flex;
@@ -72,11 +83,28 @@
     margin-bottom: 6px;
   }
 
+  .tournament-title-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 8px;
+  }
+
+  .tournament-logo {
+    height: 48px;
+    width: 48px;
+    object-fit: cover;
+    border-radius: 8px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  }
+
   h1 {
     font-size: 1.9rem;
     font-weight: 700;
     color: white;
-    margin-bottom: 8px;
+    margin: 0;
     line-height: 1.2;
   }
 

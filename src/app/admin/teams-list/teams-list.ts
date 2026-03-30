@@ -1,9 +1,10 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TeamService } from '../../core/services/team.service';
 import { TournamentService } from '../../core/services/tournament.service';
+import { CloudinaryImageService } from '../../core/services/cloudinary-image.service';
 import { Tournament, Team } from '../../models';
 import { NormalizePhotoUrlCachedPipe } from '../../core/pipes/normalize-photo-url-cached.pipe';
 
@@ -25,11 +26,12 @@ export class TeamsListComponent implements OnInit {
   // Add Team Form
   showAddTeamModal = false;
   isAddingTeam = false;
+  isUploadingTeamLogo = false;
   newTeam = {
     name: '',
     ownerName: '',
     mobileNumber: '',
-    logoFile: null as File | null,
+    logoUrl: '' as string,
   };
   teamLogoPreview: string | null = null;
 
@@ -37,14 +39,15 @@ export class TeamsListComponent implements OnInit {
   showEditTeamModal = false;
   isEditingTeam = false;
   isDeletingTeam = false;
+  isUploadingEditLogo = false;
   editingTeam: Team | null = null;
   editTeam = {
     name: '',
     ownerName: '',
     mobileNumber: '',
+    logoUrl: '' as string,
   };
   editLogoPreview: string | null = null;
-  editLogoFile: File | null = null;
 
   // ── Limit Error Modal ────────────────────────────────────────────────────
   showLimitErrorModal = false;
@@ -60,14 +63,12 @@ export class TeamsListComponent implements OnInit {
   confirmCallback: (() => void) | null = null;
 
   private tournamentId!: number;
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private teamService: TeamService,
-    private tournamentService: TournamentService,
-    private cdr: ChangeDetectorRef,
-  ) {}
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private teamService = inject(TeamService);
+  private tournamentService = inject(TournamentService);
+  private cloudinaryService = inject(CloudinaryImageService);
+  private cdr = inject(ChangeDetectorRef);
 
   ngOnInit() {
     this.loadingStartTime = Date.now();
@@ -130,20 +131,39 @@ export class TeamsListComponent implements OnInit {
       name: '',
       ownerName: '',
       mobileNumber: '',
-      logoFile: null,
+      logoUrl: this.DEFAULT_TEAM_LOGO,
     };
-    this.teamLogoPreview = null;
+    this.teamLogoPreview = this.DEFAULT_TEAM_LOGO;
   }
 
   onTeamLogoSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
-      this.newTeam.logoFile = file;
+      this.isUploadingTeamLogo = true;
+      this.cdr.detectChanges();
+      
+      // Show preview immediately
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.teamLogoPreview = e.target.result;
+        this.cdr.detectChanges();
       };
       reader.readAsDataURL(file);
+      
+      this.cloudinaryService.uploadImage(file).subscribe({
+        next: (response) => {
+          this.newTeam.logoUrl = response.secure_url;
+          this.teamLogoPreview = this.cloudinaryService.getTransformedUrl(response.secure_url);
+          this.isUploadingTeamLogo = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Logo upload failed:', err);
+          alert('Failed to upload logo. Please try again.');
+          this.isUploadingTeamLogo = false;
+          this.cdr.detectChanges();
+        },
+      });
     }
   }
 
@@ -162,7 +182,7 @@ export class TeamsListComponent implements OnInit {
         name: this.newTeam.name,
         ownerName: this.newTeam.ownerName,
         mobileNumber: this.newTeam.mobileNumber,
-        logo: this.newTeam.logoFile ?? undefined,
+        logo: this.newTeam.logoUrl || this.DEFAULT_TEAM_LOGO,
       })
       .subscribe({
         next: (t) => {
@@ -196,9 +216,9 @@ export class TeamsListComponent implements OnInit {
       name: team.name,
       ownerName: team.ownerName,
       mobileNumber: team.mobileNumber,
+      logoUrl: team.logoUrl || this.DEFAULT_TEAM_LOGO,
     };
-    this.editLogoPreview = team.logoUrl ?? null;
-    this.editLogoFile = null;
+    this.editLogoPreview = team.logoUrl || this.DEFAULT_TEAM_LOGO;
     this.showEditTeamModal = true;
   }
 
@@ -206,18 +226,36 @@ export class TeamsListComponent implements OnInit {
     this.showEditTeamModal = false;
     this.editingTeam = null;
     this.editLogoPreview = null;
-    this.editLogoFile = null;
   }
 
   onEditLogoSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
-      this.editLogoFile = file;
+      this.isUploadingEditLogo = true;
+      this.cdr.detectChanges();
+      
+      // Show preview immediately
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.editLogoPreview = e.target.result;
+        this.cdr.detectChanges();
       };
       reader.readAsDataURL(file);
+      
+      this.cloudinaryService.uploadImage(file).subscribe({
+        next: (response) => {
+          this.editTeam.logoUrl = response.secure_url;
+          this.editLogoPreview = this.cloudinaryService.getTransformedUrl(response.secure_url);
+          this.isUploadingEditLogo = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Logo upload failed:', err);
+          alert('Failed to upload logo. Please try again.');
+          this.isUploadingEditLogo = false;
+          this.cdr.detectChanges();
+        },
+      });
     }
   }
 
@@ -233,7 +271,7 @@ export class TeamsListComponent implements OnInit {
         name: this.editTeam.name,
         ownerName: this.editTeam.ownerName,
         mobileNumber: this.editTeam.mobileNumber,
-        logo: this.editLogoFile ?? undefined,
+        logo: this.editTeam.logoUrl || this.editingTeam?.logoUrl || this.DEFAULT_TEAM_LOGO,
       })
       .subscribe({
         next: (updated) => {
@@ -307,6 +345,14 @@ export class TeamsListComponent implements OnInit {
       return -1; // No limit
     }
     return this.tournament.teamesAllowed - this.teams.length;
+  }
+
+  /** Default Cloudinary URLs */
+  readonly DEFAULT_TEAM_LOGO = 'https://res.cloudinary.com/drytm0fl7/image/upload/v1774291007/default_logo_gknxbf.jpg';
+
+  /** Get team logo URL with default fallback */
+  getTeamLogoUrl(logoUrl: string | undefined): string {
+    return logoUrl || this.DEFAULT_TEAM_LOGO;
   }
 
   // ── Custom Modal Methods ──────────────────────────────────────────────────

@@ -1,0 +1,110 @@
+<div class="sponsors-container">
+  <!-- Header -->
+  <div class="sponsors-header">
+    <div class="header-left">
+      <h1>{{ tournamentName }}</h1>
+      <p class="sponsors-subtitle">Sponsors</p>
+    </div>
+    <div class="header-right">
+      <button class="btn-add-sponsor" (click)="openForm()">
+        + Add Sponsor
+      </button>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div class="error-message" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Sponsors Table -->
+  <div class="sponsors-content">
+    <button class="btn btn-back-light" (click)="goBack()" title="Back to Dashboard">← Back To Dashboard</button>
+    <div class="action-buttons">
+      <!-- Add sponsor actions here if needed -->
+    </div>
+
+    <div class="table-wrapper" *ngIf="sponsors.length > 0">
+      <table class="sponsors-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Logo</th>
+            <th>Sponsor Name</th>
+            <th>Sub Title</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let sponsor of sponsors; let i = index">
+            <td class="sponsor-number">{{ i + 1 }}</td>
+            <td class="logo-cell">
+              <img [src]="sponsor.personImageUrl" [alt]="sponsor.personName" class="sponsor-thumbnail" />
+            </td>
+            <td class="sponsor-name">{{ sponsor.name }}</td>
+            <td class="person-name">{{ sponsor.personName }}</td>
+            <td class="actions-cell">
+              <button class="btn-edit" (click)="openForm(sponsor.id)" [disabled]="isSaving" title="Edit">✏️</button>
+              <button class="btn-delete" (click)="deleteSponsor(sponsor.id)" [disabled]="isSaving" title="Delete">🗑️</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="no-sponsors" *ngIf="sponsors.length === 0">
+      <p>No sponsors yet. Click "Add Sponsor" to get started!</p>
+    </div>
+  </div>
+
+  <!-- Add/Edit Form Modal -->
+  <div class="form-modal-overlay" *ngIf="showForm" (click)="closeForm()"></div>
+  <div class="form-modal" *ngIf="showForm" (click)="$event.stopPropagation()">
+    <div class="form-modal-header">
+      <h2>{{ editingId ? 'Edit Sponsor' : 'Add New Sponsor' }}</h2>
+      <button class="modal-close" (click)="closeForm()">✕</button>
+    </div>
+
+    <div class="form-modal-body">
+      <div *ngIf="errorMessage" class="form-error">
+        {{ errorMessage }}
+      </div>
+
+      <div class="form-group">
+        <label>Sponsor Name *</label>
+        <input type="text" [(ngModel)]="formData.name" placeholder="e.g. Rocky / Amul" [disabled]="isSaving" />
+      </div>
+
+      <div class="form-group">
+        <label>Sub Title</label>
+        <input type="text" [(ngModel)]="formData.personName" placeholder="e.g. CEO, India / Taste of India" [disabled]="isSaving" />
+      </div>
+
+      <div class="form-group">
+        <label>Person / Brand Image *</label>
+        <div class="image-upload-area">
+          <div class="image-preview-wrapper" *ngIf="imagePreview">
+            <img [src]="imagePreview" [alt]="formData.personName" class="preview-image" />
+          </div>
+          <input 
+            type="file" 
+            accept="image/*" 
+            (change)="onImageSelected($event)" 
+            [disabled]="isSaving || isUploadingImage" 
+          />
+          <p class="upload-hint" *ngIf="!isUploadingImage">Click to upload image or paste URL below</p>
+          <p class="upload-hint uploading" *ngIf="isUploadingImage">⏳ Uploading image please wait...</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-modal-footer">
+      <button class="btn btn-secondary" (click)="closeForm()" [disabled]="isSaving">
+        Cancel
+      </button>
+      <button class="btn btn-primary" (click)="saveSponsor()" [disabled]="isSaving">
+        {{ isSaving ? '💾 Saving...' : '💾 Save Sponsor' }}
+      </button>
+    </div>
+  </div>
+</div>

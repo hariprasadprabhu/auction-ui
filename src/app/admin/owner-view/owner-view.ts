@@ -42,6 +42,7 @@ export class OwnerView implements OnInit, OnDestroy {
   private tournamentId = 0;
   private eventSub: Subscription | null = null;
   private refreshInterval: any = null;
+  private teamPurseByTeamId = new Map<number, TeamPurse>();
 
   // Expose tournament from data
   get tournament() { return this.data?.tournament; }
@@ -148,7 +149,10 @@ export class OwnerView implements OnInit, OnDestroy {
       next: (purses) => {
         // Create a map of purses by teamId for quick lookup
         const purseMap = new Map<number, TeamPurse>();
-        purses.forEach((purse) => purseMap.set(purse.teamId, purse));
+        purses.forEach((purse) => {
+          purseMap.set(purse.teamId, purse);
+          this.teamPurseByTeamId.set(purse.teamId, purse);
+        });
 
         // Update each teamStat with the current purse values from API
         if (this.data?.teamStats) {
@@ -255,7 +259,8 @@ export class OwnerView implements OnInit, OnDestroy {
   }
 
   getTeamLogoUrl(teamId: number): string {
-    return this.teamService.getLogoUrl(teamId);
+    const purse = this.teamPurseByTeamId.get(teamId);
+    return purse?.logoUrl || '';
   }
 
   getPlayerPhoto(auctionPlayerId: number): string | undefined {

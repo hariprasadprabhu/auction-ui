@@ -1,3 +1,4 @@
+
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -5,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { PlayerService } from '../../core/services/player.service';
 import { AuctionPlayerService } from '../../core/services/auction-player.service';
 import { TournamentService } from '../../core/services/tournament.service';
+import { CloudinaryImageService } from '../../core/services/cloudinary-image.service';
 import { Tournament, Player } from '../../models';
 import { AuthImageCachedPipe } from '../../core/pipes/auth-image-cached.pipe';
 import { NormalizePhotoUrlCachedPipe } from '../../core/pipes/normalize-photo-url-cached.pipe';
@@ -21,6 +23,76 @@ import { NormalizePhotoUrlCachedPipe } from '../../core/pipes/normalize-photo-ur
   styleUrls: ['./teams.scss'],
 })
 export class Players implements OnInit {
+    // Search and Sort
+    public searchTerm = '';
+    public sortField: 'playerNumber' | 'firstName' | 'lastName' | 'age' | 'status' = 'playerNumber';
+    public sortDirection: 'asc' | 'desc' = 'asc';
+
+    get filteredAndSortedPlayers(): Player[] {
+      let filtered = this.players;
+      if (this.searchTerm && this.searchTerm.trim()) {
+        const term = this.searchTerm.trim().toLowerCase();
+        filtered = filtered.filter((p: Player) =>
+          (p.firstName && p.firstName.toLowerCase().includes(term)) ||
+          (p.lastName && p.lastName.toLowerCase().includes(term))
+        );
+      }
+      let sorted = [...filtered];
+      sorted.sort((a: Player, b: Player) => {
+        let aVal: string | number = '';
+        let bVal: string | number = '';
+        switch (this.sortField) {
+          case 'playerNumber': {
+            // Alphanumeric sort (e.g., P001, P002, P010)
+            aVal = (a.playerNumber || '').toString();
+            bVal = (b.playerNumber || '').toString();
+            break;
+          }
+          case 'firstName':
+            aVal = (a.firstName || '').toLowerCase();
+            bVal = (b.firstName || '').toLowerCase();
+            break;
+          case 'lastName':
+            aVal = (a.lastName || '').toLowerCase();
+            bVal = (b.lastName || '').toLowerCase();
+            break;
+          case 'age':
+            aVal = Number(this.calculateAge(a.dob));
+            bVal = Number(this.calculateAge(b.dob));
+            break;
+          case 'status':
+            aVal = (a.status || '').toLowerCase();
+            bVal = (b.status || '').toLowerCase();
+            break;
+        }
+        if (aVal < bVal) return this.sortDirection === 'asc' ? -1 : 1;
+        if (aVal > bVal) return this.sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+      return sorted;
+    }
+
+    setSort(field: 'playerNumber' | 'firstName' | 'lastName' | 'age' | 'status') {
+      if (this.sortField === field) {
+        this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        this.sortField = field;
+        this.sortDirection = 'asc';
+      }
+    }
+
+    get totalPlayers(): number {
+      return this.players.length;
+    }
+
+    get totalApprovedPlayers(): number {
+      return this.players.filter((p: Player) => p.status === 'APPROVED').length;
+    }
+
+    isApprovedStatus(playerId: number): boolean {
+      const auctionStatus = this.getPlayerAuctionStatus(playerId);
+      return auctionStatus === 'SOLD' || auctionStatus === 'UNSOLD' || auctionStatus === 'APPROVED';
+    }
   tournament: Tournament | null = null;
   players: Player[] = [];
   auctionPlayerMap = new Map<number, any>(); // Map player ID to auction player data
@@ -64,13 +136,15 @@ export class Players implements OnInit {
   // Add Player Form
   showAddPlayerModal = false;
   isAddingPlayer = false;
+  isUploadingPlayerPhoto = false;
+  isUploadingPlayerPaymentProof = false;
   newPlayer = {
     firstName: '',
     lastName: '',
     dob: '',
     role: 'BATSMAN',
-    photoFile: null as File | null,
-    paymentProofFile: null as File | null,
+    photoUrl: '' as string,
+    paymentProofUrl: '' as string,
   };
   playerPhotoPreview: string | null = null;
 
@@ -78,14 +152,16 @@ export class Players implements OnInit {
   showEditPlayerModal = false;
   isEditingPlayer = false;
   isDeletingPlayer = false;
+  isUploadingEditPhoto = false;
+  isUploadingEditPaymentProof = false;
   editingPlayer: Player | null = null;
   editPlayerForm = {
     firstName: '',
     lastName: '',
     dob: '',
     role: 'BATSMAN',
-    photoFile: null as File | null,
-    paymentProofFile: null as File | null,
+    photoUrl: '' as string,
+    paymentProofUrl: '' as string,
   };
   editPhotoPreview: string | null = null;
 
@@ -95,6 +171,7 @@ export class Players implements OnInit {
   private playerService = inject(PlayerService);
   private auctionPlayerService = inject(AuctionPlayerService);
   private tournamentService = inject(TournamentService);
+  private cloudinaryService = inject(CloudinaryImageService);
   private cdr = inject(ChangeDetectorRef);
 
   ngOnInit() {
@@ -253,10 +330,10 @@ export class Players implements OnInit {
       lastName: '',
       dob: '',
       role: 'BATSMAN',
-      photoFile: null,
-      paymentProofFile: null,
+      photoUrl: this.DEFAULT_PLAYER_PHOTO,
+      paymentProofUrl: '',
     };
-    this.playerPhotoPreview = null;
+    this.playerPhotoPreview = this.DEFAULT_PLAYER_PHOTO;
   }
 
   calculateAge(dob: string | undefined): string {
@@ -271,6 +348,20 @@ export class Players implements OnInit {
       age--;
     }
     return age.toString();
+  }
+
+  /** Default Cloudinary URLs */
+  readonly DEFAULT_PLAYER_PHOTO = 'https://res.cloudinary.com/drytm0fl7/image/upload/v1774291008/default_player_lzyniw.png';
+
+  /** Get player photo URL with default fallback */
+  getPlayerPhotoUrl(photoUrl: string | undefined): string {
+    return photoUrl || this.DEFAULT_PLAYER_PHOTO;
+  }
+
+  /** Get payment proof URL with default fallback */
+  getPaymentProofUrl(proofUrl: string | undefined): string {
+    // For payment proof, we'll use player default if not provided
+    return proofUrl || this.DEFAULT_PLAYER_PHOTO;
   }
 
   deletePlayer(playerId: number) {
@@ -300,19 +391,60 @@ export class Players implements OnInit {
   onPlayerPhotoSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
-      this.newPlayer.photoFile = file;
+      this.isUploadingPlayerPhoto = true;
+      this.cdr.detectChanges();
+      
+      // Show preview immediately
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.playerPhotoPreview = e.target.result;
+        this.cdr.detectChanges();
       };
       reader.readAsDataURL(file);
+      
+      this.cloudinaryService.uploadImage(file).subscribe({
+        next: (response) => {
+          this.newPlayer.photoUrl = response.secure_url;
+          this.playerPhotoPreview = this.cloudinaryService.getTransformedUrl(response.secure_url);
+          this.isUploadingPlayerPhoto = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Photo upload failed:', err);
+          alert('Failed to upload photo. Please try again.');
+          this.isUploadingPlayerPhoto = false;
+          this.cdr.detectChanges();
+        },
+      });
     }
   }
 
   onPaymentProofSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
-      this.newPlayer.paymentProofFile = file;
+      this.isUploadingPlayerPaymentProof = true;
+      this.cdr.detectChanges();
+      
+      // Show preview immediately
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        // For payment proof, just trigger upload
+      };
+      reader.readAsDataURL(file);
+      
+      this.cloudinaryService.uploadImage(file).subscribe({
+        next: (response) => {
+          this.newPlayer.paymentProofUrl = response.secure_url;
+          this.isUploadingPlayerPaymentProof = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Payment proof upload failed:', err);
+          alert('Failed to upload payment proof. Please try again.');
+          this.isUploadingPlayerPaymentProof = false;
+          this.cdr.detectChanges();
+        },
+      });
     }
   }
 
@@ -330,8 +462,8 @@ export class Players implements OnInit {
         lastName: this.newPlayer.lastName || undefined,
         dob: this.newPlayer.dob || undefined,
         role: this.newPlayer.role,
-        photo: this.newPlayer.photoFile ?? undefined,
-        paymentProof: this.newPlayer.paymentProofFile ?? undefined,
+        photo: this.newPlayer.photoUrl || this.DEFAULT_PLAYER_PHOTO,
+        paymentProof: this.newPlayer.paymentProofUrl || undefined,
       })
       .subscribe({
         next: (p) => {
@@ -611,10 +743,20 @@ export class Players implements OnInit {
 
         this.auctionPlayerService.resetAuctionPlayers(this.tournamentId, auctionPlayerIds).subscribe({
           next: () => {
-            this.loadingMessage = `Updating player status...`;
-            this.cdr.markForCheck();
+            // Immediately update player status to APPROVED
+            selectedPlayerIds.forEach((id) => {
+              const player = this.players.find((p) => p.id === id);
+              if (player) player.status = 'APPROVED';
+            });
+            
             this.selectedPlayersForReset.clear();
-            // Refresh auction players after reset
+            this.isResettingAuction = false;
+            this.showLoadingModal = false;
+            this.cdr.markForCheck();
+            
+            this.openSuccessModal('Reset Successful', `${auctionPlayerIds.length} player(s) auction status have been reset to Available and marked as Approved`);
+            
+            // Refresh auction data silently in the background
             this.auctionPlayerService.getByTournament(this.tournamentId).subscribe({
               next: (auctionPlayers) => {
                 this.auctionPlayerMap.clear();
@@ -622,38 +764,10 @@ export class Players implements OnInit {
                   const key = ap.playerId || ap.id;
                   this.auctionPlayerMap.set(key, ap);
                 });
-                
-                // Update the status of reset players in local array to show as APPROVED
-                selectedPlayerIds.forEach((id) => {
-                  const player = this.players.find((p) => p.id === id);
-                  if (player) player.status = 'APPROVED';
-                });
-                
                 this.cdr.markForCheck();
-                
-                // Wait a moment for the UI to update before closing the modal
-                setTimeout(() => {
-                  this.isResettingAuction = false;
-                  this.showLoadingModal = false;
-                  this.openSuccessModal('Reset Successful', `${auctionPlayerIds.length} player(s) auction status have been reset to Available`);
-                  this.cdr.markForCheck();
-                }, 300);
               },
               error: () => {
-                // Even if refresh fails, update UI locally
-                selectedPlayerIds.forEach((id) => {
-                  const player = this.players.find((p) => p.id === id);
-                  if (player) player.status = 'APPROVED';
-                });
-                
-                this.cdr.markForCheck();
-                
-                setTimeout(() => {
-                  this.isResettingAuction = false;
-                  this.showLoadingModal = false;
-                  this.openSuccessModal('Reset Successful', `${auctionPlayerIds.length} player(s) auction status have been reset to Available`);
-                  this.cdr.markForCheck();
-                }, 300);
+                // Ignore refresh errors, UI is already updated
               }
             });
           },
@@ -767,10 +881,10 @@ export class Players implements OnInit {
       lastName: player.lastName || '',
       dob: player.dob || '',
       role: player.role,
-      photoFile: null,
-      paymentProofFile: null,
+      photoUrl: player.photoUrl || this.DEFAULT_PLAYER_PHOTO,
+      paymentProofUrl: player.paymentProofUrl || '',
     };
-    this.editPhotoPreview = player.photoUrl ?? null;
+    this.editPhotoPreview = player.photoUrl || this.DEFAULT_PLAYER_PHOTO;
     this.showEditPlayerModal = true;
   }
 
@@ -783,18 +897,45 @@ export class Players implements OnInit {
   onEditPhotoSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.editPhotoPreview = e.target.result;
-      };
-      reader.readAsDataURL(file);
+      this.isUploadingEditPhoto = true;
+      this.cdr.detectChanges();
+      
+      this.cloudinaryService.uploadImage(file).subscribe({
+        next: (response) => {
+          this.editPlayerForm.photoUrl = response.secure_url;
+          this.editPhotoPreview = this.cloudinaryService.getTransformedUrl(response.secure_url);
+          this.isUploadingEditPhoto = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Photo upload failed:', err);
+          alert('Failed to upload photo. Please try again.');
+          this.isUploadingEditPhoto = false;
+          this.cdr.detectChanges();
+        },
+      });
     }
   }
 
   onEditPaymentProofSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
-      this.editPlayerForm.paymentProofFile = file;
+      this.isUploadingEditPaymentProof = true;
+      this.cdr.detectChanges();
+      
+      this.cloudinaryService.uploadImage(file).subscribe({
+        next: (response) => {
+          this.editPlayerForm.paymentProofUrl = response.secure_url;
+          this.isUploadingEditPaymentProof = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Payment proof upload failed:', err);
+          alert('Failed to upload payment proof. Please try again.');
+          this.isUploadingEditPaymentProof = false;
+          this.cdr.detectChanges();
+        },
+      });
     }
   }
 
@@ -811,8 +952,8 @@ export class Players implements OnInit {
         lastName: this.editPlayerForm.lastName || undefined,
         dob: this.editPlayerForm.dob || undefined,
         role: this.editPlayerForm.role,
-        photo: this.editPlayerForm.photoFile ?? undefined,
-        paymentProof: this.editPlayerForm.paymentProofFile ?? undefined,
+        photo: this.editPlayerForm.photoUrl || this.editingPlayer?.photoUrl || this.DEFAULT_PLAYER_PHOTO,
+        paymentProof: this.editPlayerForm.paymentProofUrl || this.editingPlayer?.paymentProofUrl || undefined,
       })
       .subscribe({
         next: (updated) => {

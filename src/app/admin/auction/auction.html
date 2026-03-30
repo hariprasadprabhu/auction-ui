@@ -1,4 +1,52 @@
 <div class="auction-screen">
+<!-- ═══ HEADER ═══ -->
+  <header class="auction-header">
+    <div class="header-side">
+      <div class="header-logo-badge logo-left">
+        <img src="https://res.cloudinary.com/drytm0fl7/image/upload/v1774417151/logo_resized_xnddqz.jpg" alt="Auction Logo" class="header-logo-img" />
+      </div>
+    </div>
+    <div class="header-center">
+      <div class="live-indicator">
+        <span class="live-dot"></span>LIVE AUCTION
+      </div>
+      <h1 class="tournament-title">{{ tournament?.name }}</h1>
+    </div>
+    <div class="header-side header-side-right">
+      <div class="player-counter" *ngIf="players.length">
+        <span class="counter-done">{{ getSoldCount() }}</span>
+        <span class="counter-sep">/</span>
+        <span class="counter-total">{{ players.length }}</span>
+        <span class="counter-lbl">Players</span>
+      </div>
+      <div class="header-logo-badge logo-right">
+        <img *ngIf="tournament?.logoUrl" [src]="tournament?.logoUrl | normalizePhotoUrlCached | async" [alt]="tournament?.name" class="header-logo-img" />
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══ SPONSOR CAROUSEL ═══ -->
+  <div class="sponsor-carousel-container" *ngIf="sponsors.length > 0">
+    <div class="sponsor-carousel-track">
+      <!-- Repeat sponsorsForCarousel list twice for seamless infinite scroll -->
+      <ng-container *ngFor="let repetition of [0,1]">
+        <ng-container *ngFor="let sponsor of sponsorsForCarousel; let i = index">
+          <div class="sponsor-item">
+            <div class="sponsor-card">
+              <div class="sponsor-person">
+                <img [src]="sponsor.personImageUrl" [alt]="sponsor.personName" class="person-image" />
+              </div>
+              <div class="sponsor-info">
+                <div class="sponsor-company-name">{{ sponsor.name }}</div>
+                <div class="sponsor-person-name">{{ sponsor.personName }}</div>
+              </div>
+            </div>
+            <div class="sponsor-divider"></div>
+          </div>
+        </ng-container>
+      </ng-container>
+    </div>
+  </div>
 
   <!-- ═══ LOADING SCREEN ═══ -->
   <div class="auction-loading-screen" *ngIf="isLoading">
@@ -36,27 +84,7 @@
     </div>
   </div>
 
-  <!-- ═══ HEADER ═══ -->
-  <header class="auction-header">
-    <div class="header-side">
-      <div class="header-logo-badge logo-left">🏏</div>
-    </div>
-    <div class="header-center">
-      <div class="live-indicator">
-        <span class="live-dot"></span>LIVE AUCTION
-      </div>
-      <h1 class="tournament-title">{{ tournament?.name }}</h1>
-    </div>
-    <div class="header-side header-side-right">
-      <div class="player-counter" *ngIf="players.length">
-        <span class="counter-done">{{ getSoldCount() }}</span>
-        <span class="counter-sep">/</span>
-        <span class="counter-total">{{ players.length }}</span>
-        <span class="counter-lbl">Players</span>
-      </div>
-      <div class="header-logo-badge logo-right">🏆</div>
-    </div>
-  </header>
+  
 
   <!-- Progress Bar -->
   <div class="auction-progress">
@@ -79,8 +107,24 @@
     <button class="btn-back-home" (click)="goBack()">← Back to Dashboard</button>
   </div>
 
+  <!-- ═══ START AUCTION SCREEN ═══ -->
+  <div class="start-auction-screen" *ngIf="!isLoading && !auctionStarted && !auctionComplete && !noUnsoldAvailable">
+    <div class="start-auction-content">
+      <div class="tournament-logo-glow">
+        <div class="logo-glow-circle"></div>
+        <img *ngIf="tournament?.logoUrl" [src]="tournament?.logoUrl" [alt]="tournament?.name || 'Tournament'" class="tournament-logo-img" />
+      </div>
+      <h2 class="start-title">We Are All Set to Start the Auction</h2>
+      <p class="start-subtitle">{{ players.length }} players are ready to be auctioned</p>
+      <button class="btn-start-auction" (click)="startAuction()">
+        <span class="btn-text">{{ getStartButtonText() }}</span>
+        <span class="btn-icon">▶</span>
+      </button>
+    </div>
+  </div>
+
   <!-- ═══ MAIN ═══ -->
-  <main class="auction-main" *ngIf="!auctionComplete && !noUnsoldAvailable && currentPlayer">
+  <main class="auction-main" *ngIf="auctionStarted && !auctionComplete && !noUnsoldAvailable && currentPlayer">
 
     <!-- Left: Player Spotlight -->
     <section class="player-panel">
@@ -96,15 +140,15 @@
 
         <div class="player-info-col">
           <div class="player-full-name">
-            <span class="first-name">{{ currentPlayer.firstName }}</span>
+            <span class="first-name" [ngClass]="{'long-name': currentPlayer.firstName.length > 8}">{{ currentPlayer.firstName }}</span>
             <span class="last-name">{{ currentPlayer.lastName }}</span>
           </div>
 
           <div class="stats-list">
-            <div class="stat-row">
+            <!-- <div class="stat-row">
               <span class="stat-icon">🎂</span>
               <span class="stat-val">{{ currentPlayer.age || 'N/A' }} yrs</span>
-            </div>
+            </div> -->
             <div class="stat-row">
               <span class="stat-icon">🏏</span>
               <span class="stat-val">{{ currentPlayer.role }}</span>
@@ -113,18 +157,18 @@
               <span class="stat-icon">📍</span>
               <span class="stat-val">India</span>
             </div>
-            <div class="stat-row">
+            <!-- <div class="stat-row">
               <span class="stat-icon">🎯</span>
               <span class="stat-val">{{ currentPlayer.battingStyle }}</span>
             </div>
             <div class="stat-row">
               <span class="stat-icon">⚡</span>
               <span class="stat-val">{{ currentPlayer.bowlingStyle }}</span>
-            </div>
+            </div> -->
           </div>
 
           <div class="base-price-chip">
-            BASE &nbsp;·&nbsp; ₹{{ currentPlayer.basePrice }}L
+            BASE &nbsp;·&nbsp; {{ currentPlayer.basePrice }}
           </div>
         </div>
       </div>
@@ -154,16 +198,16 @@
       </ng-template>
 
       <div class="bid-amount-display" [class.active]="!!currentBiddingTeam">
-        <span class="bid-currency">₹</span>
+        <span class="bid-currency"></span>
         <span class="bid-value">{{ currentBid }}</span>
-        <span class="bid-unit">L</span>
+        <span class="bid-unit"></span>
       </div>
 
-      <div class="raise-bid-group">
+      <!-- <div class="raise-bid-group">
         <button class="raise-btn" (click)="raiseBid(nextIncrement)" [disabled]="!currentBiddingTeam || showSoldOverlay || showUnsoldOverlay || isValidatingBid || !canTeamPlaceNextBid(currentBiddingTeam!)">+₹{{ nextIncrement }}L</button>
         <button class="raise-btn" (click)="raiseBid(nextIncrement * 2)" [disabled]="!currentBiddingTeam || showSoldOverlay || showUnsoldOverlay || isValidatingBid || !canTeamPlaceNextBid(currentBiddingTeam!)">+₹{{ nextIncrement * 2 }}L</button>
         <button class="raise-btn raise-btn-lg" (click)="raiseBid(nextIncrement * 5)" [disabled]="!currentBiddingTeam || showSoldOverlay || showUnsoldOverlay || isValidatingBid || !canTeamPlaceNextBid(currentBiddingTeam!)">+₹{{ nextIncrement * 5 }}L</button>
-      </div>
+      </div> -->
 
       <p class="bid-validation-error" *ngIf="validationError">{{ validationError }}</p>
       <p class="budget-notice" *ngIf="budgetNotification">{{ budgetNotification }}</p>
@@ -180,7 +224,7 @@
         (click)="placeBidForTeam(team)"
         [class.team-btn-active]="currentBiddingTeam?.id === team.id"
         [class.team-btn-out-of-budget]="isTeamOutOfBudget(team)"
-        [disabled]="showSoldOverlay || showUnsoldOverlay || isTeamOutOfBudget(team) || !canTeamPlaceNextBid(team) || isValidatingBid"
+        [disabled]="!auctionStarted || showSoldOverlay || showUnsoldOverlay || isTeamOutOfBudget(team) || !canTeamPlaceNextBid(team) || isValidatingBid"
       >
         <img [src]="team.logoUrl | normalizePhotoUrlCached | async" [alt]="team.name" class="team-btn-logo" />
         <span class="team-btn-abbr">{{ getAbbr(team.name) }}</span>
@@ -195,16 +239,22 @@
       <button class="ctrl-btn ctrl-config" (click)="showConfigModal = true">
         ⚙ CONFIG
       </button>
+      <button class="ctrl-btn ctrl-search" (click)="showSearchPanel = true" [disabled]="!auctionStarted">
+        🔍 SEARCH
+      </button>
       <ng-container *ngIf="!auctionComplete && !noUnsoldAvailable">
+        <button class="ctrl-btn ctrl-undo" (click)="undoBid()" [disabled]="!auctionStarted || !canUndoBid() || processingOverlay || showSoldOverlay || showUnsoldOverlay">
+          ↶ UNDO
+        </button>
         <button class="ctrl-btn ctrl-sold" (click)="markSold()"
-          [disabled]="!currentBiddingTeam || processingOverlay || showSoldOverlay || showUnsoldOverlay">
+          [disabled]="!auctionStarted || !currentBiddingTeam || processingOverlay || showSoldOverlay || showUnsoldOverlay">
           ✓ SOLD
         </button>
         <button class="ctrl-btn ctrl-unsold" (click)="markUnsold()"
-          [disabled]="processingOverlay || showSoldOverlay || showUnsoldOverlay">
+          [disabled]="!auctionStarted || processingOverlay || showSoldOverlay || showUnsoldOverlay">
           ✗ UNSOLD
         </button>
-        <button class="ctrl-btn ctrl-next" (click)="nextPlayer()">
+        <button class="ctrl-btn ctrl-next" (click)="nextPlayer()" [disabled]="!auctionStarted">
           NEXT ▶
         </button>
       </ng-container>
@@ -223,6 +273,48 @@
         <span class="config-action-icon">🔄</span>
         <span class="config-action-label">Mark all UNSOLD players available for Auction</span>
       </button>
+    </div>
+  </div>
+
+  <!-- Search Panel -->
+  <div class="search-panel-backdrop" *ngIf="showSearchPanel" (click)="closeSearchPanel()"></div>
+  <div class="search-panel" *ngIf="showSearchPanel">
+    <div class="search-panel-header">
+      <span class="search-panel-title">🔍 Find a Player</span>
+      <button class="search-close-btn" (click)="closeSearchPanel()">✕</button>
+    </div>
+    <div class="search-panel-body">
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        (keyup)="searchPlayers()"
+        placeholder="Type player name..."
+        class="search-input"
+        (keydown.escape)="closeSearchPanel()"
+        autofocus
+      />
+      
+      <div class="search-results">
+        <div *ngIf="searchTerm && filteredPlayers.length === 0" class="search-no-results">
+          No players found matching "{{ searchTerm }}"
+        </div>
+
+        <div *ngFor="let player of filteredPlayers" class="search-result-item" (click)="jumpToPlayer(player)">
+          <div class="result-item-photo">
+            <img [src]="player.photoUrl | normalizePhotoUrlCached | async" [alt]="player.firstName" />
+          </div>
+          <div class="result-item-info">
+            <div class="result-item-name">{{ player.firstName }} {{ player.lastName }}</div>
+            <div class="result-item-details">
+              <span class="result-item-badge">{{ player.role }}</span>
+              <span class="result-item-status" [ngClass]="'status-' + player.auctionStatus.toLowerCase()">
+                {{ getPlayerStatus(player) }}
+              </span>
+            </div>
+          </div>
+          <div class="result-item-number">{{ player.playerNumber }}</div>
+        </div>
+      </div>
     </div>
   </div>
 

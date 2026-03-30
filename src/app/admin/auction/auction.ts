@@ -5,6 +5,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuctionPlayerService } from '../../core/services/auction-player.service';
@@ -13,6 +14,7 @@ import { IncrementRuleService } from '../../core/services/increment-rule.service
 import { TeamService } from '../../core/services/team.service';
 import { TournamentService } from '../../core/services/tournament.service';
 import { ImageCacheService } from '../../core/services/image-cache.service';
+import { SponsorsService } from '../../core/services/sponsors.service';
 import { NormalizePhotoUrlCachedPipe } from '../../core/pipes/normalize-photo-url-cached.pipe';
 import {
   Tournament,
@@ -20,12 +22,13 @@ import {
   AuctionPlayer,
   IncrementRule,
   TeamPurse,
+  Sponsor,
 } from '../../models';
 
 @Component({
   selector: 'app-auction',
   standalone: true,
-  imports: [CommonModule, NormalizePhotoUrlCachedPipe],
+  imports: [CommonModule, NormalizePhotoUrlCachedPipe, FormsModule],
   templateUrl: './auction.html',
   styleUrls: ['./auction.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -35,12 +38,21 @@ export class Auction implements OnInit {
   teams: Team[] = [];
   players: AuctionPlayer[] = [];
   teamPurses: TeamPurse[] = [];
+  sponsors: Sponsor[] = [];
 
   incrementRules: IncrementRule[] = [];
 
   currentIndex = 0;
   currentBid = 0;
   currentBiddingTeam: Team | null = null;
+
+  // Bid history for undo functionality
+  bidHistory: Array<{ bid: number; team: Team | null }> = [];
+
+  // Search functionality
+  searchTerm: string = '';
+  showSearchPanel: boolean = false;
+  filteredPlayers: AuctionPlayer[] = [];
 
   showSoldOverlay = false;
   showUnsoldOverlay = false;
@@ -49,6 +61,7 @@ export class Auction implements OnInit {
   auctionComplete = false;
   noUnsoldAvailable = false;
   isValidatingBid = false;
+  auctionStarted = false;
 
   // Processing state for sold/unsold actions
   processingOverlay = false;
@@ -85,6 +98,7 @@ export class Auction implements OnInit {
     private http: HttpClient,
     private imageCacheService: ImageCacheService,
     private cdr: ChangeDetectorRef,
+    private sponsorsService: SponsorsService,
   ) {}
 
   ngOnInit() {
@@ -149,6 +163,19 @@ export class Auction implements OnInit {
         },
       });
       this.startRequest();
+
+      // Load Sponsors
+      this.sponsorsService.getByTournament(id).subscribe({
+        next: (sponsors) => {
+          this.sponsors = sponsors;
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          console.error('Failed to load sponsors:', err);
+          this.sponsors = [];
+          this.cdr.markForCheck();
+        },
+      });
     }
   }
 
@@ -250,6 +277,8 @@ export class Auction implements OnInit {
     this.currentBid = this.currentPlayer?.basePrice ?? 0;
     this.currentBiddingTeam = null;
     this.validationError = null;
+    this.bidHistory = []; // Reset bid history for new player
+    this.cdr.markForCheck();
   }
 
   placeBidForTeam(team: Team) {
@@ -269,6 +298,22 @@ export class Auction implements OnInit {
     if (!this.currentBiddingTeam || (!this.overlayInteractive && (this.showSoldOverlay || this.showUnsoldOverlay))) return;
     const proposedBid = this.currentBid + amount;
     this.validateAndApplyBid(this.currentBiddingTeam, proposedBid);
+  }
+
+  undoBid() {
+    if (this.bidHistory.length === 0) return;
+    
+    const previousState = this.bidHistory.pop();
+    if (!previousState) return;
+
+    this.currentBid = previousState.bid;
+    this.currentBiddingTeam = previousState.team;
+    this.validationError = null;
+    this.cdr.markForCheck();
+  }
+
+  canUndoBid(): boolean {
+    return this.bidHistory.length > 0;
   }
 
   markSold() {
@@ -298,11 +343,6 @@ export class Auction implements OnInit {
           this.showSoldOverlay = true;
           this.overlayInteractive = false;
           this.auctionEventService.notifyAuctionUpdate(this.tournamentId);
-          
-          // Auto-advance after 2 seconds
-          setTimeout(() => {
-            this.nextPlayer();
-          }, 2000);
           
           this.cdr.markForCheck();
         },
@@ -418,6 +458,9 @@ export class Auction implements OnInit {
     const purse = this.teamPurseByTeamId.get(team.id);
     if (!purse) return false;
 
+    // If team has no remaining slots, they cannot bid
+    if (purse.remainingSlots <= 0) return false;
+
     // If this team is currently bidding, they can raise (unless they hit their max)
     if (this.currentBiddingTeam?.id === team.id) {
       const nextBid = this.currentBid + this.nextIncrement;
@@ -478,6 +521,7 @@ export class Auction implements OnInit {
     const purse = this.teamPurseByTeamId.get(team.id);
     if (!purse) {
       this.validationError = `Purse data not available for ${team.name}. Please refresh and try again.`;
+      console.warn('[validateAndApplyBid] No purse data:', team.name);
       this.isValidatingBid = false;
       this.cdr.markForCheck();
       return;
@@ -486,10 +530,16 @@ export class Auction implements OnInit {
     const error = this.getBidValidationError(bidAmount, purse);
     if (error) {
       this.validationError = error;
+      console.warn('[validateAndApplyBid] Validation error:', error);
       this.isValidatingBid = false;
       this.cdr.markForCheck();
       return;
     }
+
+    console.log(`[validateAndApplyBid] Bid accepted: ${team.name} bidding ${bidAmount}L`);
+
+    // Store current state in history before updating
+    this.bidHistory.push({ bid: this.currentBid, team: this.currentBiddingTeam });
 
     this.currentBid = bidAmount;
     this.currentBiddingTeam = team;
@@ -649,5 +699,109 @@ export class Auction implements OnInit {
   cancelConfirm() {
     this.confirmDialog = null;
   }
+
+  hasAnyPlayerBeenAuctioned(): boolean {
+    return this.players.some(p => p.auctionStatus !== 'AVAILABLE');
+  }
+
+  getStartButtonText(): string {
+    return this.hasAnyPlayerBeenAuctioned() ? 'Resume Auction' : 'Start Auction';
+  }
+
+  startAuction() {
+    // Only shuffle if this is a fresh start (no players auctioned yet)
+    if (!this.hasAnyPlayerBeenAuctioned()) {
+      this.shuffleArray(this.players);
+    }
+    
+    // Reset auction state and find first available player
+    this.currentIndex = 0;
+    const firstAvailableIndex = this.players.findIndex(p => p.auctionStatus === 'AVAILABLE');
+    if (firstAvailableIndex !== -1) {
+      this.currentIndex = firstAvailableIndex;
+      this.initBid();
+    }
+    
+    // Mark auction as started
+    this.auctionStarted = true;
+    this.cdr.markForCheck();
+  }
+
+  private shuffleArray<T>(array: T[]): void {
+    // Fisher-Yates shuffle algorithm
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+  }
+
+  getAuthority(): boolean {
+    // Authority check for making modifications
+    return !this.showSoldOverlay && !this.showUnsoldOverlay && !this.processingOverlay;
+  }
+
+  /**
+   * Search players by name
+   */
+  searchPlayers(): void {
+    if (!this.searchTerm.trim()) {
+      this.filteredPlayers = [];
+      return;
+    }
+
+    const term = this.searchTerm.toLowerCase();
+    this.filteredPlayers = this.players.filter(
+      (p) =>
+        p.firstName.toLowerCase().includes(term) ||
+        (p.lastName && p.lastName.toLowerCase().includes(term)) ||
+        (`${p.firstName} ${p.lastName || ''}`).toLowerCase().includes(term)
+    );
+  }
+
+  /**
+   * Jump to a specific player in the auction
+   */
+  jumpToPlayer(player: AuctionPlayer): void {
+    const index = this.players.indexOf(player);
+    if (index !== -1) {
+      this.currentIndex = index;
+      this.initBid();
+      this.closeSearchPanel();
+      this.cdr.markForCheck();
+    }
+  }
+
+  /**
+   * Close the search panel
+   */
+  closeSearchPanel(): void {
+    this.showSearchPanel = false;
+    this.searchTerm = '';
+    this.filteredPlayers = [];
+    this.cdr.markForCheck();
+  }
+
+  /**
+   * Get status label for a player
+   */
+  getPlayerStatus(player: AuctionPlayer): string {
+    if (player.auctionStatus === 'AVAILABLE') {
+      return 'Available';
+    } else if (player.auctionStatus === 'SOLD') {
+      return `Sold to ${player.soldToTeamName}`;
+    } else {
+      return 'Unsold';
+    }
+  }
+
+  // Utility: Duplicate sponsors to fill the screen
+  get sponsorsForCarousel(): Sponsor[] {
+    if (!this.sponsors || this.sponsors.length === 0) return [];
+    // Estimate how many times to repeat based on a minimum count (e.g., 12)
+    const minCount = 12;
+    const repeats = Math.ceil(minCount / this.sponsors.length);
+    return Array(repeats).fill(this.sponsors).flat();
+  }
+
 }
 

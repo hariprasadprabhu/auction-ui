@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -7,6 +7,7 @@ import { takeUntil } from 'rxjs/operators';
 import { TournamentService } from '../../core/services/tournament.service';
 import { PlayerService } from '../../core/services/player.service';
 import { RateLimiterService } from '../../core/services/rate-limiter.service';
+import { CloudinaryImageService } from '../../core/services/cloudinary-image.service';
 import { Tournament } from '../../models';
 
 @Component({
@@ -20,6 +21,8 @@ export class Register implements OnInit, OnDestroy {
   tournament: Tournament | undefined;
   submitted = false;
   isSubmitting = false;
+  isUploadingPhoto = false;
+  isUploadingPaymentProof = false;
   serverError = '';
   isCheckingTournament = true;
   hasValidTournamentLink = false;
@@ -40,21 +43,23 @@ export class Register implements OnInit, OnDestroy {
     role: ''
   };
 
-  photoFile: File | undefined = undefined;
-  paymentProofFile: File | undefined = undefined;
+  photoUrl: string | undefined = undefined;
+  paymentProofUrl: string | undefined = undefined;
   photoPreview: string | null = null;
   paymentProofPreview: string | null = null;
+
+  /** Default Cloudinary URLs */
+  readonly DEFAULT_PLAYER_PHOTO = 'https://res.cloudinary.com/drytm0fl7/image/upload/v1774291007/default_logo_gknxbf.jpg';
 
   private destroy$ = new Subject<void>();
   private formSubmit$ = new Subject<void>();
 
-  constructor(
-    private route: ActivatedRoute,
-    private tournamentService: TournamentService,
-    private playerService: PlayerService,
-    private rateLimiterService: RateLimiterService,
-    private cdr: ChangeDetectorRef,
-  ) {}
+  private route = inject(ActivatedRoute);
+  private tournamentService = inject(TournamentService);
+  private playerService = inject(PlayerService);
+  private rateLimiterService = inject(RateLimiterService);
+  private cloudinaryService = inject(CloudinaryImageService);
+  private cdr = inject(ChangeDetectorRef);
 
   ngOnInit() {
     const routeTournamentId =
@@ -131,31 +136,77 @@ export class Register implements OnInit, OnDestroy {
   onPhotoSelected(event: any) {
     const file: File = event.target.files[0];
     if (file) {
-      this.photoFile = file;
+      this.isUploadingPhoto = true;
+      this.cdr.detectChanges();
+      
+      // Show preview immediately
       const reader = new FileReader();
-      reader.onload = (e: any) => (this.photoPreview = e.target.result);
+      reader.onload = (e: any) => {
+        this.photoPreview = e.target.result;
+        this.cdr.detectChanges();
+      };
       reader.readAsDataURL(file);
+      
+      this.cloudinaryService.uploadImage(file).pipe(takeUntil(this.destroy$)).subscribe({
+        next: (response) => {
+          this.photoUrl = response.secure_url;
+          this.photoPreview = this.cloudinaryService.getTransformedUrl(response.secure_url);
+          this.isUploadingPhoto = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Photo upload failed:', err);
+          this.serverError = 'Failed to upload photo. Please try again.';
+          this.isUploadingPhoto = false;
+          this.cdr.detectChanges();
+        },
+      });
     }
   }
 
   removePhoto() {
-    this.photoFile = undefined;
+    this.photoUrl = undefined;
     this.photoPreview = null;
   }
 
   onPaymentProofSelected(event: any) {
     const file: File = event.target.files[0];
     if (file) {
-      this.paymentProofFile = file;
+      this.isUploadingPaymentProof = true;
+      this.cdr.detectChanges();
+      
+      // Show preview immediately
       const reader = new FileReader();
-      reader.onload = (e: any) => (this.paymentProofPreview = e.target.result);
+      reader.onload = (e: any) => {
+        this.paymentProofPreview = e.target.result;
+        this.cdr.detectChanges();
+      };
       reader.readAsDataURL(file);
+      
+      this.cloudinaryService.uploadImage(file).pipe(takeUntil(this.destroy$)).subscribe({
+        next: (response) => {
+          this.paymentProofUrl = response.secure_url;
+          this.paymentProofPreview = this.cloudinaryService.getTransformedUrl(response.secure_url);
+          this.isUploadingPaymentProof = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Payment proof upload failed:', err);
+          this.serverError = 'Failed to upload payment proof. Please try again.';
+          this.isUploadingPaymentProof = false;
+          this.cdr.detectChanges();
+        },
+      });
     }
   }
 
   submitForm() {
     // Check basic validation
-    if (!this.form.firstName || !this.form.role || !this.photoFile || !this.paymentProofFile || !this.tournamentId || this.isSubmitting) {
+    if (!this.form.firstName || !this.form.role || !this.photoUrl || !this.tournamentId || this.isSubmitting) {
+      return;
+    }
+    // Only require paymentProofUrl if payment proof is required
+    if (this.tournament?.paymentProofRequired && !this.paymentProofUrl) {
       return;
     }
 
@@ -191,8 +242,8 @@ export class Register implements OnInit, OnDestroy {
       lastName: this.form.lastName,
       dob: this.form.dob,
       role: this.form.role,
-      photo: this.photoFile,
-      paymentProof: this.paymentProofFile,
+      photo: this.photoUrl || this.DEFAULT_PLAYER_PHOTO,
+      paymentProof: this.paymentProofUrl || undefined,
     }).subscribe({
       next: () => {
         // Record successful attempt
@@ -214,8 +265,8 @@ export class Register implements OnInit, OnDestroy {
     this.submitted = false;
     this.serverError = '';
     this.form = { firstName: '', lastName: '', dob: '', role: '' };
-    this.photoFile = undefined;
-    this.paymentProofFile = undefined;
+    this.photoUrl = undefined;
+    this.paymentProofUrl = undefined;
     this.photoPreview = null;
     this.paymentProofPreview = null;
   }

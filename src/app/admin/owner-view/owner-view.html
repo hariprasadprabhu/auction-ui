@@ -15,14 +15,23 @@
 
   <!-- Main Content -->
   <div *ngIf="!isLoading" class="ov-main-content">
+  <!-- Bid Player Branding Header -->
+  <div class="bp-branding-header">
+    <div class="bp-logo-section">
+      <img src="https://res.cloudinary.com/drytm0fl7/image/upload/v1774417151/logo_resized_xnddqz.jpg" alt="Bid Player Logo" class="bp-logo" />
+      <div class="bp-text">
+        <h1 class="bp-title">Bid Players</h1>
+        <p class="bp-tagline">Fast. Fair. Final</p>
+      </div>
+    </div>
+  </div>
+
   <!-- Page Header -->
   <div class="ov-header">
     <div class="header-left">
-      <h1>{{ tournament?.name }}</h1>
-      <p class="ov-subtitle">Owner View — Team Purse &amp; Player Status</p>
-    </div>
-    <div class="header-right">
-      <span class="tournament-date" *ngIf="tournament">Purse: {{ formatAmount(tournament.purseAmount) }}</span>
+      <div class="auction-header-section">
+        <h2 class="auction-title">{{ tournament?.name }}</h2>
+      </div>
     </div>
   </div>
 

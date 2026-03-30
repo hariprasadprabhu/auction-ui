@@ -23,16 +23,24 @@ export class TournamentService {
   }
 
   create(request: CreateTournamentRequest): Observable<Tournament> {
-    const formData = this.buildFormData(request);
+    // Use JSON for requests with only Cloudinary URLs, FormData for file uploads
+    const body = this.shouldUseFormData(request) 
+      ? this.buildFormData(request)
+      : this.buildRequestObject(request);
+    
     return this.http
-      .post<Tournament>(`${this.apiUrl}/tournaments`, formData)
+      .post<Tournament>(`${this.apiUrl}/tournaments`, body)
       .pipe(map((t) => this.mapTournament(t)));
   }
 
   update(id: number, request: UpdateTournamentRequest): Observable<Tournament> {
-    const formData = this.buildFormData(request);
+    // Use JSON for requests with only Cloudinary URLs, FormData for file uploads
+    const body = this.shouldUseFormData(request)
+      ? this.buildFormData(request)
+      : this.buildRequestObject(request);
+    
     return this.http
-      .put<Tournament>(`${this.apiUrl}/tournaments/${id}`, formData)
+      .put<Tournament>(`${this.apiUrl}/tournaments/${id}`, body)
       .pipe(map((t) => this.mapTournament(t)));
   }
 
@@ -64,8 +72,64 @@ export class TournamentService {
     if (request.initialIncrementAmount !== undefined)
       fd.append('initialIncrement', String(request.initialIncrementAmount));
     if (request.status !== undefined) fd.append('status', request.status);
-    if (request.logo) fd.append('logo', request.logo);
+    if (request.paymentProofRequired !== undefined)
+      fd.append('paymentProofRequired', String(request.paymentProofRequired));
+    // Only append to FormData if it's a File object
+    if (request.logo instanceof File) {
+      fd.append('logo', request.logo);
+    }
     return fd;
+  }
+
+  /**
+   * Build a plain request object for JSON submission (used when no files)
+   */
+  private buildRequestObject(request: CreateTournamentRequest | UpdateTournamentRequest): any {
+    const obj: any = {};
+    if (request.name !== undefined) obj.name = request.name;
+    if (request.date !== undefined) obj.date = request.date;
+    if (request.sport !== undefined) obj.sport = request.sport;
+    if (request.totalTeams !== undefined) obj.totalTeams = request.totalTeams;
+    if (request.totalPlayers !== undefined) obj.totalPlayers = request.totalPlayers;
+    if (request.purseAmount !== undefined) obj.purseAmount = request.purseAmount;
+    if (request.playersPerTeam !== undefined) obj.playersPerTeam = request.playersPerTeam;
+    if (request.basePrice !== undefined) obj.basePrice = request.basePrice;
+    if (request.initialIncrementAmount !== undefined) obj.initialIncrement = request.initialIncrementAmount;
+    if (request.status !== undefined) obj.status = request.status;
+    if (request.paymentProofRequired !== undefined) obj.paymentProofRequired = request.paymentProofRequired;
+    // Attach Cloudinary URL directly to original field name
+    if (request.logo && typeof request.logo === 'string') {
+      obj.logo = request.logo;
+    }
+    return obj;
+  }
+
+  /**
+   * Check if request contains File objects (should use FormData)
+   * If all files are URLs (strings), use JSON instead
+   */
+  private shouldUseFormData(request: CreateTournamentRequest | UpdateTournamentRequest): boolean {
+    return request.logo instanceof File;
+  }
+
+  /** Normalize URL - handles both relative paths and Cloudinary absolute URLs */
+  private normalizeUrl(url: string | undefined): string | undefined {
+    if (!url) return undefined;
+    
+    // If already absolute URL (like Cloudinary), return as-is
+    if (url.startsWith('http')) {
+      return url;
+    }
+    
+    // If starts with /api, the backend already includes /api
+    // But our apiUrl also has /api, so we need the base URL without /api
+    if (url.startsWith('/api')) {
+      const baseUrl = this.apiUrl.replace(/\/api\/?$/, '');
+      return `${baseUrl}${url}`;
+    }
+    
+    // For other relative paths, prepend full apiUrl
+    return `${this.apiUrl}${url}`;
   }
 
   /** Resolve relative logoUrl to full URL */
@@ -75,7 +139,7 @@ export class TournamentService {
       initialIncrementAmount: t.initialIncrementAmount !== undefined && t.initialIncrementAmount !== null
         ? t.initialIncrementAmount
         : (t.initialIncrement !== undefined && t.initialIncrement !== null ? t.initialIncrement : 0),
-      logoUrl: t.logoUrl ? `${this.apiUrl}${t.logoUrl}` : undefined,
+      logoUrl: this.normalizeUrl(t.logoUrl),
     };
   }
 }

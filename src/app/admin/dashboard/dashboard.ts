@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { TournamentService } from '../../core/services/tournament.service';
 import { AuctionPlayerService } from '../../core/services/auction-player.service';
 import { AuthService } from '../../core/services/auth.service';
+import { CloudinaryImageService } from '../../core/services/cloudinary-image.service';
 import { Tournament, TournamentStatus } from '../../models';
 
 @Component({
@@ -59,7 +60,11 @@ export class Dashboard implements OnInit {
   private tournamentService = inject(TournamentService);
   private auctionPlayerService = inject(AuctionPlayerService);
   private authService = inject(AuthService);
+  private cloudinaryService = inject(CloudinaryImageService);
   private cdr = inject(ChangeDetectorRef);
+
+  /** Default Cloudinary URLs */
+  readonly DEFAULT_TEAM_LOGO = 'https://res.cloudinary.com/drytm0fl7/image/upload/v1774291008/default_player_lzyniw.png';
 
   ngOnInit() {
     this.currentUser = this.authService.getCurrentUser();
@@ -86,6 +91,7 @@ export class Dashboard implements OnInit {
   showCreateModal = false;
   createLogoPreview: string | null = null;
   isCreatingTournament = false;
+  isUploadingLogo = false;
 
   newTournament: {
     name: string;
@@ -98,7 +104,8 @@ export class Dashboard implements OnInit {
     basePrice: number;
     initialIncrementAmount: number;
     status: TournamentStatus;
-    logoFile: File | null;
+    logoUrl: string;
+    paymentProofRequired: boolean;
   } = this.blankForm();
 
   private blankForm() {
@@ -113,13 +120,14 @@ export class Dashboard implements OnInit {
       basePrice: 20000,
       initialIncrementAmount: 5,
       status: 'UPCOMING' as TournamentStatus,
-      logoFile: null as File | null,
+      logoUrl: this.DEFAULT_TEAM_LOGO,
+      paymentProofRequired: false,
     };
   }
 
   openCreateModal() {
     this.newTournament = this.blankForm();
-    this.createLogoPreview = null;
+    this.createLogoPreview = this.DEFAULT_TEAM_LOGO;
     this.showCreateModal = true;
   }
 
@@ -150,12 +158,23 @@ export class Dashboard implements OnInit {
   onLogoSelected(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
-    this.newTournament.logoFile = file;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      this.createLogoPreview = e.target?.result as string;
-    };
-    reader.readAsDataURL(file);
+    this.isUploadingLogo = true;
+    this.cdr.markForCheck();
+    
+    this.cloudinaryService.uploadImage(file).subscribe({
+      next: (response) => {
+        this.newTournament.logoUrl = response.secure_url;
+        this.createLogoPreview = this.cloudinaryService.getTransformedUrl(response.secure_url);
+        this.isUploadingLogo = false;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Logo upload failed:', err);
+        alert('Failed to upload logo. Please try again.');
+        this.isUploadingLogo = false;
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   createTournament(form: NgForm) {
@@ -165,6 +184,7 @@ export class Dashboard implements OnInit {
     }
     this.isCreatingTournament = true;
     this.cdr.markForCheck();
+    
     this.tournamentService
       .create({
         name: this.newTournament.name,
@@ -177,7 +197,8 @@ export class Dashboard implements OnInit {
         basePrice: this.newTournament.basePrice,
         initialIncrementAmount: this.newTournament.initialIncrementAmount || 5,
         status: this.newTournament.status,
-        logo: this.newTournament.logoFile ?? undefined,
+        logo: this.newTournament.logoUrl || this.DEFAULT_TEAM_LOGO,
+        paymentProofRequired: this.newTournament.paymentProofRequired,
       })
       .subscribe({
         next: (t) => {
@@ -273,6 +294,7 @@ export class Dashboard implements OnInit {
   editLogoPreview: string | null = null;
   editingTournamentId: number | null = null;
   isUpdatingTournament = false;
+  isUploadingEditLogo = false;
 
   editTournament: {
     name: string;
@@ -285,7 +307,8 @@ export class Dashboard implements OnInit {
     basePrice: number;
     initialIncrementAmount: number;
     status: TournamentStatus;
-    logoFile: File | null;
+    logoUrl: string;
+    paymentProofRequired: boolean;
   } = this.blankForm();
 
   openEditModal(tournament: Tournament) {
@@ -301,9 +324,10 @@ export class Dashboard implements OnInit {
       basePrice: tournament.basePrice,
       initialIncrementAmount: tournament.initialIncrementAmount,
       status: tournament.status,
-      logoFile: null,
+      logoUrl: tournament.logoUrl || this.DEFAULT_TEAM_LOGO,
+      paymentProofRequired: tournament.paymentProofRequired || false,
     };
-    this.editLogoPreview = tournament.logoUrl ?? null;
+    this.editLogoPreview = tournament.logoUrl || this.DEFAULT_TEAM_LOGO;
     this.showEditModal = true;
   }
 
@@ -315,12 +339,31 @@ export class Dashboard implements OnInit {
   onEditLogoSelected(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
-    this.editTournament.logoFile = file;
+    this.isUploadingEditLogo = true;
+    this.cdr.markForCheck();
+    
+    // Show preview immediately
     const reader = new FileReader();
-    reader.onload = (e) => {
-      this.editLogoPreview = e.target?.result as string;
+    reader.onload = (e: any) => {
+      this.editLogoPreview = e.target.result;
+      this.cdr.markForCheck();
     };
     reader.readAsDataURL(file);
+    
+    this.cloudinaryService.uploadImage(file).subscribe({
+      next: (response) => {
+        this.editTournament.logoUrl = response.secure_url;
+        this.editLogoPreview = this.cloudinaryService.getTransformedUrl(response.secure_url);
+        this.isUploadingEditLogo = false;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Logo upload failed:', err);
+        alert('Failed to upload logo. Please try again.');
+        this.isUploadingEditLogo = false;
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   saveTournament(form: NgForm) {
@@ -331,6 +374,7 @@ export class Dashboard implements OnInit {
     if (this.editingTournamentId === null) return;
     this.isUpdatingTournament = true;
     this.cdr.markForCheck();
+    
     this.tournamentService
       .update(this.editingTournamentId, {
         name: this.editTournament.name,
@@ -343,7 +387,8 @@ export class Dashboard implements OnInit {
         basePrice: this.editTournament.basePrice,
         initialIncrementAmount: this.editTournament.initialIncrementAmount,
         status: this.editTournament.status,
-        logo: this.editTournament.logoFile ?? undefined,
+        logo: this.editTournament.logoUrl || this.DEFAULT_TEAM_LOGO,
+        paymentProofRequired: this.editTournament.paymentProofRequired,
       })
       .subscribe({
         next: (updated) => {
@@ -474,5 +519,160 @@ export class Dashboard implements OnInit {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
+
+  // ── Sponsor Management Modal ─────────────────────────────────────────────
+  showSponsorsModal = false;
+  showSponsorsGridModal = false;
+  currentTournamentId: number | null = null;
+  currentTournamentName = '';
+  sponsors: Array<{ id: number; name: string; imageUrl: string; subTitle: string }> = [];
+  editingSponsorId: number | null = null;
+  sponsorForm = {
+    name: '',
+    imageUrl: '',
+    subTitle: '',
+  };
+  isSavingSponsor = false;
+  sponsorImagePreview: string | null = null;
+  nextSponsorId = 0;
+
+  private getExampleSponsors() {
+    return [
+      {
+        id: 1,
+        name: 'TechCorp',
+        imageUrl: 'https://via.placeholder.com/150x80?text=TechCorp',
+        subTitle: 'Technology Solutions',
+      },
+      {
+        id: 2,
+        name: 'InnovateLabs',
+        imageUrl: 'https://via.placeholder.com/150x80?text=Innovate',
+        subTitle: 'Innovation Hub',
+      },
+      {
+        id: 3,
+        name: 'Digital Solutions',
+        imageUrl: 'https://via.placeholder.com/150x80?text=DigitalSol',
+        subTitle: 'Digital Excellence',
+      },
+      {
+        id: 4,
+        name: 'FutureTech',
+        imageUrl: 'https://via.placeholder.com/150x80?text=FutureTech',
+        subTitle: 'The Future is Here',
+      },
+    ];
+  }
+
+  openSponsorsGridModal(tournamentId: number, tournamentName: string) {
+    // Navigate to the dedicated sponsors component
+    this.router.navigate(['/admin/sponsors', tournamentId], { queryParams: { name: tournamentName } });
+  }
+
+  closeSponsorsGridModal() {
+    this.showSponsorsGridModal = false;
+    this.currentTournamentId = null;
+    this.currentTournamentName = '';
+    this.cdr.markForCheck();
+  }
+
+  openSponsorsManageModal(tournamentId: number, tournamentName: string) {
+    this.currentTournamentId = tournamentId;
+    this.currentTournamentName = tournamentName;
+    this.sponsors = this.getExampleSponsors();
+    this.nextSponsorId = Math.max(...this.sponsors.map((s) => s.id), 0) + 1;
+    this.showSponsorsModal = true;
+    this.editingSponsorId = null;
+    this.resetSponsorForm();
+    this.cdr.markForCheck();
+  }
+
+  closeSponsorsModal() {
+    this.showSponsorsModal = false;
+    this.currentTournamentId = null;
+    this.currentTournamentName = '';
+    this.editingSponsorId = null;
+    this.resetSponsorForm();
+    this.cdr.markForCheck();
+  }
+
+  resetSponsorForm() {
+    this.sponsorForm = {
+      name: '',
+      imageUrl: '',
+      subTitle: '',
+    };
+    this.sponsorImagePreview = null;
+  }
+
+  editSponsor(sponsorId: number) {
+    const sponsor = this.sponsors.find((s) => s.id === sponsorId);
+    if (!sponsor) return;
+    this.editingSponsorId = sponsorId;
+    this.sponsorForm = {
+      name: sponsor.name,
+      imageUrl: sponsor.imageUrl,
+      subTitle: sponsor.subTitle,
+    };
+    this.sponsorImagePreview = sponsor.imageUrl;
+    this.cdr.markForCheck();
+  }
+
+  deleteSponsor(sponsorId: number) {
+    this.sponsors = this.sponsors.filter((s) => s.id !== sponsorId);
+    this.cdr.markForCheck();
+  }
+
+  saveSponsor() {
+    if (!this.sponsorForm.name.trim() || !this.sponsorForm.imageUrl.trim() || !this.sponsorForm.subTitle.trim()) {
+      alert('Please fill in all fields');
+      return;
+    }
+
+    this.isSavingSponsor = true;
+    this.cdr.markForCheck();
+
+    // Simulate API call with timeout
+    setTimeout(() => {
+      if (this.editingSponsorId !== null) {
+        // Edit existing sponsor
+        const sponsor = this.sponsors.find((s) => s.id === this.editingSponsorId);
+        if (sponsor) {
+          sponsor.name = this.sponsorForm.name;
+          sponsor.imageUrl = this.sponsorForm.imageUrl;
+          sponsor.subTitle = this.sponsorForm.subTitle;
+        }
+        this.editingSponsorId = null;
+      } else {
+        // Add new sponsor
+        this.sponsors.push({
+          id: this.nextSponsorId,
+          name: this.sponsorForm.name,
+          imageUrl: this.sponsorForm.imageUrl,
+          subTitle: this.sponsorForm.subTitle,
+        });
+        this.nextSponsorId++;
+      }
+
+      this.isSavingSponsor = false;
+      this.resetSponsorForm();
+      this.cdr.markForCheck();
+    }, 500);
+  }
+
+  onSponsorImageSelected(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      this.sponsorImagePreview = e.target?.result as string;
+      this.sponsorForm.imageUrl = this.sponsorImagePreview;
+      this.cdr.markForCheck();
+    };
+    reader.readAsDataURL(file);
+  }
 }
+
 

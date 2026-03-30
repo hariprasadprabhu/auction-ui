@@ -62,6 +62,7 @@ export interface Tournament {
   initialIncrementAmount: number;
   logoUrl?: string;
   teamesAllowed?: number;
+  paymentProofRequired?: boolean;
 }
 
 export interface CreateTournamentRequest {
@@ -75,7 +76,8 @@ export interface CreateTournamentRequest {
   basePrice: number;
   initialIncrementAmount: number;
   status?: TournamentStatus;
-  logo?: File;
+  logo?: File | string;
+  paymentProofRequired?: boolean;
 }
 
 export type UpdateTournamentRequest = Partial<CreateTournamentRequest>;
@@ -97,7 +99,7 @@ export interface CreateTeamRequest {
   name: string;
   ownerName: string;
   mobileNumber: string;
-  logo?: File;
+  logo?: File | string;
 }
 
 export type UpdateTeamRequest = Partial<CreateTeamRequest>;
@@ -116,6 +118,7 @@ export interface TeamPurse {
   availableForBidding: number;
   playersBought: number;
   remainingSlots: number;
+  logoUrl?: string;
 }
 
 // ── Player ───────────────────────────────────────────────────────────────────
@@ -145,8 +148,8 @@ export interface PlayerRegistrationRequest {
   lastName?: string;
   dob?: string;
   role: string;
-  photo?: File | undefined;
-  paymentProof?: File | undefined;
+  photo?: File | string | undefined;
+  paymentProof?: File | string | undefined;
 }
 
 export interface AddToAuctionRequest {
@@ -190,7 +193,7 @@ export interface CreateAuctionPlayerRequest {
   bowlingStyle: string;
   role: string;
   basePrice: number;
-  photo?: File;
+  photo?: File | string;
 }
 
 export interface SellPlayerRequest {
@@ -263,4 +266,22 @@ export interface OwnerViewTeamStats {
     role: string;
     soldPrice: number;
   }[];
+}
+
+// ── Sponsor ──────────────────────────────────────────────────────────────────
+
+export interface Sponsor {
+  id: number;
+  name: string;
+  personName: string;
+  personImageUrl: string;
+  websiteUrl?: string;
+  logoUrl?: string;
+  tournamentId?: number;
+}
+
+export interface CreateSponsorRequest {
+  name: string;
+  personName: string;
+  personImageUrl: string;
 }

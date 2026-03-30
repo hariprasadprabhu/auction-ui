@@ -92,8 +92,9 @@ $text-muted: #777;
 
   .brand-logo {
     height: 50px;
-    width: auto;
-    object-fit: contain;
+    width: 50px;
+    object-fit: cover;
+    border-radius: 50%;
     transition: transform 0.3s ease;
 
     &:hover {
@@ -804,8 +805,9 @@ $text-muted: #777;
 
     .brand-logo.footer-logo {
       height: 60px;
-      width: auto;
-      object-fit: contain;
+      width: 60px;
+      object-fit: cover;
+      border-radius: 50%;
     }
 
     .brand-name { color: $white; }

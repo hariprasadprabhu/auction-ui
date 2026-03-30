@@ -50,11 +50,13 @@ export class PlayerService {
     tournamentId: number | string,
     request: PlayerRegistrationRequest,
   ): Observable<Player> {
-    const formData = this.buildFormData(request);
+    const body = this.shouldUseFormData(request)
+      ? this.buildFormData(request)
+      : this.buildRequestObject(request);
     return this.http
       .post<Player>(
         `${this.apiUrl}/players/register/${tournamentId}`,
-        formData,
+        body,
       )
       .pipe(map((p) => this.mapPlayer(p)));
   }
@@ -66,9 +68,11 @@ export class PlayerService {
   }
 
   update(id: number, request: Partial<PlayerRegistrationRequest>): Observable<Player> {
-    const formData = this.buildFormData(request);
+    const body = this.shouldUseFormData(request)
+      ? this.buildFormData(request)
+      : this.buildRequestObject(request);
     return this.http
-      .put<Player>(`${this.apiUrl}/players/${id}`, formData)
+      .put<Player>(`${this.apiUrl}/players/${id}`, body)
       .pipe(map((p) => this.mapPlayer(p)));
   }
 
@@ -128,9 +132,34 @@ export class PlayerService {
     if (request.lastName !== undefined) fd.append('lastName', request.lastName);
     if (request.dob !== undefined) fd.append('dob', request.dob);
     if (request.role !== undefined) fd.append('role', request.role);
-    if (request.photo) fd.append('photo', request.photo);
-    if (request.paymentProof) fd.append('paymentProof', request.paymentProof);
+    // Only append to FormData if it's a File object
+    if (request.photo instanceof File) {
+      fd.append('photo', request.photo);
+    }
+    if (request.paymentProof instanceof File) {
+      fd.append('paymentProof', request.paymentProof);
+    }
     return fd;
+  }
+
+  private buildRequestObject(request: Partial<PlayerRegistrationRequest>): any {
+    const obj: any = {};
+    if (request.firstName !== undefined) obj.firstName = request.firstName;
+    if (request.lastName !== undefined) obj.lastName = request.lastName;
+    if (request.dob !== undefined) obj.dob = request.dob;
+    if (request.role !== undefined) obj.role = request.role;
+    // Attach Cloudinary URL directly to original field name
+    if (request.photo && typeof request.photo === 'string') {
+      obj.photo = request.photo;
+    }
+    if (request.paymentProof && typeof request.paymentProof === 'string') {
+      obj.paymentProof = request.paymentProof;
+    }
+    return obj;
+  }
+
+  private shouldUseFormData(request: Partial<PlayerRegistrationRequest>): boolean {
+    return request.photo instanceof File || request.paymentProof instanceof File;
   }
 
   private mapPlayer(p: Player): Player {
