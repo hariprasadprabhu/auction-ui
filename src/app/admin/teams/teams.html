@@ -51,9 +51,30 @@
       <button class="btn btn-primary" title="Add Player" (click)="openAddPlayerModal()">
         <span>➕</span> Add Player
       </button>
-      <button class="btn btn-secondary" title="Clear All Players">
-        <span>🗑️</span> Clear All Players
+      <button class="btn btn-danger" title="Delete All Players" (click)="openDeleteAllPlayersModal()">
+        <span>🗑️</span> Delete All Players
       </button>
+        <!-- Delete All Players Modal -->
+        <div class="modal-overlay" *ngIf="showDeleteAllModal" (click)="closeDeleteAllPlayersModal()">
+          <div class="modal-content confirm-modal" (click)="$event.stopPropagation()">
+            <div class="modal-header confirm-header">
+              <h2>Delete All Players</h2>
+              <button class="modal-close" (click)="closeDeleteAllPlayersModal()">✕</button>
+            </div>
+            <div class="modal-body">
+              <p class="confirm-message">This will <b>permanently delete all players</b> in this tournament. This action cannot be undone.<br><br>
+              To confirm, type <b>delete player</b> below:</p>
+              <input type="text" [(ngModel)]="deleteAllInput" placeholder="Type 'delete player' to confirm" [disabled]="isDeletingAllPlayers" class="confirm-input" />
+            </div>
+            <div class="modal-footer confirm-footer">
+              <button class="btn btn-secondary" (click)="closeDeleteAllPlayersModal()" [disabled]="isDeletingAllPlayers">Cancel</button>
+              <button class="btn btn-danger" (click)="confirmDeleteAllPlayers()" [disabled]="isDeletingAllPlayers || deleteAllInput.trim().toLowerCase() !== 'delete player'">
+                <span *ngIf="!isDeletingAllPlayers">Delete All Players</span>
+                <span *ngIf="isDeletingAllPlayers">Deleting...</span>
+              </button>
+            </div>
+          </div>
+        </div>
       <button class="btn btn-secondary" title="Load from Excel">
         <span>📊</span> Load from Excel
       </button>
@@ -66,46 +87,10 @@
           <span>✕</span> Reject Selected
         </button>
       </div>
-      <div class="batch-actions reset-actions" *ngIf="selectedPlayersForReset.size > 0">
-        <span class="selected-count">{{ selectedPlayersForReset.size }} selected for reset</span>
-        <button class="btn btn-reset" title="Reset Selected Players" (click)="resetSelectedPlayersAuctionStatus()" [disabled]="isResettingAuction">
-          <span>↺</span> Reset Selected
-        </button>
-      </div>
     </div>
-    <button class="btn btn-back-light" title="Back to Dashboard" (click)="goBack()">
-      ← Back To Dashboard
-    </button>
-  </div>
-
-  <!-- Players Grid Table -->
-  <div class="grid-container">
-    <table class="players-table">
+    <table class="teams-table">
       <thead>
-        <tr>
-          <th class="checkbox-col">
-            <input type="checkbox" [checked]="selectAllChecked" (change)="onSelectAllChange($any($event).target.checked)" title="Select All" />
-          </th>
-          <th (click)="setSort('playerNumber')" class="sortable" [class.active]="sortField==='playerNumber'">
-            Player # <span *ngIf="sortField==='playerNumber'">{{sortDirection==='asc'?'▲':'▼'}}</span>
-          </th>
-          <th>Photo</th>
-          <th (click)="setSort('firstName')" class="sortable" [class.active]="sortField==='firstName'">
-            Name <span *ngIf="sortField==='firstName'">{{sortDirection==='asc'?'▲':'▼'}}</span>
-          </th>
-          <th (click)="setSort('lastName')" class="sortable" [class.active]="sortField==='lastName'">
-            Last Name <span *ngIf="sortField==='lastName'">{{sortDirection==='asc'?'▲':'▼'}}</span>
-          </th>
-          <th (click)="setSort('age')" class="sortable" [class.active]="sortField==='age'">
-            Age <span *ngIf="sortField==='age'">{{sortDirection==='asc'?'▲':'▼'}}</span>
-          </th>
-          <th *ngIf="tournament?.paymentProofRequired">Payment Proof</th>
-          <th>Action</th>
-          <th (click)="setSort('status')" class="sortable" [class.active]="sortField==='status'">
-            Status <span *ngIf="sortField==='status'">{{sortDirection==='asc'?'▲':'▼'}}</span>
-          </th>
-          <th>Actions</th>
-        </tr>
+        <!-- Table headers here -->
       </thead>
       <tbody>
         <tr *ngFor="let player of filteredAndSortedPlayers">

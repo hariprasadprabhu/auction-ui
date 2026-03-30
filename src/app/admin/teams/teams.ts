@@ -23,6 +23,42 @@ import { NormalizePhotoUrlCachedPipe } from '../../core/pipes/normalize-photo-ur
   styleUrls: ['./teams.scss'],
 })
 export class Players implements OnInit {
+      // Delete All Players Modal State
+      showDeleteAllModal = false;
+      deleteAllInput = '';
+      isDeletingAllPlayers = false;
+
+      openDeleteAllPlayersModal() {
+        this.deleteAllInput = '';
+        this.showDeleteAllModal = true;
+      }
+
+      closeDeleteAllPlayersModal() {
+        this.showDeleteAllModal = false;
+        this.deleteAllInput = '';
+      }
+
+      confirmDeleteAllPlayers() {
+        if (this.deleteAllInput.trim().toLowerCase() !== 'delete player') {
+          this.openErrorModal('Confirmation Failed', "You must type 'delete player' to confirm deletion.");
+          return;
+        }
+        this.isDeletingAllPlayers = true;
+        this.playerService.deleteAllPlayers(this.tournamentId).subscribe({
+          next: () => {
+            this.players = [];
+            this.isDeletingAllPlayers = false;
+            this.showDeleteAllModal = false;
+            this.openSuccessModal('All Players Deleted', 'All players have been deleted from this tournament.');
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            this.isDeletingAllPlayers = false;
+            this.openErrorModal('Delete Failed', 'Failed to delete all players. Please try again.');
+            this.cdr.markForCheck();
+          }
+        });
+      }
     // Search and Sort
     public searchTerm = '';
     public sortField: 'playerNumber' | 'firstName' | 'lastName' | 'age' | 'status' = 'playerNumber';

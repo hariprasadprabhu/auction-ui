@@ -14,6 +14,12 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class PlayerService {
+    /**
+     * Delete all players in a tournament
+     */
+    deleteAllPlayers(tournamentId: number): Observable<void> {
+      return this.http.delete<void>(`${this.apiUrl}/tournaments/${tournamentId}/players`);
+    }
   private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.apiUrl;
 
