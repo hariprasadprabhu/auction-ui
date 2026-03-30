@@ -11,7 +11,7 @@
         <div class="loading-progress"></div>
       </div>
     </div>
-  </div>
+  
 
   <!-- Image Loading Overlay -->
   <div class="image-loading-overlay" *ngIf="!isLoading && pendingImages > 0">
@@ -22,7 +22,7 @@
       </div>
       <p class="overlay-text">Loading images...</p>
     </div>
-  </div>
+  
 
   <!-- Main Content -->
   <div [class.blur-content]="!isLoading && pendingImages > 0" class="teams-content">
@@ -165,9 +165,9 @@
             <button class="btn-delete" (click)="deletePlayer(player.id)" title="Delete">🗑️</button>
           </td>
         </tr>
+
       </tbody>
     </table>
-  </div>
 
   <!-- Image Modal -->
   <div class="modal-overlay" *ngIf="selectedImage" (click)="closeImageModal()">
@@ -179,7 +179,7 @@
         <button class="btn btn-reject-modal" (click)="rejectFromModal()">✕ Reject</button>
       </div>
     </div>
-  </div>
+  
 
   <!-- Edit Player Modal -->
   <div class="modal-overlay" *ngIf="showEditPlayerModal" (click)="closeEditPlayerModal()">
@@ -399,4 +399,3 @@
     </div>
   </div>
   </div>
-</div>
