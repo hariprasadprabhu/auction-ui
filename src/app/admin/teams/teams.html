@@ -54,7 +54,21 @@
       <button class="btn btn-danger" title="Delete All Players" (click)="openDeleteAllPlayersModal()">
         <span>🗑️</span> Delete All Players
       </button>
-        <!-- Delete All Players Modal -->
+      <button class="btn btn-secondary" title="Load from Excel">
+        <span>📊</span> Load from Excel
+      </button>
+      <div class="batch-actions" *ngIf="selectedPlayers.size > 0">
+        <span class="selected-count">{{ selectedPlayers.size }} selected</span>
+        <button class="btn btn-success" title="Approve Selected" (click)="approveSelectedPlayers()" [disabled]="isProcessingBatchAction">
+          <span>✓</span> Approve Selected
+        </button>
+        <button class="btn btn-danger" title="Reject Selected" (click)="rejectSelectedPlayers()" [disabled]="isProcessingBatchAction">
+          <span>✕</span> Reject Selected
+        </button>
+      </div>
+    </div>
+    <table class="players-table">
+        <!-- Delete All Players Modal (moved outside actions-bar for alignment) -->
         <div class="modal-overlay" *ngIf="showDeleteAllModal" (click)="closeDeleteAllPlayersModal()">
           <div class="modal-content confirm-modal" (click)="$event.stopPropagation()">
             <div class="modal-header confirm-header">
@@ -75,20 +89,6 @@
             </div>
           </div>
         </div>
-      <button class="btn btn-secondary" title="Load from Excel">
-        <span>📊</span> Load from Excel
-      </button>
-      <div class="batch-actions" *ngIf="selectedPlayers.size > 0">
-        <span class="selected-count">{{ selectedPlayers.size }} selected</span>
-        <button class="btn btn-success" title="Approve Selected" (click)="approveSelectedPlayers()" [disabled]="isProcessingBatchAction">
-          <span>✓</span> Approve Selected
-        </button>
-        <button class="btn btn-danger" title="Reject Selected" (click)="rejectSelectedPlayers()" [disabled]="isProcessingBatchAction">
-          <span>✕</span> Reject Selected
-        </button>
-      </div>
-    </div>
-    <table class="teams-table">
       <thead>
         <!-- Table headers here -->
       </thead>
