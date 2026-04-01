@@ -1,4 +1,4 @@
-<div class="dashboard-container">
+<div class="dashboard-container" (click)="closeProfileMenu()">
   <div class="dashboard-header">
     <div class="header-left">
       <div class="app-logo">
@@ -10,7 +10,29 @@
     </div>
     <div class="header-right">
       <button class="btn-create" (click)="openCreateModal()">＋ Create Tournament</button>
-      <button class="btn-logout" (click)="logout()">Logout</button>
+      <!-- Profile Avatar Menu -->
+      <div class="profile-menu-wrap" (click)="$event.stopPropagation()">
+        <button class="profile-avatar-btn" (click)="toggleProfileMenu()" [class.active]="showProfileMenu" title="Account">
+          <span class="profile-avatar-initials">{{ getInitials() }}</span>
+        </button>
+        <div class="profile-dropdown" *ngIf="showProfileMenu">
+          <div class="profile-dropdown-header">
+            <div class="profile-dropdown-avatar">{{ getInitials() }}</div>
+            <div class="profile-dropdown-name">{{ currentUser?.name || 'User' }}</div>
+          </div>
+          <div class="profile-dropdown-divider"></div>
+          <button class="profile-dropdown-item" (click)="openProfileModal()">
+            <span class="item-icon">👤</span> Profile
+          </button>
+          <button class="profile-dropdown-item" (click)="openChangePasswordModal()">
+            <span class="item-icon">🔑</span> Reset Password
+          </button>
+          <div class="profile-dropdown-divider"></div>
+          <button class="profile-dropdown-item profile-dropdown-item-logout" (click)="logout()">
+            <span class="item-icon">🚪</span> Logout
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -669,6 +691,77 @@
       <div class="sponsors-modal-footer">
         <p class="info-text">💡 Sponsors are displayed in the auction carousel</p>
         <button class="btn btn-secondary" (click)="closeSponsorsModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Modal -->
+  <div class="modal-overlay" *ngIf="showProfileModal" (click)="closeProfileModal()">
+    <div class="modal-content profile-modal-content" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="closeProfileModal()">✕</button>
+      <div class="profile-modal-header">
+        <div class="profile-modal-avatar">{{ getInitials() }}</div>
+        <h2>My Profile</h2>
+      </div>
+      <div class="profile-modal-body" *ngIf="!isLoadingProfile && profileData">
+        <div class="profile-field">
+          <span class="profile-field-label">Full Name</span>
+          <span class="profile-field-value">{{ profileData.name }}</span>
+        </div>
+        <div class="profile-field">
+          <span class="profile-field-label">Email Address</span>
+          <span class="profile-field-value">{{ profileData.email }}</span>
+        </div>
+        <div class="profile-field">
+          <span class="profile-field-label">Mobile Number</span>
+          <span class="profile-field-value">
+            {{ (profileData.phoneCountryCode ? '+' + profileData.phoneCountryCode + ' ' : '') + (profileData.phoneNumber || '—') }}
+          </span>
+        </div>
+        <div class="profile-field">
+          <span class="profile-field-label">Role</span>
+          <span class="profile-field-value">{{ profileData.role | titlecase }}</span>
+        </div>
+      </div>
+      <div class="profile-modal-loading" *ngIf="isLoadingProfile">
+        <div class="spinner-circle"></div>
+        <p>Loading profile...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Change Password Modal -->
+  <div class="modal-overlay" *ngIf="showChangePasswordModal" (click)="closeChangePasswordModal()">
+    <div class="modal-content change-password-modal-content" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="closeChangePasswordModal()">✕</button>
+      <h2>🔑 Reset Password</h2>
+
+      <div class="change-password-success" *ngIf="changePasswordSuccess">
+        <div class="success-icon">✓</div>
+        <p>Password changed successfully!</p>
+        <button class="btn btn-primary" (click)="closeChangePasswordModal()">Close</button>
+      </div>
+
+      <div *ngIf="!changePasswordSuccess">
+        <div class="form-group full-width">
+          <label>Current Password</label>
+          <input type="password" [(ngModel)]="changePasswordForm.currentPassword" placeholder="Enter current password" />
+        </div>
+        <div class="form-group full-width">
+          <label>New Password</label>
+          <input type="password" [(ngModel)]="changePasswordForm.newPassword" placeholder="At least 8 characters" />
+        </div>
+        <div class="form-group full-width">
+          <label>Confirm New Password</label>
+          <input type="password" [(ngModel)]="changePasswordForm.confirmPassword" placeholder="Repeat new password" />
+        </div>
+        <p class="error-msg" *ngIf="changePasswordError">{{ changePasswordError }}</p>
+        <div class="form-actions">
+          <button class="btn btn-secondary" (click)="closeChangePasswordModal()" [disabled]="isChangingPassword">Cancel</button>
+          <button class="btn btn-primary" (click)="submitChangePassword()" [disabled]="isChangingPassword">
+            {{ isChangingPassword ? '🔄 Saving...' : 'Change Password' }}
+          </button>
+        </div>
       </div>
     </div>
   </div>
