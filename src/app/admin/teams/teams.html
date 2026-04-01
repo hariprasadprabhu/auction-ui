@@ -50,9 +50,6 @@
     <span>Total Players: <b>{{ totalPlayers }}</b></span>
     <span>Total Approved Players: <b>{{ totalApprovedPlayers }}</b></span>
   </div>
-  <div class="search-sort-bar">
-    <input type="text" [(ngModel)]="searchTerm" placeholder="Search by name..." class="search-input" />
-  </div>
 
   <!-- Actions Bar -->
   <div class="actions-bar">
@@ -85,6 +82,10 @@
     <button class="btn btn-back-light" title="Back to Dashboard" (click)="goBack()">
       ← Back To Dashboard
     </button>
+  </div>
+
+  <div class="search-sort-bar">
+    <input type="text" [(ngModel)]="searchTerm" placeholder="Search by name..." class="search-input" />
   </div>
 
   <!-- Players Grid Table -->
