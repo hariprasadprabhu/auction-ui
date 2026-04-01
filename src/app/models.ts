@@ -157,7 +157,7 @@ export interface PlayerBulkRegisterRequest {
   lastName?: string;
   dob?: string;
   role: string;
-  photoUrl?: string;
+  photo?: string;
 }
 
 export interface BulkUploadRowError {

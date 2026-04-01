@@ -1151,7 +1151,7 @@ export class Players implements OnInit {
     this.cdr.markForCheck();
     const rowsWithDefaults = this.excelBulkRows.map(r => ({
       ...r,
-      photoUrl: r.photoUrl || this.DEFAULT_PLAYER_PHOTO,
+      photo: r.photo || this.DEFAULT_PLAYER_PHOTO,
     }));
     this.playerService.bulkRegister(this.tournamentId, rowsWithDefaults).subscribe({
       next: (created) => {
