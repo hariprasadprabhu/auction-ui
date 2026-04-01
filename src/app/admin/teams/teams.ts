@@ -890,6 +890,49 @@ export class Players implements OnInit {
     );
   }
 
+  deleteSelectedPlayers() {
+    const selectedIds = this.getSelectedPlayerIds();
+    if (selectedIds.length === 0) {
+      this.openErrorModal('No Selection', 'Please select at least one player to delete');
+      return;
+    }
+
+    this.openConfirmModal(
+      'Delete Players',
+      `Are you sure you want to delete ${selectedIds.length} player(s)? This action cannot be undone.`,
+      () => {
+        this.showLoadingModal = true;
+        this.loadingMessage = `Deleting ${selectedIds.length} player(s)...`;
+        this.isProcessingBatchAction = true;
+        this.cdr.markForCheck();
+
+        this.playerService.deleteBulk(this.tournamentId, selectedIds).subscribe({
+          next: (response) => {
+            this.players = this.players.filter((p) => !selectedIds.includes(p.id));
+            this.selectedPlayers.clear();
+            this.selectAllChecked = false;
+            this.isProcessingBatchAction = false;
+            this.showLoadingModal = false;
+            const skippedMsg = response.skippedCount > 0
+              ? ` ${response.skippedCount} player(s) could not be deleted.`
+              : '';
+            this.openSuccessModal(
+              'Deletion Successful',
+              `${response.deletedCount} player(s) have been deleted successfully.${skippedMsg}`
+            );
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            this.isProcessingBatchAction = false;
+            this.showLoadingModal = false;
+            this.openErrorModal('Deletion Failed', 'Failed to delete selected players. Please try again.');
+            this.cdr.markForCheck();
+          },
+        });
+      }
+    );
+  }
+
   openEditPlayerModal(player: Player) {
     this.editingPlayer = player;
     this.editPlayerForm = {

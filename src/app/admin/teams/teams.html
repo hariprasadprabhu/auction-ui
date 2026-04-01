@@ -62,8 +62,11 @@
         <button class="btn btn-success" title="Approve Selected" (click)="approveSelectedPlayers()" [disabled]="isProcessingBatchAction">
           <span>✓</span> Approve Selected
         </button>
-        <button class="btn btn-danger" title="Reject Selected" (click)="rejectSelectedPlayers()" [disabled]="isProcessingBatchAction">
+        <button class="btn btn-warning" title="Reject Selected" (click)="rejectSelectedPlayers()" [disabled]="isProcessingBatchAction">
           <span>✕</span> Reject Selected
+        </button>
+        <button class="btn btn-danger" title="Delete Selected" (click)="deleteSelectedPlayers()" [disabled]="isProcessingBatchAction">
+          <span>🗑️</span> Delete Selected
         </button>
       </div>
       <div class="batch-actions reset-actions" *ngIf="selectedPlayersForReset.size > 0">

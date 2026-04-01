@@ -85,6 +85,13 @@ export class PlayerService {
     return this.http.delete<void>(`${this.apiUrl}/tournaments/${tournamentId}/players`);
   }
 
+  deleteBulk(tournamentId: number, playerIds: number[]): Observable<{ deletedCount: number; skippedCount: number; skippedIds: number[]; status: string }> {
+    return this.http.delete<{ deletedCount: number; skippedCount: number; skippedIds: number[]; status: string }>(
+      `${this.apiUrl}/tournaments/${tournamentId}/players/bulk`,
+      { body: { playerIds } },
+    );
+  }
+
   bulkRegister(
     tournamentId: number,
     requests: PlayerBulkRegisterRequest[],
