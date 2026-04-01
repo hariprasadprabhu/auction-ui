@@ -60,6 +60,7 @@ export class Auction implements OnInit {
   showConfigModal = false;
   auctionComplete = false;
   noUnsoldAvailable = false;
+  hoveredTeamName: string | null = null;
   isValidatingBid = false;
   auctionStarted = false;
 
