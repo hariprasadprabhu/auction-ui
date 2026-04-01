@@ -1,3 +1,8 @@
+// ── Constants ─────────────────────────────────────────────────────────────────
+
+export const DEFAULT_PLAYER_PHOTO_URL =
+  'https://res.cloudinary.com/drytm0fl7/image/upload/v1774291008/default_player_lzyniw.png';
+
 // ── Status type aliases ──────────────────────────────────────────────────────
 
 export type TournamentStatus = 'UPCOMING' | 'ONGOING' | 'COMPLETED';

@@ -7,7 +7,7 @@ import { PlayerService } from '../../core/services/player.service';
 import { AuctionPlayerService } from '../../core/services/auction-player.service';
 import { TournamentService } from '../../core/services/tournament.service';
 import { CloudinaryImageService } from '../../core/services/cloudinary-image.service';
-import { Tournament, Player, PlayerBulkRegisterRequest, BulkUploadRowError } from '../../models';
+import { Tournament, Player, PlayerBulkRegisterRequest, BulkUploadRowError, DEFAULT_PLAYER_PHOTO_URL } from '../../models';
 import { AuthImageCachedPipe } from '../../core/pipes/auth-image-cached.pipe';
 import { NormalizePhotoUrlCachedPipe } from '../../core/pipes/normalize-photo-url-cached.pipe';
 
@@ -365,7 +365,7 @@ export class Players implements OnInit {
   }
 
   /** Default Cloudinary URLs */
-  readonly DEFAULT_PLAYER_PHOTO = 'https://res.cloudinary.com/drytm0fl7/image/upload/v1774291008/default_player_lzyniw.png';
+  readonly DEFAULT_PLAYER_PHOTO = DEFAULT_PLAYER_PHOTO_URL;
 
   /** Get player photo URL with default fallback */
   getPlayerPhotoUrl(photoUrl: string | undefined): string {
