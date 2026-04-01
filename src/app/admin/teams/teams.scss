@@ -1388,31 +1388,19 @@
   }
 }
 
-.batch-actions.reset-actions {
-  background: #ffebee;
-  border-left: 4px solid #ff6b6b;
+.btn-light-red {
+  background: linear-gradient(135deg, #ff8a80 0%, #ff6b6b 100%);
+  color: white;
 
-  .btn-reset {
-    background: #ff6b6b;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.9rem;
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(255, 107, 107, 0.35);
+  }
 
-    &:hover:not(:disabled) {
-      background: #ee5a5a;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
-    }
-
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
   }
 }
 
