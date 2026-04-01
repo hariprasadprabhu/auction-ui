@@ -25,12 +25,16 @@
 
   <!-- Sponsors Table -->
   <div class="sponsors-content">
-    <button class="btn btn-back-light" (click)="goBack()" title="Back to Dashboard">← Back To Dashboard</button>
-    <div class="action-buttons">
-      <button class="btn btn-add-sponsor" (click)="openForm()">+ Add Sponsor</button>
+    <div class="actions-bar">
+      <div class="action-buttons">
+        <button class="btn btn-primary" (click)="openForm()">
+          <span>➕</span> Add Sponsor
+        </button>
+      </div>
+      <button class="btn btn-back-light" (click)="goBack()" title="Back to Dashboard">← Back To Dashboard</button>
     </div>
 
-    <div class="table-wrapper" *ngIf="sponsors.length > 0">
+    <div class="grid-container" *ngIf="sponsors.length > 0">
       <table class="sponsors-table">
         <thead>
           <tr>
