@@ -51,8 +51,8 @@
       <button class="btn btn-primary" title="Add Player" (click)="openAddPlayerModal()">
         <span>➕</span> Add Player
       </button>
-      <button class="btn btn-secondary" title="Clear All Players">
-        <span>🗑️</span> Clear All Players
+      <button class="btn btn-danger" title="Delete All Players" (click)="openDeleteAllPlayersModal()">
+        <span>🗑️</span> Delete All Players
       </button>
       <button class="btn btn-secondary" title="Load from Excel">
         <span>📊</span> Load from Excel
@@ -408,6 +408,38 @@
           <div class="spinner-circle"></div>
         </div>
         <p class="loading-message">{{ loadingMessage }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete All Players Confirmation Modal -->
+  <div class="modal-overlay" *ngIf="showDeleteAllConfirmModal" (click)="closeDeleteAllConfirmModal()">
+    <div class="modal-content confirm-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header error-header">
+        <h2>Delete All Players</h2>
+        <button class="modal-close" (click)="closeDeleteAllConfirmModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="confirm-message">
+          ⚠️ This will permanently delete <strong>all players</strong> from this tournament. This action cannot be undone.
+        </p>
+        <p class="confirm-message" style="margin-top: 12px;">Type <strong>delete players</strong> to confirm:</p>
+        <input
+          type="text"
+          class="search-input"
+          style="margin-top: 8px; width: 100%;"
+          [(ngModel)]="deleteAllConfirmInput"
+          placeholder="delete players"
+          autocomplete="off"
+        />
+      </div>
+      <div class="modal-footer confirm-footer">
+        <button class="btn btn-secondary" (click)="closeDeleteAllConfirmModal()">Cancel</button>
+        <button
+          class="btn btn-danger"
+          (click)="confirmDeleteAllPlayers()"
+          [disabled]="deleteAllConfirmInput !== 'delete players'"
+        >Delete All Players</button>
       </div>
     </div>
   </div>

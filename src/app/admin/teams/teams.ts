@@ -133,6 +133,11 @@ export class Players implements OnInit {
   showLoadingModal = false;
   loadingMessage = '';
 
+  // Delete All Players Confirmation Modal
+  showDeleteAllConfirmModal = false;
+  deleteAllConfirmInput = '';
+  isDeletingAllPlayers = false;
+
   // Add Player Form
   showAddPlayerModal = false;
   isAddingPlayer = false;
@@ -975,6 +980,45 @@ export class Players implements OnInit {
   }
 
   // ── Custom Modal Methods ──────────────────────────────────────────────────
+
+  openDeleteAllPlayersModal() {
+    this.deleteAllConfirmInput = '';
+    this.showDeleteAllConfirmModal = true;
+  }
+
+  closeDeleteAllConfirmModal() {
+    this.showDeleteAllConfirmModal = false;
+    this.deleteAllConfirmInput = '';
+  }
+
+  confirmDeleteAllPlayers() {
+    if (this.deleteAllConfirmInput !== 'delete players') return;
+    this.closeDeleteAllConfirmModal();
+    this.isDeletingAllPlayers = true;
+    this.showLoadingModal = true;
+    this.loadingMessage = 'Deleting all players...';
+    this.cdr.markForCheck();
+
+    this.playerService.deleteAllByTournament(this.tournamentId).subscribe({
+      next: () => {
+        this.players = [];
+        this.auctionPlayerMap.clear();
+        this.selectedPlayers.clear();
+        this.selectedPlayersForReset.clear();
+        this.selectAllChecked = false;
+        this.isDeletingAllPlayers = false;
+        this.showLoadingModal = false;
+        this.openSuccessModal('All Players Deleted', 'All players have been successfully deleted from the tournament.');
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.isDeletingAllPlayers = false;
+        this.showLoadingModal = false;
+        this.openErrorModal('Deletion Failed', 'Failed to delete all players. Please try again.');
+        this.cdr.markForCheck();
+      },
+    });
+  }
 
   openConfirmModal(title: string, message: string, onConfirm: () => void) {
     this.confirmTitle = title;

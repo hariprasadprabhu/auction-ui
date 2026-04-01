@@ -80,6 +80,10 @@ export class PlayerService {
     return this.http.delete<void>(`${this.apiUrl}/players/${id}`);
   }
 
+  deleteAllByTournament(tournamentId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/tournaments/${tournamentId}/players`);
+  }
+
   approve(id: number): Observable<Player> {
     return this.http
       .patch<Player>(`${this.apiUrl}/players/${id}/approve`, {})
