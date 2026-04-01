@@ -1399,3 +1399,170 @@
     }
   }
 }
+
+// ── Excel / CSV Bulk Upload Modal ─────────────────────────────────────────────
+
+.excel-modal {
+  max-width: 680px;
+  width: 96vw;
+
+  h2 {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 20px;
+    font-weight: 700;
+  }
+}
+
+.excel-section {
+  margin-bottom: 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.excel-step-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #444;
+  margin: 0 0 8px 0;
+}
+
+.excel-hint {
+  font-size: 0.85rem;
+  color: #666;
+  margin: 0 0 10px 0;
+}
+
+.excel-columns-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.col-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: #f0ecf8;
+  color: #5c3d87;
+  font-size: 0.8rem;
+  font-weight: 600;
+
+  &.required::after {
+    content: ' *';
+    color: #e53935;
+    font-weight: 700;
+  }
+
+  small {
+    font-weight: 400;
+    color: #888;
+  }
+}
+
+.csv-file-name {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: #555;
+  font-style: italic;
+}
+
+.excel-errors {
+  background: #fff3f3;
+  border: 1px solid #f8bbbb;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+
+.errors-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #c62828;
+  margin: 0 0 10px 0;
+}
+
+.errors-list {
+  margin: 0;
+  padding-left: 18px;
+  list-style: disc;
+
+  li {
+    font-size: 0.85rem;
+    color: #b71c1c;
+    margin-bottom: 4px;
+  }
+}
+
+.excel-preview {
+  margin-bottom: 16px;
+}
+
+.preview-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #2e7d32;
+  margin: 0 0 10px 0;
+}
+
+.preview-table-wrap {
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+
+  th {
+    background: #f5f5f5;
+    color: #555;
+    font-weight: 700;
+    padding: 8px 10px;
+    text-align: left;
+    position: sticky;
+    top: 0;
+    border-bottom: 2px solid #ddd;
+  }
+
+  td {
+    padding: 7px 10px;
+    border-bottom: 1px solid #f0f0f0;
+    color: #333;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  tr:nth-child(even) td {
+    background: #fafafa;
+  }
+}
+
+.excel-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 16px;
+  text-align: center;
+
+  .success-check {
+    font-size: 2.5rem;
+    color: #2e7d32;
+    line-height: 1;
+  }
+
+  p {
+    font-size: 1rem;
+    color: #333;
+    margin: 0;
+  }
+}

@@ -7,6 +7,7 @@ import {
   Player,
   PlayerStats,
   PlayerRegistrationRequest,
+  PlayerBulkRegisterRequest,
   AddToAuctionRequest,
   AuctionPlayer,
   PlayerStatus,
@@ -82,6 +83,18 @@ export class PlayerService {
 
   deleteAllByTournament(tournamentId: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/tournaments/${tournamentId}/players`);
+  }
+
+  bulkRegister(
+    tournamentId: number,
+    requests: PlayerBulkRegisterRequest[],
+  ): Observable<Player[]> {
+    return this.http
+      .post<Player[]>(
+        `${this.apiUrl}/tournaments/${tournamentId}/players/bulk`,
+        requests,
+      )
+      .pipe(map((list) => list.map((p) => this.mapPlayer(p))));
   }
 
   approve(id: number): Observable<Player> {

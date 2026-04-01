@@ -7,7 +7,7 @@ import { PlayerService } from '../../core/services/player.service';
 import { AuctionPlayerService } from '../../core/services/auction-player.service';
 import { TournamentService } from '../../core/services/tournament.service';
 import { CloudinaryImageService } from '../../core/services/cloudinary-image.service';
-import { Tournament, Player } from '../../models';
+import { Tournament, Player, PlayerBulkRegisterRequest, BulkUploadRowError } from '../../models';
 import { AuthImageCachedPipe } from '../../core/pipes/auth-image-cached.pipe';
 import { NormalizePhotoUrlCachedPipe } from '../../core/pipes/normalize-photo-url-cached.pipe';
 
@@ -132,6 +132,15 @@ export class Players implements OnInit {
 
   showLoadingModal = false;
   loadingMessage = '';
+
+  // Excel Bulk Upload Modal
+  showExcelModal = false;
+  excelBulkRows: PlayerBulkRegisterRequest[] = [];
+  excelBulkErrors: BulkUploadRowError[] = [];
+  isBulkUploading = false;
+  csvFileName = '';
+  bulkUploadSuccess = false;
+  bulkUploadCreatedCount = 0;
 
   // Delete All Players Confirmation Modal
   showDeleteAllConfirmModal = false;
@@ -1057,5 +1066,103 @@ export class Players implements OnInit {
 
   closeErrorModal() {
     this.showErrorModal = false;
+  }
+
+  // ── Excel / CSV Bulk Upload ───────────────────────────────────────────────
+
+  openExcelModal() {
+    this.showExcelModal = true;
+    this.excelBulkRows = [];
+    this.excelBulkErrors = [];
+    this.csvFileName = '';
+    this.bulkUploadSuccess = false;
+    this.bulkUploadCreatedCount = 0;
+  }
+
+  closeExcelModal() {
+    this.showExcelModal = false;
+  }
+
+  downloadCsvTemplate() {
+    const headers = 'firstName,lastName,dob,role';
+    const sample = 'John,Doe,1995-06-15,Batsman';
+    const csv = `${headers}\n${sample}\n`;
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'players_template.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  onCsvFileSelected(event: any) {
+    const file: File = event.target.files[0];
+    if (!file) return;
+    this.csvFileName = file.name;
+    this.bulkUploadSuccess = false;
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      const text: string = e.target.result;
+      this.parseCsv(text);
+      this.cdr.markForCheck();
+    };
+    reader.readAsText(file);
+    // Reset input so same file can be re-selected
+    event.target.value = '';
+  }
+
+  parseCsv(text: string) {
+    const VALID_ROLES = ['batsman', 'bowler', 'all-rounder', 'wicket keeper'];
+    const lines = text.replace(/\r/g, '').split('\n').filter(l => l.trim() !== '');
+    if (lines.length < 2) {
+      this.excelBulkErrors = [{ row: 0, field: 'file', message: 'CSV file is empty or has no data rows.' }];
+      this.excelBulkRows = [];
+      return;
+    }
+    const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+    this.excelBulkRows = [];
+    this.excelBulkErrors = [];
+    for (let i = 1; i < lines.length; i++) {
+      const rowNum = i;
+      const values = lines[i].split(',').map(v => v.trim());
+      const rowData: Record<string, string> = {};
+      headers.forEach((h, idx) => { rowData[h] = values[idx] || ''; });
+      if (!rowData['firstname']) {
+        this.excelBulkErrors.push({ row: rowNum, field: 'firstName', message: `Row ${rowNum}: firstName is mandatory.` });
+      }
+      if (!rowData['role']) {
+        this.excelBulkErrors.push({ row: rowNum, field: 'role', message: `Row ${rowNum}: role is mandatory.` });
+      } else if (!VALID_ROLES.includes(rowData['role'].toLowerCase())) {
+        this.excelBulkErrors.push({ row: rowNum, field: 'role', message: `Row ${rowNum}: role must be one of Batsman, Bowler, All-rounder, Wicket Keeper.` });
+      }
+      this.excelBulkRows.push({
+        firstName: rowData['firstname'] || '',
+        lastName: rowData['lastname'] || undefined,
+        dob: rowData['dob'] || undefined,
+        role: rowData['role'] || '',
+      });
+    }
+  }
+
+  submitBulkUpload() {
+    if (this.excelBulkErrors.length > 0 || this.excelBulkRows.length === 0) return;
+    this.isBulkUploading = true;
+    this.cdr.markForCheck();
+    this.playerService.bulkRegister(this.tournamentId, this.excelBulkRows).subscribe({
+      next: (created) => {
+        this.players.push(...created);
+        this.bulkUploadCreatedCount = created.length;
+        this.bulkUploadSuccess = true;
+        this.isBulkUploading = false;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.isBulkUploading = false;
+        const msg = err?.error?.message || 'Failed to bulk upload players. Please check the data and try again.';
+        this.excelBulkErrors = [{ row: 0, field: 'server', message: msg }];
+        this.cdr.markForCheck();
+      },
+    });
   }
 }

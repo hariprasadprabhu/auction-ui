@@ -54,7 +54,7 @@
       <button class="btn btn-danger" title="Delete All Players" (click)="openDeleteAllPlayersModal()">
         <span>🗑️</span> Delete All Players
       </button>
-      <button class="btn btn-secondary" title="Load from Excel">
+      <button class="btn btn-secondary" title="Load from Excel" (click)="openExcelModal()">
         <span>📊</span> Load from Excel
       </button>
       <div class="batch-actions" *ngIf="selectedPlayers.size > 0">
@@ -408,6 +408,91 @@
           <div class="spinner-circle"></div>
         </div>
         <p class="loading-message">{{ loadingMessage }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Excel / CSV Bulk Upload Modal -->
+  <div class="modal-overlay" *ngIf="showExcelModal" (click)="closeExcelModal()">
+    <div class="modal-content form-modal excel-modal" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="closeExcelModal()">✕</button>
+      <h2>📊 Load Players from CSV</h2>
+
+      <!-- Step 1: Download template -->
+      <div class="excel-section">
+        <h3 class="excel-step-title">Step 1 — Download Template</h3>
+        <p class="excel-hint">The template contains the required columns. Do not include Player ID, Photo or Payment Proof.</p>
+        <button class="btn btn-secondary" (click)="downloadCsvTemplate()">⬇ Download CSV Template</button>
+        <div class="excel-columns-info">
+          <span class="col-tag required">firstName *</span>
+          <span class="col-tag">lastName</span>
+          <span class="col-tag">dob <small>(YYYY-MM-DD)</small></span>
+          <span class="col-tag required">role *</span>
+        </div>
+        <p class="excel-hint" style="margin-top:6px;">Valid roles: <strong>Batsman, Bowler, All-rounder, Wicket Keeper</strong></p>
+      </div>
+
+      <!-- Step 2: Upload CSV -->
+      <div class="excel-section">
+        <h3 class="excel-step-title">Step 2 — Upload Filled CSV</h3>
+        <div class="file-upload-wrapper">
+          <input type="file" id="csvFileInput" accept=".csv,text/csv" (change)="onCsvFileSelected($event)" name="csvFileInput" />
+          <label for="csvFileInput" class="file-upload-label">📂 Choose CSV File</label>
+        </div>
+        <p *ngIf="csvFileName" class="csv-file-name">{{ csvFileName }}</p>
+      </div>
+
+      <!-- Validation Errors -->
+      <div class="excel-errors" *ngIf="excelBulkErrors.length > 0">
+        <h4 class="errors-title">⚠ Validation Errors — please fix the CSV and re-upload</h4>
+        <ul class="errors-list">
+          <li *ngFor="let err of excelBulkErrors">{{ err.message }}</li>
+        </ul>
+      </div>
+
+      <!-- Preview table -->
+      <div class="excel-preview" *ngIf="excelBulkRows.length > 0 && excelBulkErrors.length === 0 && !bulkUploadSuccess">
+        <h4 class="preview-title">Preview — {{ excelBulkRows.length }} player(s) ready to import</h4>
+        <div class="preview-table-wrap">
+          <table class="preview-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Date of Birth</th>
+                <th>Role</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of excelBulkRows; let i = index">
+                <td>{{ i + 1 }}</td>
+                <td>{{ row.firstName }}</td>
+                <td>{{ row.lastName || '—' }}</td>
+                <td>{{ row.dob || '—' }}</td>
+                <td>{{ row.role }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Success message -->
+      <div class="excel-success" *ngIf="bulkUploadSuccess">
+        <span class="success-check">✓</span>
+        <p>{{ bulkUploadCreatedCount }} player(s) imported successfully!</p>
+        <button class="btn btn-secondary" (click)="closeExcelModal()">Close</button>
+      </div>
+
+      <!-- Actions -->
+      <div class="form-actions" *ngIf="!bulkUploadSuccess">
+        <button class="btn btn-secondary" (click)="closeExcelModal()">Cancel</button>
+        <button
+          class="btn btn-primary"
+          (click)="submitBulkUpload()"
+          [disabled]="excelBulkRows.length === 0 || excelBulkErrors.length > 0 || isBulkUploading">
+          {{ isBulkUploading ? '⏳ Importing...' : '⬆ Import Players' }}
+        </button>
       </div>
     </div>
   </div>
