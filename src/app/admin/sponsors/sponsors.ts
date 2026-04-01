@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Observable } from 'rxjs';
 import { SponsorsService } from '../../core/services/sponsors.service';
 import { CloudinaryImageService } from '../../core/services/cloudinary-image.service';
 import { Sponsor } from '../../models';
@@ -146,40 +147,55 @@ export class Sponsors implements OnInit {
     this.errorMessage = null;
     this.cdr.markForCheck();
 
-    // For now, only handle adding new sponsors via API
-    if (this.editingId === null) {
-      const sponsorRequest = {
-        name: this.formData.name,
-        personName: this.formData.personName,
-        personImageUrl: this.formData.personImageUrl,
-      };
+    const sponsorRequest = {
+      name: this.formData.name,
+      personName: this.formData.personName,
+      personImageUrl: this.formData.personImageUrl,
+    };
 
-      this.sponsorsService.create(this.tournamentId, [sponsorRequest]).subscribe({
-        next: () => {
-          this.isSaving = false;
-          this.closeForm();
-          this.loadSponsors();
-          this.cdr.markForCheck();
-        },
-        error: (err) => {
-          console.error('Failed to save sponsor:', err);
-          this.errorMessage = 'Failed to save sponsor. Please try again.';
-          this.isSaving = false;
-          this.cdr.markForCheck();
-        },
-      });
-    } else {
-      // Edit mode not yet implemented on backend
-      this.errorMessage = 'Editing sponsors is not yet supported';
-      this.isSaving = false;
-      this.cdr.markForCheck();
-    }
+    const request$: Observable<unknown> = this.editingId === null
+      ? this.sponsorsService.create(this.tournamentId, [sponsorRequest])
+      : this.sponsorsService.update(this.tournamentId, this.editingId, sponsorRequest);
+
+    request$.subscribe({
+      next: () => {
+        this.isSaving = false;
+        this.closeForm();
+        this.loadSponsors();
+        this.cdr.markForCheck();
+      },
+      error: (err: { status?: number }) => {
+        console.error('Failed to save sponsor:', err);
+        this.errorMessage = err.status === 403
+          ? 'You are not authorized to modify sponsors for this tournament.'
+          : 'Failed to save sponsor. Please try again.';
+        this.isSaving = false;
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   deleteSponsor(id: number) {
-    if (confirm('Are you sure you want to delete this sponsor?')) {
-      this.sponsors = this.sponsors.filter((s) => s.id !== id);
-      this.cdr.markForCheck();
-    }
+    if (!this.tournamentId) return;
+    if (!confirm('Are you sure you want to delete this sponsor?')) return;
+
+    this.isSaving = true;
+    this.cdr.markForCheck();
+
+    this.sponsorsService.delete(this.tournamentId, id).subscribe({
+      next: () => {
+        this.sponsors = this.sponsors.filter((s) => s.id !== id);
+        this.isSaving = false;
+        this.cdr.markForCheck();
+      },
+      error: (err: { status?: number }) => {
+        console.error('Failed to delete sponsor:', err);
+        this.errorMessage = err.status === 403
+          ? 'You are not authorized to delete sponsors for this tournament.'
+          : 'Failed to delete sponsor. Please try again.';
+        this.isSaving = false;
+        this.cdr.markForCheck();
+      },
+    });
   }
 }
