@@ -86,12 +86,14 @@ export class Players implements OnInit {
     }
 
     get totalApprovedPlayers(): number {
-      return this.players.filter((p: Player) => p.status === 'APPROVED').length;
+      return this.players.filter((p: Player) => this.isApprovedStatus(p.id)).length;
     }
 
     isApprovedStatus(playerId: number): boolean {
+      let status = false;
       const auctionStatus = this.getPlayerAuctionStatus(playerId);
-      return auctionStatus === 'SOLD' || auctionStatus === 'UNSOLD' || auctionStatus === 'APPROVED';
+       status = auctionStatus!=null && (auctionStatus === 'SOLD' || auctionStatus === 'UNSOLD' || auctionStatus === 'APPROVED'|| auctionStatus === 'UPCOMING');
+       return status;
     }
   tournament: Tournament | null = null;
   players: Player[] = [];
