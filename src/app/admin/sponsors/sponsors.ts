@@ -18,6 +18,7 @@ import { Sponsor } from '../../models';
 export class Sponsors implements OnInit {
   tournamentId: number | null = null;
   tournamentName = '';
+  tournamentDate = '';
   sponsors: Sponsor[] = [];
   
   // Modal state
@@ -44,6 +45,7 @@ export class Sponsors implements OnInit {
   ngOnInit() {
     this.tournamentId = Number(this.route.snapshot.paramMap.get('tournamentId'));
     this.tournamentName = this.route.snapshot.queryParamMap.get('name') || '';
+    this.tournamentDate = this.route.snapshot.queryParamMap.get('date') || '';
     this.loadSponsors();
   }
 

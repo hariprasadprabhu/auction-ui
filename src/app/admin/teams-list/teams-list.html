@@ -13,18 +13,27 @@
     </div>
   </div>
 
+  <!-- Auction-style Header -->
+  <header class="teams-header">
+    <div class="header-side">
+      <div class="header-logo-badge">
+        <img src="https://res.cloudinary.com/drytm0fl7/image/upload/v1774417151/logo_resized_xnddqz.jpg" alt="Auction Logo" class="header-logo-img" />
+      </div>
+    </div>
+    <div class="header-center">
+      <p class="page-subtitle">Teams</p>
+      <h1 class="tournament-title">{{ tournament?.name }}</h1>
+    </div>
+    <div class="header-side header-side-right">
+      <div class="auction-date">
+        <span class="date-label">Auction Date</span>
+        <span class="date-value">{{ tournament?.date | date: 'MMM dd, yyyy' }}</span>
+      </div>
+    </div>
+  </header>
+
   <!-- Main Content -->
   <div *ngIf="!isLoading" class="main-content">
-  <div class="teams-header">
-    <div class="header-left">
-      <h1>{{ tournament?.name }}</h1>
-      <p class="teams-subtitle">Teams</p>
-    </div>
-    <div class="header-right">
-      <span class="team-date">{{ tournament?.date | date: 'MMM dd, yyyy' }}</span>
-    </div>
-  </div>
-
   <div class="teams-content">
     <button class="btn btn-back-light" (click)="goBack()" title="Back to Dashboard">← Back To Dashboard</button>
     <div class="action-buttons">

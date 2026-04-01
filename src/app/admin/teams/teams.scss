@@ -71,8 +71,10 @@
   width: 100%;
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 30px 20px;
+  padding: 0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  display: flex;
+  flex-direction: column;
 }
 
 .teams-loading-screen {
@@ -155,44 +157,94 @@
 
 .teams-content {
   width: 100%;
+  padding: 20px;
+  flex: 1;
 }
 
-/* Header */
+/* Auction-style header */
 .teams-header {
-  background: white;
-  padding: 30px;
-  border-radius: 12px;
-  margin-bottom: 30px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-}
-
-.header-content {
+  height: 95px;
+  flex-shrink: 0;
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 20px;
+  padding: 0 28px;
+  background: rgba(0, 0, 0, 0.55);
+  border-bottom: 2px solid rgba(247, 201, 72, 0.3);
 }
 
-.tournament-info h1 {
-  font-size: 2rem;
-  color: #333;
-  margin-bottom: 5px;
-  font-weight: 700;
+.header-side {
+  width: 160px;
+  display: flex;
+  align-items: center;
+
+  &.header-side-right {
+    justify-content: flex-end;
+  }
 }
 
-.sub-header {
-  font-size: 1.2rem;
-  color: #667eea;
-  font-weight: 600;
+.header-logo-badge {
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(247, 201, 72, 0.4);
+  flex-shrink: 0;
+  overflow: hidden;
+  background: radial-gradient(circle at 40% 40%, #172040, #0b1225);
+  box-shadow: 0 0 20px rgba(102, 126, 234, 0.25);
 }
 
-.tournament-date {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-weight: 600;
+.header-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.header-center {
+  flex: 1;
+  text-align: center;
+}
+
+.tournament-title {
+  font-size: 1.65rem;
+  font-weight: 800;
+  color: #f7c948;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 20px rgba(247, 201, 72, 0.3);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.page-subtitle {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+
+.auction-date {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.date-label {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.date-value {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #f7c948;
 }
 
 /* Actions Bar */
@@ -791,15 +843,11 @@
 /* Responsive */
 @media (max-width: 1200px) {
   .teams-header {
-    padding: 25px;
+    padding: 0 20px;
   }
 
-  .header-content {
-    flex-direction: column;
-  }
-
-  .tournament-date {
-    align-self: flex-start;
+  .tournament-title {
+    font-size: 1.4rem;
   }
 
   .btn-back-top {
@@ -832,26 +880,30 @@
 }
 
 @media (max-width: 768px) {
-  .teams-container {
-    padding: 20px 15px;
+  .teams-content {
+    padding: 15px;
   }
 
   .teams-header {
-    padding: 20px;
-    margin-bottom: 20px;
+    height: 75px;
+    padding: 0 15px;
   }
 
-  .tournament-info h1 {
-    font-size: 1.5rem;
+  .tournament-title {
+    font-size: 1.1rem;
   }
 
-  .sub-header {
-    font-size: 1rem;
+  .header-logo-badge {
+    width: 50px;
+    height: 50px;
   }
 
-  .tournament-date {
-    font-size: 0.85rem;
-    padding: 8px 16px;
+  .header-side {
+    width: 120px;
+  }
+
+  .date-value {
+    font-size: 0.8rem;
   }
 
   .actions-bar {
@@ -905,26 +957,30 @@
 }
 
 @media (max-width: 480px) {
-  .teams-container {
-    padding: 15px 10px;
-  }
-
   .teams-header {
-    padding: 15px;
-    margin-bottom: 15px;
+    height: 65px;
+    padding: 0 12px;
   }
 
-  .tournament-info h1 {
-    font-size: 1.2rem;
+  .tournament-title {
+    font-size: 0.95rem;
   }
 
-  .sub-header {
-    font-size: 0.9rem;
+  .header-logo-badge {
+    width: 42px;
+    height: 42px;
   }
 
-  .tournament-date {
+  .header-side {
+    width: 90px;
+  }
+
+  .date-label {
+    display: none;
+  }
+
+  .date-value {
     font-size: 0.75rem;
-    padding: 6px 12px;
   }
 
   .actions-bar {
