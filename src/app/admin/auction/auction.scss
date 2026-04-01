@@ -718,12 +718,14 @@
   background: rgba(0,0,0,0.65);
   border-top: 1px solid rgba(255,255,255,0.07);
   gap: 20px;
+  overflow: visible;
 }
 
 .team-buttons-row {
   display: flex;
   gap: 8px;
   overflow-x: auto;
+  overflow-y: visible;
   flex: 1;
   align-items: center;
   padding: 6px 0;

@@ -683,16 +683,16 @@ export class Players implements OnInit {
                 this.auctionPlayerMap = newMap;
                 this.isResettingAuction = false;
                 this.showLoadingModal = false;
-                this.cdr.detectChanges();
                 this.openSuccessModal('Reset Successful', 'Player auction status has been reset to Available');
+                this.cdr.detectChanges();
               },
               error: () => {
                 const player = this.players.find(p => p.id === playerId);
                 if (player) player.status = 'APPROVED';
                 this.isResettingAuction = false;
                 this.showLoadingModal = false;
-                this.cdr.detectChanges();
                 this.openSuccessModal('Reset Successful', 'Player auction status has been reset to Available');
+                this.cdr.detectChanges();
               }
             });
           },
@@ -759,8 +759,8 @@ export class Players implements OnInit {
                 this.selectAllChecked = false;
                 this.isResettingAuction = false;
                 this.showLoadingModal = false;
-                this.cdr.detectChanges();
                 this.openSuccessModal('Reset Successful', `${auctionPlayerIds.length} player(s) auction status have been reset to Available and marked as Approved`);
+                this.cdr.detectChanges();
               },
               error: () => {
                 // Fallback: update player statuses locally
@@ -772,8 +772,8 @@ export class Players implements OnInit {
                 this.selectAllChecked = false;
                 this.isResettingAuction = false;
                 this.showLoadingModal = false;
-                this.cdr.detectChanges();
                 this.openSuccessModal('Reset Successful', `${auctionPlayerIds.length} player(s) auction status have been reset to Available and marked as Approved`);
+                this.cdr.detectChanges();
               }
             });
           },
