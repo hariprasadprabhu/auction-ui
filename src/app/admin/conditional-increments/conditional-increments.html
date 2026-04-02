@@ -1,13 +1,22 @@
 <div class="increments-container">
-  <div class="increments-header">
-    <div class="header-left">
-      <h1>{{ tournament?.name }}</h1>
-      <p class="increments-subtitle">Conditional Bid Increments</p>
+  <!-- Auction-style Header -->
+  <header class="increments-header">
+    <div class="header-side">
+      <div class="header-logo-badge">
+        <img src="https://res.cloudinary.com/drytm0fl7/image/upload/v1774417151/logo_resized_xnddqz.jpg" alt="Auction Logo" class="header-logo-img" />
+      </div>
     </div>
-    <div class="header-right">
-      <span class="tournament-date">{{ tournament?.date | date: 'MMM dd, yyyy' }}</span>
+    <div class="header-center">
+      <p class="page-subtitle">Conditional Bid Increments</p>
+      <h1 class="tournament-title">{{ tournament?.name }}</h1>
     </div>
-  </div>
+    <div class="header-side header-side-right">
+      <div class="auction-date">
+        <span class="date-label">Auction Date</span>
+        <span class="date-value">{{ tournament?.date | date: 'MMM dd, yyyy' }}</span>
+      </div>
+    </div>
+  </header>
 
   <!-- Loading Overlay -->
   <div class="loading-overlay" *ngIf="isLoading">

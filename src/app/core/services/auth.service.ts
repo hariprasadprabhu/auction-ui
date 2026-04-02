@@ -11,6 +11,16 @@ interface StoredUser {
   role: string;
 }
 
+export interface UserProfile {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  phoneCountryCode?: string;
+  phoneNumber?: string;
+  organisation?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
@@ -61,5 +71,13 @@ export class AuthService {
   getCurrentUser(): StoredUser | null {
     const user = localStorage.getItem(this.USER_KEY);
     return user ? (JSON.parse(user) as StoredUser) : null;
+  }
+
+  getProfile(): Observable<UserProfile> {
+    return this.http.get<UserProfile>(`${this.apiUrl}/users/me`);
+  }
+
+  changePassword(currentPassword: string, newPassword: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/users/change-password`, { currentPassword, newPassword });
   }
 }

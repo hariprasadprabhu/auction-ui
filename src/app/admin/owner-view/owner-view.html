@@ -195,31 +195,6 @@
         </div>
       </div>
 
-      <div class="portfolio-block" *ngIf="selectedTeam">
-        <div class="portfolio-title">Portfolio Across Tournaments</div>
-
-        <p class="portfolio-error" *ngIf="portfolioError">{{ portfolioError }}</p>
-
-        <div class="portfolio-list" *ngIf="!portfolioError && selectedTeamPortfolio.length">
-          <div class="portfolio-row" *ngFor="let purse of selectedTeamPortfolio">
-            <div class="portfolio-main">
-              <span class="portfolio-tournament">Tournament #{{ purse.tournamentId }}</span>
-              <span class="portfolio-team">{{ purse.teamName }} ({{ purse.teamNumber }})</span>
-            </div>
-            <div class="portfolio-metrics">
-              <span>Initial: {{ formatAmount(purse.initialPurse) }}</span>
-              <span>Used: {{ formatAmount(purse.purseUsed) }}</span>
-              <span>Current: {{ formatAmount(purse.currentPurse) }}</span>
-              <span class="portfolio-available">Available: {{ formatAmount(purse.availableForBidding) }}</span>
-            </div>
-          </div>
-        </div>
-
-        <p class="portfolio-empty" *ngIf="!portfolioError && !selectedTeamPortfolio.length">
-          No cross-tournament purse entries available.
-        </p>
-      </div>
-
       <div class="modal-squad-title">
         Squad
         <span class="squad-count">({{ selectedTeam?.playerDetails?.length }} players)</span>

@@ -152,6 +152,20 @@ export interface PlayerRegistrationRequest {
   paymentProof?: File | string | undefined;
 }
 
+export interface PlayerBulkRegisterRequest {
+  firstName: string;
+  lastName?: string;
+  dob?: string;
+  role: string;
+  photo?: string;
+}
+
+export interface BulkUploadRowError {
+  row: number;
+  field: string;
+  message: string;
+}
+
 export interface AddToAuctionRequest {
   age: number;
   city: string;

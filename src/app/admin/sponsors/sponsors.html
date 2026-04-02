@@ -1,16 +1,22 @@
 <div class="sponsors-container">
-  <!-- Header -->
-  <div class="sponsors-header">
-    <div class="header-left">
-      <h1>{{ tournamentName }}</h1>
-      <p class="sponsors-subtitle">Sponsors</p>
+  <!-- Auction-style Header -->
+  <header class="sponsors-header">
+    <div class="header-side">
+      <div class="header-logo-badge">
+        <img src="https://res.cloudinary.com/drytm0fl7/image/upload/v1774417151/logo_resized_xnddqz.jpg" alt="Auction Logo" class="header-logo-img" />
+      </div>
     </div>
-    <div class="header-right">
-      <button class="btn-add-sponsor" (click)="openForm()">
-        + Add Sponsor
-      </button>
+    <div class="header-center">
+      <p class="page-subtitle">Sponsors</p>
+      <h1 class="tournament-title">{{ tournamentName }}</h1>
     </div>
-  </div>
+    <div class="header-side header-side-right">
+      <div class="auction-date">
+        <span class="date-label">Auction Date</span>
+        <span class="date-value">{{ tournamentDate | date: 'MMM dd, yyyy' }}</span>
+      </div>
+    </div>
+  </header>
 
   <!-- Error Message -->
   <div class="error-message" *ngIf="errorMessage">
@@ -19,12 +25,16 @@
 
   <!-- Sponsors Table -->
   <div class="sponsors-content">
-    <button class="btn btn-back-light" (click)="goBack()" title="Back to Dashboard">← Back To Dashboard</button>
-    <div class="action-buttons">
-      <!-- Add sponsor actions here if needed -->
+    <div class="actions-bar">
+      <div class="action-buttons">
+        <button class="btn btn-primary" (click)="openForm()">
+          <span>➕</span> Add Sponsor
+        </button>
+      </div>
+      <button class="btn btn-back-light" (click)="goBack()" title="Back to Dashboard">← Back To Dashboard</button>
     </div>
 
-    <div class="table-wrapper" *ngIf="sponsors.length > 0">
+    <div class="grid-container" *ngIf="sponsors.length > 0">
       <table class="sponsors-table">
         <thead>
           <tr>

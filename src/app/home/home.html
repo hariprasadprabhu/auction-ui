@@ -35,7 +35,7 @@
 
   <div class="hero-content">
     <div class="hero-badge">
-      <span>✅ Proven in 156+ Real Sport Auctions Across India</span>
+      <span>✅ Proven in Multiple Real Sport Auctions Across India</span>
     </div>
     <h1 class="hero-title">
       Run Your Dream<br />
@@ -79,22 +79,6 @@
     </div>
   </div>
 
-  <div class="hero-scroll-hint" (click)="scrollTo('stats')">
-    <span>Scroll</span>
-    <div class="scroll-arrow">↓</div>
-  </div>
-</section>
-
-<!-- ═══════════ STATS ═══════════ -->
-<section class="stats-section" id="stats">
-  <div class="stats-grid">
-    @for (stat of stats; track stat.label) {
-      <div class="stat-card reveal">
-        <div class="stat-number">{{ Math.floor(stat.current) }}{{ stat.suffix }}</div>
-        <div class="stat-label">{{ stat.label }}</div>
-      </div>
-    }
-  </div>
 </section>
 
 <!-- ═══════════ FEATURES ═══════════ -->
@@ -188,8 +172,8 @@
           <li>✅ Team Budget Tracker</li>
           <li>✅ Virtual Support During Auction</li>
           <li>✅ Priority Support</li>
-          <li>✅ Advanced Bid Increments</li>
           <li>✅ Custom Branding for Sponsors</li>
+          <li>❌ Auction Host</li>
         </ul>
         <button class="btn-pkg-primary" (click)="scrollTo('contact')">Contact Us</button>
       </div>
@@ -206,7 +190,7 @@
         </div>
         <ul class="pkg-features">
           <li>✅ Everything in Pro Package</li>
-          <li>✅ Free 2 Teams, then ₹70/Team</li>
+          <li>✅ Unlimited Teams</li>
           <li>✅ Virtual Support During Auction</li>
           <li>✅ Priority Support</li>
           <li>✅ Custom Branding for Sponsors</li>
@@ -247,7 +231,7 @@
         <div class="support-icon">🛡️</div>
         <h3>Battle-Tested Platform</h3>
         <p>
-          Our app has been successfully used in 156+ sport auctions across India. It's stable, secure, and built to handle real-world pressure with zero downtime.
+          Our app has been successfully used in multiple sport auctions across India. It's stable, secure, and built to handle real-world pressure with zero downtime.
         </p>
       </div>
     </div>
@@ -255,7 +239,7 @@
     <div class="trust-banner reveal">
       <div class="trust-item">
         <span class="trust-icon">✅</span>
-        <span>Trusted in 156+ Auctions</span>
+        <span>Trusted in Multiple Auctions</span>
       </div>
       <div class="trust-divider"></div>
       <div class="trust-item">
@@ -337,7 +321,7 @@
   </div>
 
   <div class="footer-bottom">
-    <span>© 2026 AuctionDeck. All rights reserved.</span>
+    <span>© 2026 BidPlayers. All rights reserved.</span>
     <span>Made with ♥️ for sports lovers</span>
   </div>
 </footer>

@@ -4,7 +4,7 @@ import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TournamentService } from '../../core/services/tournament.service';
 import { AuctionPlayerService } from '../../core/services/auction-player.service';
-import { AuthService } from '../../core/services/auth.service';
+import { AuthService, UserProfile } from '../../core/services/auth.service';
 import { CloudinaryImageService } from '../../core/services/cloudinary-image.service';
 import { Tournament, TournamentStatus } from '../../models';
 
@@ -50,7 +50,20 @@ export class Dashboard implements OnInit {
   deletedTournamentName = '';
   deleteSuccessMessage = '';
 
-  // ── Custom Confirmation Modal ────────────────────────────────────────────
+  // ── Profile Menu ─────────────────────────────────────────────────────────
+  showProfileMenu = false;
+  showProfileModal = false;
+  profileData: UserProfile | null = null;
+  isLoadingProfile = false;
+
+  // ── Change Password Modal ─────────────────────────────────────────────────
+  showChangePasswordModal = false;
+  changePasswordForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
+  isChangingPassword = false;
+  changePasswordError = '';
+  changePasswordSuccess = false;
+
+  // ── Confirm Modal ────────────────────────────────────────────────────────
   showConfirmModal = false;
   confirmTitle = '';
   confirmMessage = '';
@@ -520,6 +533,90 @@ export class Dashboard implements OnInit {
     this.router.navigate(['/login']);
   }
 
+  toggleProfileMenu() {
+    this.showProfileMenu = !this.showProfileMenu;
+  }
+
+  closeProfileMenu() {
+    this.showProfileMenu = false;
+  }
+
+  openProfileModal() {
+    this.showProfileMenu = false;
+    this.showProfileModal = true;
+    this.isLoadingProfile = true;
+    this.cdr.markForCheck();
+    this.authService.getProfile().subscribe({
+      next: (profile) => {
+        this.profileData = profile;
+        this.isLoadingProfile = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        // Fallback to stored user data
+        const stored = this.authService.getCurrentUser();
+        if (stored) {
+          this.profileData = { id: stored.id, name: stored.name, email: stored.email, role: stored.role };
+        }
+        this.isLoadingProfile = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  closeProfileModal() {
+    this.showProfileModal = false;
+    this.profileData = null;
+  }
+
+  openChangePasswordModal() {
+    this.showProfileMenu = false;
+    this.changePasswordForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
+    this.changePasswordError = '';
+    this.changePasswordSuccess = false;
+    this.showChangePasswordModal = true;
+  }
+
+  closeChangePasswordModal() {
+    this.showChangePasswordModal = false;
+  }
+
+  submitChangePassword() {
+    const { currentPassword, newPassword, confirmPassword } = this.changePasswordForm;
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      this.changePasswordError = 'All fields are required.';
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      this.changePasswordError = 'New passwords do not match.';
+      return;
+    }
+    if (newPassword.length < 8) {
+      this.changePasswordError = 'New password must be at least 8 characters.';
+      return;
+    }
+    this.isChangingPassword = true;
+    this.changePasswordError = '';
+    this.cdr.markForCheck();
+    this.authService.changePassword(currentPassword, newPassword).subscribe({
+      next: () => {
+        this.isChangingPassword = false;
+        this.changePasswordSuccess = true;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.isChangingPassword = false;
+        this.changePasswordError = err?.error?.message || 'Failed to change password. Please try again.';
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  getInitials(): string {
+    const name = this.currentUser?.name || '';
+    return name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || 'U';
+  }
+
   // ── Sponsor Management Modal ─────────────────────────────────────────────
   showSponsorsModal = false;
   showSponsorsGridModal = false;
@@ -565,9 +662,9 @@ export class Dashboard implements OnInit {
     ];
   }
 
-  openSponsorsGridModal(tournamentId: number, tournamentName: string) {
+  openSponsorsGridModal(tournamentId: number, tournamentName: string, tournamentDate: string) {
     // Navigate to the dedicated sponsors component
-    this.router.navigate(['/admin/sponsors', tournamentId], { queryParams: { name: tournamentName } });
+    this.router.navigate(['/admin/sponsors', tournamentId], { queryParams: { name: tournamentName, date: tournamentDate } });
   }
 
   closeSponsorsGridModal() {

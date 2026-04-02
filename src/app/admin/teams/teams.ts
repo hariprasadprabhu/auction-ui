@@ -7,7 +7,7 @@ import { PlayerService } from '../../core/services/player.service';
 import { AuctionPlayerService } from '../../core/services/auction-player.service';
 import { TournamentService } from '../../core/services/tournament.service';
 import { CloudinaryImageService } from '../../core/services/cloudinary-image.service';
-import { Tournament, Player } from '../../models';
+import { Tournament, Player, PlayerBulkRegisterRequest, BulkUploadRowError } from '../../models';
 import { AuthImageCachedPipe } from '../../core/pipes/auth-image-cached.pipe';
 import { NormalizePhotoUrlCachedPipe } from '../../core/pipes/normalize-photo-url-cached.pipe';
 
@@ -86,12 +86,14 @@ export class Players implements OnInit {
     }
 
     get totalApprovedPlayers(): number {
-      return this.players.filter((p: Player) => p.status === 'APPROVED').length;
+      return this.players.filter((p: Player) => this.isApprovedStatus(p.id)).length;
     }
 
     isApprovedStatus(playerId: number): boolean {
+      let status = false;
       const auctionStatus = this.getPlayerAuctionStatus(playerId);
-      return auctionStatus === 'SOLD' || auctionStatus === 'UNSOLD' || auctionStatus === 'APPROVED';
+       status = (auctionStatus === 'SOLD' || auctionStatus === 'UNSOLD' || auctionStatus === 'APPROVED'|| auctionStatus === 'UPCOMING');
+       return status;
     }
   tournament: Tournament | null = null;
   players: Player[] = [];
@@ -112,9 +114,7 @@ export class Players implements OnInit {
   isProcessingBatchAction = false;
 
   // Reset Auction Functionality
-  selectedPlayersForReset = new Set<number>();
   isResettingAuction = false;
-  resetMessage = '';
 
   // Custom Modal States
   showConfirmModal = false;
@@ -132,6 +132,20 @@ export class Players implements OnInit {
 
   showLoadingModal = false;
   loadingMessage = '';
+
+  // Excel Bulk Upload Modal
+  showExcelModal = false;
+  excelBulkRows: PlayerBulkRegisterRequest[] = [];
+  excelBulkErrors: BulkUploadRowError[] = [];
+  isBulkUploading = false;
+  csvFileName = '';
+  bulkUploadSuccess = false;
+  bulkUploadCreatedCount = 0;
+
+  // Delete All Players Confirmation Modal
+  showDeleteAllConfirmModal = false;
+  deleteAllConfirmInput = '';
+  isDeletingAllPlayers = false;
 
   // Add Player Form
   showAddPlayerModal = false;
@@ -574,20 +588,6 @@ export class Players implements OnInit {
     return Array.from(this.selectedPlayers);
   }
 
-  // ── Reset Auction Status ────────────────────────────────────────────────
-
-  onPlayerResetCheckboxChange(playerId: number, checked: boolean) {
-    if (checked) {
-      this.selectedPlayersForReset.add(playerId);
-    } else {
-      this.selectedPlayersForReset.delete(playerId);
-    }
-  }
-
-  isPlayerSelectedForReset(playerId: number): boolean {
-    return this.selectedPlayersForReset.has(playerId);
-  }
-
   getPlayerAuctionStatus(playerId: number): string {
     return this.auctionPlayerMap.get(playerId)?.auctionStatus || 'N/A';
   }
@@ -670,33 +670,29 @@ export class Players implements OnInit {
         this.auctionPlayerService.resetAuctionPlayers(this.tournamentId, [auctionPlayer.id]).subscribe({
           next: () => {
             this.loadingMessage = 'Updating player status...';
-            this.cdr.markForCheck();
             // Refresh auction players after reset
             this.auctionPlayerService.getByTournament(this.tournamentId).subscribe({
               next: (auctionPlayers) => {
-                this.auctionPlayerMap.clear();
+                const player = this.players.find(p => p.id === playerId);
+                if (player) player.status = 'APPROVED';
+                const newMap = new Map<number, any>();
                 auctionPlayers.forEach(ap => {
                   const key = ap.playerId || ap.id;
-                  this.auctionPlayerMap.set(key, ap);
+                  newMap.set(key, ap);
                 });
-                this.cdr.markForCheck();
-                // Wait a moment for the UI to update before closing the modal
-                setTimeout(() => {
-                  this.isResettingAuction = false;
-                  this.showLoadingModal = false;
-                  this.openSuccessModal('Reset Successful', 'Player auction status has been reset to Available');
-                  this.cdr.markForCheck();
-                }, 300);
+                this.auctionPlayerMap = newMap;
+                this.isResettingAuction = false;
+                this.showLoadingModal = false;
+                this.openSuccessModal('Reset Successful', 'Player auction status has been reset to Available');
+                this.cdr.detectChanges();
               },
               error: () => {
-                this.cdr.markForCheck();
-                // Wait a moment for the UI to update before closing the modal
-                setTimeout(() => {
-                  this.isResettingAuction = false;
-                  this.showLoadingModal = false;
-                  this.openSuccessModal('Reset Successful', 'Player auction status has been reset to Available');
-                  this.cdr.markForCheck();
-                }, 300);
+                const player = this.players.find(p => p.id === playerId);
+                if (player) player.status = 'APPROVED';
+                this.isResettingAuction = false;
+                this.showLoadingModal = false;
+                this.openSuccessModal('Reset Successful', 'Player auction status has been reset to Available');
+                this.cdr.detectChanges();
               }
             });
           },
@@ -712,19 +708,22 @@ export class Players implements OnInit {
   }
 
   resetSelectedPlayersAuctionStatus() {
-    const selectedPlayerIds = Array.from(this.selectedPlayersForReset);
-    if (selectedPlayerIds.length === 0) {
-      this.openErrorModal('No Selection', 'Please select at least one player to reset');
+    const selectedPlayerIds = Array.from(this.selectedPlayers);
+    const eligibleIds = selectedPlayerIds.filter(id => this.isResetAllowed(id, this.players.find(p => p.id === id)?.status || ''));
+    if (eligibleIds.length === 0) {
+      this.openErrorModal('No Eligible Players', 'None of the selected players have a SOLD or UNSOLD auction status that can be reset.');
       return;
     }
 
+    const skippedCount = selectedPlayerIds.length - eligibleIds.length;
+    const skippedNote = skippedCount > 0 ? ` (${skippedCount} selected player(s) are not eligible and will be skipped.)` : '';
     this.openConfirmModal(
-      'Reset Multiple Players',
-      `Are you sure you want to reset auction status for ${selectedPlayerIds.length} player(s) to Available? Any sales will be refunded.`,
+      'Reset Auction Status',
+      `Are you sure you want to reset auction status for ${eligibleIds.length} player(s) to Available? Any sales will be refunded.${skippedNote}`,
       () => {
-        // Convert player IDs to auction player IDs
+        // Convert eligible player IDs to auction player IDs
         const auctionPlayerIds: number[] = [];
-        for (const playerId of selectedPlayerIds) {
+        for (const playerId of eligibleIds) {
           const auctionPlayer = this.auctionPlayerMap.get(playerId);
           if (auctionPlayer) {
             auctionPlayerIds.push(auctionPlayer.id);
@@ -743,31 +742,38 @@ export class Players implements OnInit {
 
         this.auctionPlayerService.resetAuctionPlayers(this.tournamentId, auctionPlayerIds).subscribe({
           next: () => {
-            // Immediately update player status to APPROVED
-            selectedPlayerIds.forEach((id) => {
-              const player = this.players.find((p) => p.id === id);
-              if (player) player.status = 'APPROVED';
-            });
-            
-            this.selectedPlayersForReset.clear();
-            this.isResettingAuction = false;
-            this.showLoadingModal = false;
-            this.cdr.markForCheck();
-            
-            this.openSuccessModal('Reset Successful', `${auctionPlayerIds.length} player(s) auction status have been reset to Available and marked as Approved`);
-            
-            // Refresh auction data silently in the background
+            // Refresh auction data first so the grid updates before showing the modal
             this.auctionPlayerService.getByTournament(this.tournamentId).subscribe({
               next: (auctionPlayers) => {
-                this.auctionPlayerMap.clear();
+                eligibleIds.forEach((id) => {
+                  const player = this.players.find((p) => p.id === id);
+                  if (player) player.status = 'APPROVED';
+                });
+                const newMap = new Map<number, any>();
                 auctionPlayers.forEach(ap => {
                   const key = ap.playerId || ap.id;
-                  this.auctionPlayerMap.set(key, ap);
+                  newMap.set(key, ap);
                 });
-                this.cdr.markForCheck();
+                this.auctionPlayerMap = newMap;
+                this.selectedPlayers.clear();
+                this.selectAllChecked = false;
+                this.isResettingAuction = false;
+                this.showLoadingModal = false;
+                this.openSuccessModal('Reset Successful', `${auctionPlayerIds.length} player(s) auction status have been reset to Available and marked as Approved`);
+                this.cdr.detectChanges();
               },
               error: () => {
-                // Ignore refresh errors, UI is already updated
+                // Fallback: update player statuses locally
+                eligibleIds.forEach((id) => {
+                  const player = this.players.find((p) => p.id === id);
+                  if (player) player.status = 'APPROVED';
+                });
+                this.selectedPlayers.clear();
+                this.selectAllChecked = false;
+                this.isResettingAuction = false;
+                this.showLoadingModal = false;
+                this.openSuccessModal('Reset Successful', `${auctionPlayerIds.length} player(s) auction status have been reset to Available and marked as Approved`);
+                this.cdr.detectChanges();
               }
             });
           },
@@ -867,6 +873,49 @@ export class Players implements OnInit {
             const errorMessage =
               error?.error?.message || 'Failed to reject selected players';
             this.openErrorModal('Rejection Failed', errorMessage);
+            this.cdr.markForCheck();
+          },
+        });
+      }
+    );
+  }
+
+  deleteSelectedPlayers() {
+    const selectedIds = this.getSelectedPlayerIds();
+    if (selectedIds.length === 0) {
+      this.openErrorModal('No Selection', 'Please select at least one player to delete');
+      return;
+    }
+
+    this.openConfirmModal(
+      'Delete Players',
+      `Are you sure you want to delete ${selectedIds.length} player(s)? This action cannot be undone.`,
+      () => {
+        this.showLoadingModal = true;
+        this.loadingMessage = `Deleting ${selectedIds.length} player(s)...`;
+        this.isProcessingBatchAction = true;
+        this.cdr.markForCheck();
+
+        this.playerService.deleteBulk(this.tournamentId, selectedIds).subscribe({
+          next: (response) => {
+            this.players = this.players.filter((p) => !selectedIds.includes(p.id));
+            this.selectedPlayers.clear();
+            this.selectAllChecked = false;
+            this.isProcessingBatchAction = false;
+            this.showLoadingModal = false;
+            const skippedMsg = response.skippedCount > 0
+              ? ` ${response.skippedCount} player(s) could not be deleted.`
+              : '';
+            this.openSuccessModal(
+              'Deletion Successful',
+              `${response.deletedCount} player(s) have been deleted successfully.${skippedMsg}`
+            );
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            this.isProcessingBatchAction = false;
+            this.showLoadingModal = false;
+            this.openErrorModal('Deletion Failed', 'Failed to delete selected players. Please try again.');
             this.cdr.markForCheck();
           },
         });
@@ -976,6 +1025,44 @@ export class Players implements OnInit {
 
   // ── Custom Modal Methods ──────────────────────────────────────────────────
 
+  openDeleteAllPlayersModal() {
+    this.deleteAllConfirmInput = '';
+    this.showDeleteAllConfirmModal = true;
+  }
+
+  closeDeleteAllConfirmModal() {
+    this.showDeleteAllConfirmModal = false;
+    this.deleteAllConfirmInput = '';
+  }
+
+  confirmDeleteAllPlayers() {
+    if (this.deleteAllConfirmInput !== 'delete players') return;
+    this.closeDeleteAllConfirmModal();
+    this.isDeletingAllPlayers = true;
+    this.showLoadingModal = true;
+    this.loadingMessage = 'Deleting all players...';
+    this.cdr.markForCheck();
+
+    this.playerService.deleteAllByTournament(this.tournamentId).subscribe({
+      next: () => {
+        this.players = [];
+        this.auctionPlayerMap.clear();
+        this.selectedPlayers.clear();
+        this.selectAllChecked = false;
+        this.isDeletingAllPlayers = false;
+        this.showLoadingModal = false;
+        this.openSuccessModal('All Players Deleted', 'All players have been successfully deleted from the tournament.');
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.isDeletingAllPlayers = false;
+        this.showLoadingModal = false;
+        this.openErrorModal('Deletion Failed', 'Failed to delete all players. Please try again.');
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
   openConfirmModal(title: string, message: string, onConfirm: () => void) {
     this.confirmTitle = title;
     this.confirmMessage = message;
@@ -1013,5 +1100,107 @@ export class Players implements OnInit {
 
   closeErrorModal() {
     this.showErrorModal = false;
+  }
+
+  // ── Excel / CSV Bulk Upload ───────────────────────────────────────────────
+
+  openExcelModal() {
+    this.showExcelModal = true;
+    this.excelBulkRows = [];
+    this.excelBulkErrors = [];
+    this.csvFileName = '';
+    this.bulkUploadSuccess = false;
+    this.bulkUploadCreatedCount = 0;
+  }
+
+  closeExcelModal() {
+    this.showExcelModal = false;
+  }
+
+  downloadCsvTemplate() {
+    const headers = 'firstName,lastName,dob,role';
+    const sample = 'John,Doe,1995-06-15,Batsman';
+    const csv = `${headers}\n${sample}\n`;
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'players_template.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  onCsvFileSelected(event: any) {
+    const file: File = event.target.files[0];
+    if (!file) return;
+    this.csvFileName = file.name;
+    this.bulkUploadSuccess = false;
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      const text: string = e.target.result;
+      this.parseCsv(text);
+      this.cdr.markForCheck();
+    };
+    reader.readAsText(file);
+    // Reset input so same file can be re-selected
+    event.target.value = '';
+  }
+
+  parseCsv(text: string) {
+    const VALID_ROLES = ['batsman', 'bowler', 'all-rounder', 'wicket keeper'];
+    const lines = text.replace(/\r/g, '').split('\n').filter(l => l.trim() !== '');
+    if (lines.length < 2) {
+      this.excelBulkErrors = [{ row: 0, field: 'file', message: 'CSV file is empty or has no data rows.' }];
+      this.excelBulkRows = [];
+      return;
+    }
+    const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+    this.excelBulkRows = [];
+    this.excelBulkErrors = [];
+    for (let i = 1; i < lines.length; i++) {
+      const rowNum = i;
+      const values = lines[i].split(',').map(v => v.trim());
+      const rowData: Record<string, string> = {};
+      headers.forEach((h, idx) => { rowData[h] = values[idx] || ''; });
+      if (!rowData['firstname']) {
+        this.excelBulkErrors.push({ row: rowNum, field: 'firstName', message: `Row ${rowNum}: firstName is mandatory.` });
+      }
+      if (!rowData['role']) {
+        this.excelBulkErrors.push({ row: rowNum, field: 'role', message: `Row ${rowNum}: role is mandatory.` });
+      } else if (!VALID_ROLES.includes(rowData['role'].toLowerCase())) {
+        this.excelBulkErrors.push({ row: rowNum, field: 'role', message: `Row ${rowNum}: role must be one of Batsman, Bowler, All-rounder, Wicket Keeper.` });
+      }
+      this.excelBulkRows.push({
+        firstName: rowData['firstname'] || '',
+        lastName: rowData['lastname'] || undefined,
+        dob: rowData['dob'] || undefined,
+        role: rowData['role'] || '',
+      });
+    }
+  }
+
+  submitBulkUpload() {
+    if (this.excelBulkErrors.length > 0 || this.excelBulkRows.length === 0) return;
+    this.isBulkUploading = true;
+    this.cdr.markForCheck();
+    const rowsWithDefaults = this.excelBulkRows.map(r => ({
+      ...r,
+      photo: r.photo || this.DEFAULT_PLAYER_PHOTO,
+    }));
+    this.playerService.bulkRegister(this.tournamentId, rowsWithDefaults).subscribe({
+      next: (created) => {
+        this.players.push(...created);
+        this.bulkUploadCreatedCount = created.length;
+        this.bulkUploadSuccess = true;
+        this.isBulkUploading = false;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.isBulkUploading = false;
+        const msg = err?.error?.message || 'Failed to bulk upload players. Please check the data and try again.';
+        this.excelBulkErrors = [{ row: 0, field: 'server', message: msg }];
+        this.cdr.markForCheck();
+      },
+    });
   }
 }

@@ -10,9 +10,13 @@
 .player-stats-bar {
   display: flex;
   gap: 32px;
-  margin: 10px 0 0 0;
+  margin: 20px 0 0 0;
   font-size: 1.1rem;
   color: #333;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  padding: 8px 16px;
   b { color: #764ba2; }
 }
 
@@ -20,7 +24,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  margin: 18px 0 0 0;
+  margin: 20px 0 0 0;
 }
 
 .search-input {
@@ -71,8 +75,10 @@
   width: 100%;
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 30px 20px;
+  padding: 0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  display: flex;
+  flex-direction: column;
 }
 
 .teams-loading-screen {
@@ -155,44 +161,94 @@
 
 .teams-content {
   width: 100%;
+  padding: 20px;
+  flex: 1;
 }
 
-/* Header */
+/* Auction-style header */
 .teams-header {
-  background: white;
-  padding: 30px;
-  border-radius: 12px;
-  margin-bottom: 30px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-}
-
-.header-content {
+  height: 95px;
+  flex-shrink: 0;
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 20px;
+  padding: 0 28px;
+  background: rgba(0, 0, 0, 0.55);
+  border-bottom: 2px solid rgba(247, 201, 72, 0.3);
 }
 
-.tournament-info h1 {
-  font-size: 2rem;
-  color: #333;
-  margin-bottom: 5px;
-  font-weight: 700;
+.header-side {
+  width: 160px;
+  display: flex;
+  align-items: center;
+
+  &.header-side-right {
+    justify-content: flex-end;
+  }
 }
 
-.sub-header {
-  font-size: 1.2rem;
-  color: #667eea;
-  font-weight: 600;
+.header-logo-badge {
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(247, 201, 72, 0.4);
+  flex-shrink: 0;
+  overflow: hidden;
+  background: radial-gradient(circle at 40% 40%, #172040, #0b1225);
+  box-shadow: 0 0 20px rgba(102, 126, 234, 0.25);
 }
 
-.tournament-date {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-weight: 600;
+.header-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.header-center {
+  flex: 1;
+  text-align: center;
+}
+
+.tournament-title {
+  font-size: 1.65rem;
+  font-weight: 800;
+  color: #f7c948;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 20px rgba(247, 201, 72, 0.3);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.page-subtitle {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+
+.auction-date {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.date-label {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.date-value {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #f7c948;
 }
 
 /* Actions Bar */
@@ -200,7 +256,8 @@
   background: white;
   padding: 20px 30px;
   border-radius: 12px;
-  margin-bottom: 30px;
+  margin-top: 20px;
+  margin-bottom: 0;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   display: flex;
   justify-content: space-between;
@@ -791,15 +848,11 @@
 /* Responsive */
 @media (max-width: 1200px) {
   .teams-header {
-    padding: 25px;
+    padding: 0 20px;
   }
 
-  .header-content {
-    flex-direction: column;
-  }
-
-  .tournament-date {
-    align-self: flex-start;
+  .tournament-title {
+    font-size: 1.4rem;
   }
 
   .btn-back-top {
@@ -832,26 +885,30 @@
 }
 
 @media (max-width: 768px) {
-  .teams-container {
-    padding: 20px 15px;
+  .teams-content {
+    padding: 15px;
   }
 
   .teams-header {
-    padding: 20px;
-    margin-bottom: 20px;
+    height: 75px;
+    padding: 0 15px;
   }
 
-  .tournament-info h1 {
-    font-size: 1.5rem;
+  .tournament-title {
+    font-size: 1.1rem;
   }
 
-  .sub-header {
-    font-size: 1rem;
+  .header-logo-badge {
+    width: 50px;
+    height: 50px;
   }
 
-  .tournament-date {
-    font-size: 0.85rem;
-    padding: 8px 16px;
+  .header-side {
+    width: 120px;
+  }
+
+  .date-value {
+    font-size: 0.8rem;
   }
 
   .actions-bar {
@@ -905,26 +962,30 @@
 }
 
 @media (max-width: 480px) {
-  .teams-container {
-    padding: 15px 10px;
-  }
-
   .teams-header {
-    padding: 15px;
-    margin-bottom: 15px;
+    height: 65px;
+    padding: 0 12px;
   }
 
-  .tournament-info h1 {
-    font-size: 1.2rem;
+  .tournament-title {
+    font-size: 0.95rem;
   }
 
-  .sub-header {
-    font-size: 0.9rem;
+  .header-logo-badge {
+    width: 42px;
+    height: 42px;
   }
 
-  .tournament-date {
+  .header-side {
+    width: 90px;
+  }
+
+  .date-label {
+    display: none;
+  }
+
+  .date-value {
     font-size: 0.75rem;
-    padding: 6px 12px;
   }
 
   .actions-bar {
@@ -1034,6 +1095,22 @@
   &:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+}
+
+.btn-warning {
+  background: linear-gradient(135deg, #fd7e14 0%, #ffc107 100%);
+  color: white;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(253, 126, 20, 0.3);
   }
 
   &:disabled {
@@ -1372,30 +1449,185 @@
   }
 }
 
-.batch-actions.reset-actions {
-  background: #ffebee;
-  border-left: 4px solid #ff6b6b;
+.btn-light-red {
+  background: linear-gradient(135deg, #ff8a80 0%, #ff6b6b 100%);
+  color: white;
 
-  .btn-reset {
-    background: #ff6b6b;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.9rem;
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(255, 107, 107, 0.35);
+  }
 
-    &:hover:not(:disabled) {
-      background: #ee5a5a;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
-    }
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+}
 
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
+// ── Excel / CSV Bulk Upload Modal ─────────────────────────────────────────────
+
+.excel-modal {
+  max-width: 680px;
+  width: 96vw;
+
+  h2 {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 20px;
+    font-weight: 700;
+  }
+}
+
+.excel-section {
+  margin-bottom: 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.excel-step-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #444;
+  margin: 0 0 8px 0;
+}
+
+.excel-hint {
+  font-size: 0.85rem;
+  color: #666;
+  margin: 0 0 10px 0;
+}
+
+.excel-columns-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.col-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: #f0ecf8;
+  color: #5c3d87;
+  font-size: 0.8rem;
+  font-weight: 600;
+
+  &.required::after {
+    content: ' *';
+    color: #e53935;
+    font-weight: 700;
+  }
+
+  small {
+    font-weight: 400;
+    color: #888;
+  }
+}
+
+.csv-file-name {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: #555;
+  font-style: italic;
+}
+
+.excel-errors {
+  background: #fff3f3;
+  border: 1px solid #f8bbbb;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+
+.errors-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #c62828;
+  margin: 0 0 10px 0;
+}
+
+.errors-list {
+  margin: 0;
+  padding-left: 18px;
+  list-style: disc;
+
+  li {
+    font-size: 0.85rem;
+    color: #b71c1c;
+    margin-bottom: 4px;
+  }
+}
+
+.excel-preview {
+  margin-bottom: 16px;
+}
+
+.preview-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #2e7d32;
+  margin: 0 0 10px 0;
+}
+
+.preview-table-wrap {
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+
+  th {
+    background: #f5f5f5;
+    color: #555;
+    font-weight: 700;
+    padding: 8px 10px;
+    text-align: left;
+    position: sticky;
+    top: 0;
+    border-bottom: 2px solid #ddd;
+  }
+
+  td {
+    padding: 7px 10px;
+    border-bottom: 1px solid #f0f0f0;
+    color: #333;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  tr:nth-child(even) td {
+    background: #fafafa;
+  }
+}
+
+.excel-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 16px;
+  text-align: center;
+
+  .success-check {
+    font-size: 2.5rem;
+    color: #2e7d32;
+    line-height: 1;
+  }
+
+  p {
+    font-size: 1rem;
+    color: #333;
+    margin: 0;
   }
 }

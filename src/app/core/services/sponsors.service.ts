@@ -30,4 +30,17 @@ export class SponsorsService {
       sponsors
     );
   }
+
+  update(tournamentId: number, sponsorId: number, sponsor: SponsorRequest): Observable<SponsorResponse> {
+    return this.http.put<SponsorResponse>(
+      `${this.apiUrl}/tournaments/${tournamentId}/sponsors/${sponsorId}`,
+      sponsor
+    );
+  }
+
+  delete(tournamentId: number, sponsorId: number): Observable<void> {
+    return this.http.delete<void>(
+      `${this.apiUrl}/tournaments/${tournamentId}/sponsors/${sponsorId}`
+    );
+  }
 }
