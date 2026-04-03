@@ -1,4 +1,4 @@
-* {
+*,html,body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -11,7 +11,7 @@
 }
 
 .dashboard-container {
-  padding: 40px 20px;
+  padding: 0;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -19,24 +19,24 @@
 }
 
 .dashboard-header {
-  max-width: 1400px;
-  margin: 0 auto 30px;
+  margin: 0 0 30px;
+  border-radius: 0;
   background: white;
-  border-radius: 12px;
-  padding: 24px 30px;
+  padding: 16px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 12px;
 
   .header-left {
     flex: 1;
-    min-width: 200px;
+    min-width: 0;
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
+    overflow: hidden;
   }
 
   .app-logo {
@@ -55,6 +55,7 @@
     display: flex;
     align-items: center;
     gap: 12px;
+    overflow: hidden;
 
     .user-icon {
       font-size: 2rem;
@@ -65,6 +66,9 @@
       color: #333;
       margin: 0;
       font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
 
@@ -88,13 +92,20 @@
   }
 }
 
+.brand-logo {
+  height: 40px;
+  max-width: 120px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
 .btn-create {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
-  padding: 12px 24px;
+  padding: 10px 18px;
   border-radius: 8px;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -399,9 +410,9 @@
 }
 
 .tournaments-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  height: 70vh;
+  margin: 0;
+  height: auto;
+  max-height: calc(100vh - 110px);
   overflow-y: auto;
   padding-right: 10px;
 
@@ -499,7 +510,7 @@
 }
 
 .card-body {
-  padding: 15px 20px;
+  padding: 15px 20px 16px;
   border-bottom: 1px solid #e0e0e0;
   flex: 1;
 }
@@ -550,13 +561,98 @@
   }
 }
 
-.card-actions {
-  padding: 15px 20px 50px 20px;
+.registration-toggle-row {
   display: flex;
-  justify-content: space-around;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0 0;
+  border-top: 1px solid #ebebeb;
+  margin-top: 12px;
+}
+
+.registration-toggle-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #555;
+}
+
+.registration-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .toggle-track {
+    width: 40px;
+    height: 22px;
+    border-radius: 11px;
+    background: #ccc;
+    position: relative;
+    transition: background 0.25s;
+
+    .toggle-thumb {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      transition: left 0.25s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+  }
+
+  &.toggle-on .toggle-track {
+    background: #4caf50;
+    .toggle-thumb { left: 21px; }
+  }
+
+  &.toggle-off .toggle-track {
+    background: #bbb;
+    .toggle-thumb { left: 3px; }
+  }
+
+  .toggle-state-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    min-width: 38px;
+  }
+
+  &.toggle-on .toggle-state-label { color: #388e3c; }
+  &.toggle-off .toggle-state-label { color: #999; }
+
+  &.toggle-loading {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+}
+
+.toggle-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #ddd;
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+.card-actions {
+  display: flex;
+  justify-content: flex-start;
   gap: 8px;
   flex-wrap: wrap;
   background: #f8f9fa;
+  padding: 14px 16px 16px;
 }
 
 .action-btn {
@@ -629,6 +725,26 @@
   }
 }
 
+/* Limit hover effects to pointer devices only */
+@media (hover: none) {
+  .tournament-card:hover {
+    transform: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  }
+
+  .action-btn:hover {
+    background: white;
+    border-color: #e0e0e0;
+    color: inherit;
+    transform: none;
+
+    .tooltip {
+      opacity: 0;
+      visibility: hidden;
+    }
+  }
+}
+
 /* Responsive Design */
 
 /* Desktop (1201px and above) - 2 columns */
@@ -638,6 +754,7 @@
   }
 
   .dashboard-header {
+    padding: 24px 30px;
     margin-bottom: 40px;
 
     h1 {
@@ -649,8 +766,13 @@
     }
   }
 
+  .brand-logo {
+    height: 50px;
+    max-width: 150px;
+  }
+
   .tournaments-container {
-    height: 70vh;
+    max-height: calc(100vh - 150px);
   }
 
   .tournaments-grid {
@@ -662,26 +784,22 @@
   }
 }
 
-/* Tablet (769px to 1200px) - 2 columns on larger tablets, 1 column on smaller */
+/* Tablet (769px to 1200px) */
 @media (min-width: 769px) and (max-width: 1200px) {
   .dashboard-container {
-    padding: 35px 15px;
+    padding: 30px 15px;
   }
 
   .dashboard-header {
-    margin-bottom: 35px;
+    margin-bottom: 28px;
 
     h1 {
-      font-size: 2rem;
-    }
-
-    p {
-      font-size: 1rem;
+      font-size: 1.8rem;
     }
   }
 
   .tournaments-container {
-    height: 65vh;
+    max-height: calc(100vh - 130px);
   }
 
   .tournaments-grid {
@@ -704,39 +822,52 @@
   }
 }
 
-/* Mobile (481px to 768px) - 1 column */
+/* Mobile landscape / large phone (481px to 768px) */
 @media (min-width: 481px) and (max-width: 768px) {
   .dashboard-container {
-    padding: 25px 12px;
+    padding: 0 0 20px;
   }
 
   .dashboard-header {
-    margin-bottom: 25px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    gap: 10px;
 
     h1 {
-      font-size: 1.5rem;
+      font-size: 1.3rem;
     }
 
-    p {
-      font-size: 0.95rem;
-    }
+    .header-left { min-width: 0; }
+  }
+
+  .brand-logo {
+    height: 34px;
+    max-width: 100px;
+  }
+
+  .btn-create {
+    padding: 9px 14px;
+    font-size: 0.85rem;
   }
 
   .tournaments-container {
-    height: 60vh;
+    max-height: none;
+    overflow-y: visible;
+    padding: 0 12px 12px;
   }
 
   .tournaments-grid {
-    grid-template-columns: repeat(1, 1fr);
+    grid-template-columns: 1fr;
     gap: 12px;
   }
 
   .tournament-card {
-    min-height: 280px;
+    min-height: unset;
+    height: auto;
   }
 
   .card-header {
-    padding: 15px;
+    padding: 14px 16px;
   }
 
   .tournament-name {
@@ -744,117 +875,141 @@
   }
 
   .tournament-date {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
   }
 
   .card-body {
-    padding: 12px 15px;
+    padding: 12px 16px 14px;
   }
 
   .card-actions {
-    padding: 12px 15px;
-    gap: 6px;
+    padding: 12px 16px 14px;
+    gap: 8px;
   }
 
   .action-btn {
-    width: 40px;
-    height: 40px;
-    font-size: 1rem;
+    width: 42px;
+    height: 42px;
+    font-size: 1.1rem;
   }
 
   .tooltip {
-    font-size: 0.65rem;
-    padding: 4px 8px;
+    display: none;
   }
+
+  .registration-toggle-label { font-size: 0.82rem; }
 }
 
-/* Small Mobile (up to 480px) - 1 column, optimized */
+/* Small Mobile (up to 480px) */
 @media (max-width: 480px) {
   .dashboard-container {
-    padding: 20px 8px;
+    padding: 0 0 24px;
     min-height: 100vh;
   }
 
   .dashboard-header {
-    margin-bottom: 20px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    gap: 10px;
+
+    .header-left {
+      min-width: 0;
+      gap: 8px;
+    }
+
+    .header-right {
+      gap: 8px;
+    }
 
     h1 {
-      font-size: 1.3rem;
-      margin-bottom: 5px;
+      font-size: 1.1rem;
+      margin: 0;
     }
+  }
 
-    p {
-      font-size: 0.85rem;
-    }
+  .brand-logo {
+    height: 30px;
+    max-width: 80px;
+  }
+
+  .btn-create {
+    padding: 8px 12px;
+    font-size: 0.8rem;
   }
 
   .tournaments-container {
-    height: 55vh;
-    padding-right: 5px;
-    max-width: 100%;
+    max-height: none;
+    overflow-y: visible;
+    padding: 0 10px 10px;
+    padding-right: 10px;
   }
 
   .tournaments-grid {
-    grid-template-columns: repeat(1, 1fr);
-    gap: 10px;
+    grid-template-columns: 1fr;
+    gap: 12px;
     padding: 0;
   }
 
   .tournament-card {
-    min-height: 260px;
-    height: 28vh;
+    min-height: unset;
+    height: auto;
   }
 
   .card-header {
-    padding: 12px;
+    padding: 12px 14px;
   }
 
   .tournament-name {
     font-size: 0.95rem;
-    line-height: 1.2;
+    line-height: 1.3;
   }
 
   .tournament-date {
-    font-size: 0.7rem;
-    padding: 2px 6px;
+    font-size: 0.72rem;
+    padding: 3px 7px;
   }
 
   .card-body {
-    padding: 10px 12px;
+    padding: 12px 14px 14px;
   }
 
   .info-item {
     font-size: 0.8rem;
   }
 
+  .info-grid {
+    gap: 7px 10px;
+  }
+
   .status-badge {
-    font-size: 0.7rem;
-    padding: 3px 6px;
+    font-size: 0.72rem;
+    padding: 3px 7px;
   }
 
   .card-actions {
-    padding: 10px 12px;
-    gap: 3px;
+    padding: 12px 14px 14px;
+    gap: 8px;
   }
 
   .action-btn {
-    width: 36px;
-    height: 36px;
-    font-size: 0.9rem;
-    border: 1px solid #e0e0e0;
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+    border: 1.5px solid #e0e0e0;
   }
 
   .tooltip {
-    font-size: 0.6rem;
-    padding: 3px 6px;
-    bottom: -28px;
+    display: none;
   }
 
-  .tooltip::before {
-    border-left: 3px solid transparent;
-    border-right: 3px solid transparent;
-    border-bottom: 3px solid rgba(0, 0, 0, 0.9);
+  .registration-toggle-row {
+    margin-top: 10px;
+    padding-top: 10px;
   }
+
+  .registration-toggle-label { font-size: 0.8rem; }
+
+  .toggle-state-label { font-size: 0.78rem !important; }
 }
 
 /* ── Create Tournament Modal ─────────────────────────────────────────────── */
@@ -1096,24 +1251,15 @@
 @media (max-width: 480px) {
   // ── Dashboard header ──
   .dashboard-header {
-    flex-direction: column;
-    align-items: stretch;
-    padding: 16px;
-    gap: 12px;
-
-    .header-left { min-width: unset; }
-
-    h1 { font-size: 1.3rem; }
-    p  { font-size: 0.82rem; }
-
-    .header-right { justify-content: stretch; }
+    flex-direction: row;
+    flex-wrap: wrap;
   }
 
   .btn-create {
-    width: 100%;
+    flex: 1 1 100%;
     text-align: center;
-    padding: 12px 16px;
-    font-size: 0.9rem;
+    padding: 11px 16px;
+    font-size: 0.88rem;
   }
 
   // ── Modal: bottom sheet ──

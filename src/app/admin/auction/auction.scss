@@ -811,7 +811,6 @@
 .team-name-tooltip-overlay {
   position: absolute;
   bottom: calc(100% + 8px);
-  left: 50%;
   transform: translateX(-50%);
   background: rgba(8,12,25,0.97);
   color: #f7c948;
@@ -822,7 +821,7 @@
   white-space: nowrap;
   pointer-events: none;
   border: 1px solid rgba(247,201,72,0.4);
-  z-index: 100;
+  z-index: 200;
   animation: tooltip-in 0.15s ease forwards;
 }
 

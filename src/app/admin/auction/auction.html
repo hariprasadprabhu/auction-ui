@@ -217,13 +217,17 @@
 
   <!-- ═══ FOOTER ═══ -->
   <footer class="auction-footer">
-    <div class="team-name-tooltip-overlay" *ngIf="hoveredTeamName">{{ hoveredTeamName }}</div>
+    <div
+      class="team-name-tooltip-overlay"
+      *ngIf="hoveredTeamName"
+      [style.left.px]="hoveredTeamLeft"
+    >{{ hoveredTeamName }}</div>
     <div class="team-buttons-row" *ngIf="!auctionComplete && !noUnsoldAvailable">
       <button
         *ngFor="let team of teams"
         class="team-btn"
         (click)="placeBidForTeam(team)"
-        (mouseenter)="hoveredTeamName = team.name"
+        (mouseenter)="onTeamHover($event, team.name)"
         (mouseleave)="hoveredTeamName = null"
         [class.team-btn-active]="currentBiddingTeam?.id === team.id"
         [class.team-btn-out-of-budget]="isTeamOutOfBudget(team)"

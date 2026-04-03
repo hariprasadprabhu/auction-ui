@@ -86,6 +86,31 @@
               </span>
             </div>
           </div>
+
+          <!-- Player Registration Toggle -->
+          <div class="registration-toggle-row">
+            <span class="registration-toggle-label">Player Registration</span>
+            <button
+              class="registration-toggle-btn"
+              [class.toggle-on]="tournament.playerRegistrationOpen"
+              [class.toggle-off]="!tournament.playerRegistrationOpen"
+              [class.toggle-loading]="togglingRegistrationIds.has(tournament.id)"
+              [disabled]="togglingRegistrationIds.has(tournament.id)"
+              (click)="togglePlayerRegistration(tournament)"
+              [title]="tournament.playerRegistrationOpen ? 'Click to close registration' : 'Click to open registration'"
+            >
+              <ng-container *ngIf="togglingRegistrationIds.has(tournament.id); else toggleReady">
+                <span class="toggle-spinner"></span>
+                <span class="toggle-state-label" style="color:#999">Saving…</span>
+              </ng-container>
+              <ng-template #toggleReady>
+                <span class="toggle-track">
+                  <span class="toggle-thumb"></span>
+                </span>
+                <span class="toggle-state-label">{{ tournament.playerRegistrationOpen ? 'Open' : 'Closed' }}</span>
+              </ng-template>
+            </button>
+          </div>
         </div>
 
         <div class="card-actions">
@@ -99,15 +124,15 @@
           </button>
           <button class="action-btn" (click)="openRegisterLink(tournament.id)">
             <span class="icon">🔗</span>
-            <span class="tooltip">Gen Link</span>
+            <span class="tooltip">Registration Link</span>
           </button>
           <button class="action-btn" (click)="startAuction(tournament.id)">
             <span class="icon">▶️</span>
-            <span class="tooltip">Start</span>
+            <span class="tooltip">Start Auction</span>
           </button>
           <button class="action-btn" (click)="viewConditionalIncrements(tournament.id)">
             <span class="icon">📈</span>
-            <span class="tooltip">Increments</span>
+            <span class="tooltip">Increment Rules</span>
           </button>
           <button class="action-btn" (click)="viewOwnerView(tournament.id)">
             <span class="icon">👑</span>
@@ -189,7 +214,6 @@
             <label for="tDate">Auction Date *</label>
             <input type="date" id="tDate" #tDate="ngModel" [(ngModel)]="newTournament.date" name="tDate"
                    [min]="getTodayString()" required />
-            <span class="field-hint">⚠️ Choose carefully — auction date can be changed only twice.</span>
             <span class="error-msg" *ngIf="tDate.invalid && (tDate.dirty || tDate.touched || createForm.submitted)">Auction date is required and must be today or a future date.</span>
           </div>
         </div>
@@ -317,7 +341,7 @@
           <div class="form-group">
             <label for="eDate">Auction Date *</label>
             <input type="date" id="eDate" #eDate="ngModel" [(ngModel)]="editTournament.date" name="eDate" required />
-            <span class="field-hint">⚠️ Choose carefully — auction date can be changed only twice.</span>
+            <span class="field-hint">⚠️ Choose carefully — auction date can be changed only once.</span>
             <span class="error-msg" *ngIf="eDate.invalid && (eDate.dirty || eDate.touched || editForm.submitted)">Auction date is required.</span>
           </div>
         </div>
@@ -559,6 +583,18 @@
       <div class="reset-message" *ngIf="isDeletingTournament">
         <p>{{ deleteMessage }}</p>
       </div>
+    </div>
+  </div>
+
+  <!-- Reset Notification Modal -->
+  <div class="modal-overlay" *ngIf="showResetNotificationModal" (click)="closeResetNotificationModal()">
+    <div class="modal-content delete-success-modal" (click)="$event.stopPropagation()">
+      <div class="success-icon" [style.color]="resetNotificationIsSuccess ? '#4caf50' : '#e53935'">
+        {{ resetNotificationIsSuccess ? '✓' : '✗' }}
+      </div>
+      <h2 class="success-title">{{ resetNotificationTitle }}</h2>
+      <p class="success-message">{{ resetNotificationMessage }}</p>
+      <button class="btn" [class.btn-success]="resetNotificationIsSuccess" [class.btn-danger]="!resetNotificationIsSuccess" (click)="closeResetNotificationModal()">Done</button>
     </div>
   </div>
 

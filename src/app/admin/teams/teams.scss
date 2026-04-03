@@ -1543,6 +1543,75 @@
   margin-bottom: 16px;
 }
 
+.limit-modal {
+  max-width: 420px;
+  text-align: center;
+  padding: 36px 28px 28px;
+
+  .limit-icon {
+    font-size: 3rem;
+    margin-bottom: 14px;
+  }
+
+  .limit-title {
+    font-size: 1.5rem;
+    color: #c62828;
+    margin-bottom: 10px;
+    font-weight: 700;
+  }
+
+  .limit-message {
+    font-size: 1rem;
+    color: #333;
+    margin-bottom: 6px;
+  }
+
+  .limit-sub {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 20px;
+  }
+
+  .limit-contact {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-whatsapp {
+    background: #25d366;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    &:hover { background: #1ebe5a; }
+  }
+
+  .btn-email {
+    background: #1976d2;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    &:hover { background: #1565c0; }
+  }
+}
+
 .errors-title {
   font-size: 0.95rem;
   font-weight: 700;

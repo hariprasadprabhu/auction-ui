@@ -116,6 +116,11 @@ export class TeamsListComponent implements OnInit {
     });
   }
 
+  get isTeamNameDuplicate(): boolean {
+    if (!this.newTeam.name.trim()) return false;
+    return this.teams.some(t => t.name.trim().toLowerCase() === this.newTeam.name.trim().toLowerCase());
+  }
+
   openAddTeamModal() {
     this.showAddTeamModal = true;
     this.resetTeamForm();
@@ -174,6 +179,9 @@ export class TeamsListComponent implements OnInit {
     }
     if (!this.newTeam.name || !this.newTeam.ownerName || !this.newTeam.mobileNumber) {
       alert('Please fill in all required fields');
+      return;
+    }
+    if (this.isTeamNameDuplicate) {
       return;
     }
     this.isAddingTeam = true;

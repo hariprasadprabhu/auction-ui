@@ -63,6 +63,7 @@ export interface Tournament {
   logoUrl?: string;
   teamesAllowed?: number;
   paymentProofRequired?: boolean;
+  playerRegistrationOpen?: boolean;
 }
 
 export interface CreateTournamentRequest {

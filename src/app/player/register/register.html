@@ -40,8 +40,16 @@
     <p class="not-found-hint">Contact your tournament organiser for a valid link.</p>
   </div>
 
+  <!-- Registration Closed -->
+  <div class="not-found" *ngIf="!isCheckingTournament && hasValidTournamentLink && !submitted && tournament?.playerRegistrationOpen === false">
+    <div class="not-found-icon">🚫</div>
+    <h2>Player registration is closed</h2>
+    <p>Registration for this tournament is currently not accepting new entries.</p>
+    <p class="not-found-hint">Contact your tournament organiser for more information.</p>
+  </div>
+
   <!-- Registration Form -->
-  <div class="form-wrapper" *ngIf="!isCheckingTournament && hasValidTournamentLink && !submitted">
+  <div class="form-wrapper" *ngIf="!isCheckingTournament && hasValidTournamentLink && !submitted && tournament?.playerRegistrationOpen !== false">
     <div class="form-card">
       <h2>Player Registration</h2>
       <p class="form-subtitle" *ngIf="!tournamentLookupFailed">Fill in your details below to register for this tournament</p>

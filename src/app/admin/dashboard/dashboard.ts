@@ -31,7 +31,7 @@ export class Dashboard implements OnInit {
   // ── Reset Entire Auction Modal ───────────────────────────────────────────
   showResetAuctionModal = false;
   resetAuctionConfirmText = '';
-  resetAuctionExpectedText = 'reset ins';
+  resetAuctionExpectedText = 'reset';
   isResettingAuction = false;
   resetAuctionMessage = '';
   resetAuctionTournamentId: number | null = null;
@@ -44,6 +44,12 @@ export class Dashboard implements OnInit {
   deleteMessage = '';
   deleteTournamentId: number | null = null;
   deleteTournamentName = '';
+
+  // ── Reset Success / Error Notification Modal ───────────────────────────
+  showResetNotificationModal = false;
+  resetNotificationTitle = '';
+  resetNotificationMessage = '';
+  resetNotificationIsSuccess = true;
 
   // ── Delete Success Modal ─────────────────────────────────────────────────
   showDeleteSuccessModal = false;
@@ -278,6 +284,35 @@ export class Dashboard implements OnInit {
       });
   }
 
+  togglingRegistrationIds = new Set<number>();
+
+  togglePlayerRegistration(tournament: Tournament) {
+    const newValue = !tournament.playerRegistrationOpen;
+    this.togglingRegistrationIds.add(tournament.id);
+    this.cdr.markForCheck();
+    this.tournamentService.togglePlayerRegistration(tournament.id, newValue).subscribe({
+      next: (updated) => {
+        tournament.playerRegistrationOpen = updated.playerRegistrationOpen;
+        this.togglingRegistrationIds.delete(tournament.id);
+        this.resetNotificationIsSuccess = true;
+        this.resetNotificationTitle = updated.playerRegistrationOpen ? '✓ Registration Opened' : '✓ Registration Closed';
+        this.resetNotificationMessage = updated.playerRegistrationOpen
+          ? `Player registration for "${tournament.name}" is now open.`
+          : `Player registration for "${tournament.name}" is now closed.`;
+        this.showResetNotificationModal = true;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.togglingRegistrationIds.delete(tournament.id);
+        this.resetNotificationIsSuccess = false;
+        this.resetNotificationTitle = '✗ Update Failed';
+        this.resetNotificationMessage = 'Could not update player registration status. Please try again.';
+        this.showResetNotificationModal = true;
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
   deleteTournament(id: number) {
     const tournament = this.tournaments.find((t) => t.id === id);
     this.deleteTournamentId = id;
@@ -484,6 +519,10 @@ export class Dashboard implements OnInit {
             t.id === updated.id ? updated : t,
           );
           this.closeEditModal();
+          this.resetNotificationTitle = '✓ Tournament Saved';
+          this.resetNotificationMessage = 'Tournament details have been saved successfully.';
+          this.resetNotificationIsSuccess = true;
+          this.showResetNotificationModal = true;
           this.cdr.markForCheck();
         },
         error: (err: any) => {
@@ -503,8 +542,20 @@ export class Dashboard implements OnInit {
             this.showLimitErrorModal = true;
             this.limitErrorMessage = errorBody.message || '';
             this.cdr.markForCheck();
+          } else if (errorBody?.message?.includes('Auction date has already been modified once')) {
+            this.closeEditModal();
+            this.resetNotificationTitle = '✗ Date Change Not Allowed';
+            this.resetNotificationMessage = 'You already edited the tournament date once, so you can no longer edit the auction date for this tournament.';
+            this.resetNotificationIsSuccess = false;
+            this.showResetNotificationModal = true;
+            this.cdr.markForCheck();
           } else {
-            alert('Failed to update tournament. Please try again.');
+            this.closeEditModal();
+            this.resetNotificationTitle = '✗ Update Failed';
+            this.resetNotificationMessage = 'Failed to update tournament. Please try again.';
+            this.resetNotificationIsSuccess = false;
+            this.showResetNotificationModal = true;
+            this.cdr.markForCheck();
           }
         },
       });
@@ -568,20 +619,31 @@ export class Dashboard implements OnInit {
       next: (response) => {
         this.isResettingAuction = false;
         this.resetAuctionMessage = '';
-        alert('Auction has been reset successfully!\n\n' + (response?.message || 'All auction data has been reset.'));
         this.closeResetAuctionModal();
+        this.resetNotificationTitle = '✓ Auction Reset Successfully';
+        this.resetNotificationMessage = response?.message || 'All auction data has been reset.';
+        this.resetNotificationIsSuccess = true;
+        this.showResetNotificationModal = true;
         this.cdr.markForCheck();
       },
       error: (err) => {
         this.isResettingAuction = false;
         this.resetAuctionMessage = '';
-        alert('Failed to reset auction. ' + (err?.error?.message || 'Please try again.'));
+        this.resetNotificationTitle = '✗ Reset Failed';
+        this.resetNotificationMessage = err?.error?.message || 'Failed to reset auction. Please try again.';
+        this.resetNotificationIsSuccess = false;
+        this.showResetNotificationModal = true;
         this.cdr.markForCheck();
       },
     });
   }
 
   // ── Custom Modal Methods ──────────────────────────────────────────────────
+
+  closeResetNotificationModal() {
+    this.showResetNotificationModal = false;
+    this.cdr.markForCheck();
+  }
 
   openConfirmModal(title: string, message: string, onConfirm: () => void) {
     this.confirmTitle = title;

@@ -48,6 +48,12 @@ export class TournamentService {
     return this.http.delete<void>(`${this.apiUrl}/tournaments/${id}`);
   }
 
+  togglePlayerRegistration(id: number, open: boolean): Observable<Tournament> {
+    return this.http
+      .patch<Tournament>(`${this.apiUrl}/tournaments/${id}/registration`, { playerRegistrationOpen: open })
+      .pipe(map((t) => this.mapTournament(t)));
+  }
+
   getLogoUrl(id: number): string {
     return `${this.apiUrl}/tournaments/${id}/logo`;
   }
@@ -74,6 +80,8 @@ export class TournamentService {
     if (request.status !== undefined) fd.append('status', request.status);
     if (request.paymentProofRequired !== undefined)
       fd.append('paymentProofRequired', String(request.paymentProofRequired));
+    if ((request as any).playerRegistrationOpen !== undefined)
+      fd.append('playerRegistrationOpen', String((request as any).playerRegistrationOpen));
     // Only append to FormData if it's a File object
     if (request.logo instanceof File) {
       fd.append('logo', request.logo);
@@ -97,6 +105,7 @@ export class TournamentService {
     if (request.initialIncrementAmount !== undefined) obj.initialIncrement = request.initialIncrementAmount;
     if (request.status !== undefined) obj.status = request.status;
     if (request.paymentProofRequired !== undefined) obj.paymentProofRequired = request.paymentProofRequired;
+    if ((request as any).playerRegistrationOpen !== undefined) obj.playerRegistrationOpen = (request as any).playerRegistrationOpen;
     // Attach Cloudinary URL directly to original field name
     if (request.logo && typeof request.logo === 'string') {
       obj.logo = request.logo;

@@ -548,6 +548,17 @@
       color: #666;
       cursor: not-allowed;
     }
+
+    &.input-error {
+      border-color: #e53935;
+      box-shadow: 0 0 6px rgba(229, 57, 53, 0.2);
+    }
+  }
+
+  .field-error {
+    font-size: 0.82rem;
+    color: #e53935;
+    margin-top: 2px;
   }
 }
 

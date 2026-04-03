@@ -500,6 +500,26 @@
     </div>
   </div>
 
+  <!-- Bulk Upload Limit Modal -->
+  <div class="modal-overlay" *ngIf="showBulkLimitModal" (click)="showBulkLimitModal = false">
+    <div class="modal-content confirm-modal limit-modal" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="showBulkLimitModal = false">✕</button>
+      <div class="limit-icon">⚠️</div>
+      <h2 class="limit-title">Upload Limit Reached</h2>
+      <p class="limit-message">Bulk registration is limited to <strong>30 players</strong> at a time.</p>
+      <p class="limit-sub">Buy more teams to increase your upload capacity.</p>
+      <div class="limit-contact">
+        <a class="btn btn-whatsapp" [href]="'https://wa.me/' + whatsappNumber" target="_blank" rel="noopener">
+          <span>💬</span> WhatsApp Us
+        </a>
+        <a class="btn btn-email" [href]="'mailto:' + contactEmail">
+          <span>✉</span> Email Us
+        </a>
+      </div>
+      <button class="btn btn-secondary" style="margin-top:16px;" (click)="showBulkLimitModal = false">Close</button>
+    </div>
+  </div>
+
   <!-- Delete All Players Confirmation Modal -->
   <div class="modal-overlay" *ngIf="showDeleteAllConfirmModal" (click)="closeDeleteAllConfirmModal()">
     <div class="modal-content confirm-modal" (click)="$event.stopPropagation()">

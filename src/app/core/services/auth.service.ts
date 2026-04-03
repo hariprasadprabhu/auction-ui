@@ -4,6 +4,11 @@ import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse } from '../../models';
 
+interface JwtPayload {
+  exp?: number;
+  sub?: string;
+}
+
 interface StoredUser {
   id: number;
   name: string;
@@ -64,8 +69,43 @@ export class AuthService {
     return localStorage.getItem(this.TOKEN_KEY);
   }
 
+  setToken(token: string): void {
+    localStorage.setItem(this.TOKEN_KEY, token);
+  }
+
+  private decodeTokenPayload(token: string): JwtPayload | null {
+    try {
+      const payload = token.split('.')[1];
+      const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+      return JSON.parse(decoded) as JwtPayload;
+    } catch {
+      return null;
+    }
+  }
+
+  isTokenExpired(): boolean {
+    const token = this.getToken();
+    if (!token) return true;
+    const payload = this.decodeTokenPayload(token);
+    if (!payload?.exp) return true;
+    return payload.exp * 1000 < Date.now();
+  }
+
   isAuthenticated(): boolean {
     return !!this.getToken();
+  }
+
+  refreshToken(): Observable<LoginResponse> {
+    const token = this.getToken();
+    return this.http
+      .post<LoginResponse>(`${this.apiUrl}/auth/refresh`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .pipe(
+        tap((response) => {
+          localStorage.setItem(this.TOKEN_KEY, response.token);
+        }),
+      );
   }
 
   getCurrentUser(): StoredUser | null {

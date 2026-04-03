@@ -58,9 +58,10 @@ export class Auction implements OnInit {
   showUnsoldOverlay = false;
   overlayInteractive = false;
   showConfigModal = false;
+  hoveredTeamName: string | null = null;
+  hoveredTeamLeft = 0;
   auctionComplete = false;
   noUnsoldAvailable = false;
-  hoveredTeamName: string | null = null;
   isValidatingBid = false;
   auctionStarted = false;
 
@@ -617,6 +618,15 @@ export class Auction implements OnInit {
 
   getAbbr(teamName: string): string {
     return teamName.split(' ').map(w => w[0]).join('').toUpperCase();
+  }
+
+  onTeamHover(event: MouseEvent, name: string): void {
+    const btn = event.currentTarget as HTMLElement;
+    const footer = btn.closest('.auction-footer') as HTMLElement;
+    const btnRect = btn.getBoundingClientRect();
+    const footerRect = footer.getBoundingClientRect();
+    this.hoveredTeamLeft = btnRect.left - footerRect.left + btnRect.width / 2;
+    this.hoveredTeamName = name;
   }
 
   getPlayerAge(): string | number {

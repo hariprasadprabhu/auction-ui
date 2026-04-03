@@ -142,6 +142,11 @@ export class Players implements OnInit {
   bulkUploadSuccess = false;
   bulkUploadCreatedCount = 0;
 
+  // Bulk Upload Limit Modal
+  showBulkLimitModal = false;
+  readonly whatsappNumber = '+916360634388';
+  readonly contactEmail = 'auction.deck@gmail.com';
+
   // Delete All Players Confirmation Modal
   showDeleteAllConfirmModal = false;
   deleteAllConfirmInput = '';
@@ -1198,7 +1203,11 @@ export class Players implements OnInit {
       error: (err) => {
         this.isBulkUploading = false;
         const msg = err?.error?.message || 'Failed to bulk upload players. Please check the data and try again.';
-        this.excelBulkErrors = [{ row: 0, field: 'server', message: msg }];
+        if (msg.toLowerCase().includes('limited to 30') || msg.toLowerCase().includes('bulk registration is limited')) {
+          this.showBulkLimitModal = true;
+        } else {
+          this.excelBulkErrors = [{ row: 0, field: 'server', message: msg }];
+        }
         this.cdr.markForCheck();
       },
     });
