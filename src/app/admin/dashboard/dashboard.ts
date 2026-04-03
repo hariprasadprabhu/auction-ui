@@ -69,6 +69,14 @@ export class Dashboard implements OnInit {
   confirmMessage = '';
   confirmCallback: (() => void) | null = null;
 
+  // ── Auction Impact Warning Modal ─────────────────────────────────────────
+  showAuctionImpactWarning = false;
+  private pendingSaveForm: NgForm | null = null;
+  private originalBasePrice = 0;
+  private originalPurseAmount = 0;
+  private originalInitialIncrement = 0;
+  private originalPlayersPerTeam = 0;
+
   private router = inject(Router);
   private tournamentService = inject(TournamentService);
   private auctionPlayerService = inject(AuctionPlayerService);
@@ -126,16 +134,39 @@ export class Dashboard implements OnInit {
       name: '',
       date: '',
       sport: '',
-      totalTeams: 8,
+      totalTeams: 5,
       totalPlayers: 120,
-      purseAmount: 1000000,
+      purseAmount: 100000,
       playersPerTeam: 15,
-      basePrice: 20000,
-      initialIncrementAmount: 5,
+      basePrice: 2000,
+      initialIncrementAmount: 1000,
       status: 'UPCOMING' as TournamentStatus,
       logoUrl: this.DEFAULT_TEAM_LOGO,
       paymentProofRequired: false,
     };
+  }
+
+  getTodayString(): string {
+    return new Date().toISOString().split('T')[0];
+  }
+
+  statusFromDate(date: string): TournamentStatus {
+    if (!date) return 'UPCOMING';
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    if (d.getTime() === today.getTime()) return 'ONGOING';
+    if (d > today) return 'UPCOMING';
+    return 'COMPLETED';
+  }
+
+  isPurseValid(purse: number, ppt: number, base: number): boolean {
+    return purse >= ppt * base;
+  }
+
+  minPurse(ppt: number, base: number): number {
+    return ppt * base;
   }
 
   openCreateModal() {
@@ -195,6 +226,10 @@ export class Dashboard implements OnInit {
       form.control.markAllAsTouched();
       return;
     }
+    if (!this.isPurseValid(this.newTournament.purseAmount, this.newTournament.playersPerTeam, this.newTournament.basePrice)) {
+      form.control.markAllAsTouched();
+      return;
+    }
     this.isCreatingTournament = true;
     this.cdr.markForCheck();
     
@@ -208,8 +243,8 @@ export class Dashboard implements OnInit {
         purseAmount: this.newTournament.purseAmount,
         playersPerTeam: this.newTournament.playersPerTeam,
         basePrice: this.newTournament.basePrice,
-        initialIncrementAmount: this.newTournament.initialIncrementAmount || 5,
-        status: this.newTournament.status,
+        initialIncrementAmount: this.newTournament.initialIncrementAmount || 1000,
+        status: this.statusFromDate(this.newTournament.date),
         logo: this.newTournament.logoUrl || this.DEFAULT_TEAM_LOGO,
         paymentProofRequired: this.newTournament.paymentProofRequired,
       })
@@ -225,7 +260,6 @@ export class Dashboard implements OnInit {
           console.log('API Error Response:', err);
           const errorBody = err.error || err;
           console.log('Error Body:', errorBody);
-          
           // Check for maximum allowed teams error
           if (errorBody?.error === 'BAD_REQUEST' && 
               errorBody?.message?.includes('Reached maximum allowed teams')) {
@@ -340,6 +374,11 @@ export class Dashboard implements OnInit {
       logoUrl: tournament.logoUrl || this.DEFAULT_TEAM_LOGO,
       paymentProofRequired: tournament.paymentProofRequired || false,
     };
+    // Snapshot sensitive fields to detect impactful changes
+    this.originalBasePrice = tournament.basePrice;
+    this.originalPurseAmount = tournament.purseAmount;
+    this.originalInitialIncrement = tournament.initialIncrementAmount;
+    this.originalPlayersPerTeam = tournament.playersPerTeam;
     this.editLogoPreview = tournament.logoUrl || this.DEFAULT_TEAM_LOGO;
     this.showEditModal = true;
   }
@@ -384,10 +423,44 @@ export class Dashboard implements OnInit {
       form.control.markAllAsTouched();
       return;
     }
+    if (!this.isPurseValid(this.editTournament.purseAmount, this.editTournament.playersPerTeam, this.editTournament.basePrice)) {
+      form.control.markAllAsTouched();
+      return;
+    }
+    if (this.editingTournamentId === null) return;
+
+    const sensitiveChanged =
+      this.editTournament.basePrice !== this.originalBasePrice ||
+      this.editTournament.purseAmount !== this.originalPurseAmount ||
+      this.editTournament.initialIncrementAmount !== this.originalInitialIncrement ||
+      this.editTournament.playersPerTeam !== this.originalPlayersPerTeam;
+
+    if (sensitiveChanged) {
+      this.pendingSaveForm = form;
+      this.showAuctionImpactWarning = true;
+      this.cdr.markForCheck();
+      return;
+    }
+
+    this._doSaveTournament();
+  }
+
+  confirmAuctionImpactWarning() {
+    this.showAuctionImpactWarning = false;
+    this._doSaveTournament();
+  }
+
+  cancelAuctionImpactWarning() {
+    this.showAuctionImpactWarning = false;
+    this.pendingSaveForm = null;
+    this.cdr.markForCheck();
+  }
+
+  private _doSaveTournament() {
     if (this.editingTournamentId === null) return;
     this.isUpdatingTournament = true;
     this.cdr.markForCheck();
-    
+
     this.tournamentService
       .update(this.editingTournamentId, {
         name: this.editTournament.name,
@@ -399,13 +472,14 @@ export class Dashboard implements OnInit {
         playersPerTeam: this.editTournament.playersPerTeam,
         basePrice: this.editTournament.basePrice,
         initialIncrementAmount: this.editTournament.initialIncrementAmount,
-        status: this.editTournament.status,
+        status: this.statusFromDate(this.editTournament.date),
         logo: this.editTournament.logoUrl || this.DEFAULT_TEAM_LOGO,
         paymentProofRequired: this.editTournament.paymentProofRequired,
       })
       .subscribe({
         next: (updated) => {
           this.isUpdatingTournament = false;
+          this.pendingSaveForm = null;
           this.tournaments = this.tournaments.map((t) =>
             t.id === updated.id ? updated : t,
           );
@@ -414,14 +488,14 @@ export class Dashboard implements OnInit {
         },
         error: (err: any) => {
           this.isUpdatingTournament = false;
+          this.pendingSaveForm = null;
           console.log('API Error Response:', err);
           const errorBody = err.error || err;
           console.log('Error Body:', errorBody);
-          
+
           // Check for maximum allowed teams error
-          if (errorBody?.error === 'BAD_REQUEST' && 
+          if (errorBody?.error === 'BAD_REQUEST' &&
               errorBody?.message?.includes('Reached maximum allowed teams')) {
-            // Extract the maximum allowed teams from error message
             const match = errorBody.message.match(/Reached maximum allowed teams: (\d+)/);
             if (match && match[1]) {
               this.maxTeamsAllowed = parseInt(match[1], 10);

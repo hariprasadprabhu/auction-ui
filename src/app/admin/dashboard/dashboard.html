@@ -173,14 +173,24 @@
         <div class="form-row">
           <div class="form-group">
             <label for="tSport">Sport *</label>
-            <input type="text" id="tSport" #tSport="ngModel" [(ngModel)]="newTournament.sport" name="tSport"
-                   placeholder="e.g. Cricket" required />
+            <select id="tSport" #tSport="ngModel" [(ngModel)]="newTournament.sport" name="tSport" required>
+              <option value="">-- Select Sport --</option>
+              <option value="Cricket">Cricket</option>
+              <option value="Football">Football</option>
+              <option value="VolleyBall">VolleyBall</option>
+              <option value="Badminton">Badminton</option>
+              <option value="Hockey">Hockey</option>
+              <option value="Kho-Kho">Kho-Kho</option>
+              <option value="Other">Other</option>
+            </select>
             <span class="error-msg" *ngIf="tSport.invalid && (tSport.dirty || tSport.touched || createForm.submitted)">Sport is required.</span>
           </div>
           <div class="form-group">
-            <label for="tDate">Date *</label>
-            <input type="date" id="tDate" #tDate="ngModel" [(ngModel)]="newTournament.date" name="tDate" required />
-            <span class="error-msg" *ngIf="tDate.invalid && (tDate.dirty || tDate.touched || createForm.submitted)">Date is required.</span>
+            <label for="tDate">Auction Date *</label>
+            <input type="date" id="tDate" #tDate="ngModel" [(ngModel)]="newTournament.date" name="tDate"
+                   [min]="getTodayString()" required />
+            <span class="field-hint">⚠️ Choose carefully — auction date can be changed only twice.</span>
+            <span class="error-msg" *ngIf="tDate.invalid && (tDate.dirty || tDate.touched || createForm.submitted)">Auction date is required and must be today or a future date.</span>
           </div>
         </div>
 
@@ -207,6 +217,9 @@
             <input type="number" id="tPurse" #tPurse="ngModel" [(ngModel)]="newTournament.purseAmount" name="tPurse"
                    min="0" placeholder="1000000" required />
             <span class="error-msg" *ngIf="tPurse.invalid && (tPurse.dirty || tPurse.touched || createForm.submitted)">Purse amount is required.</span>
+            <span class="error-msg" *ngIf="(createForm.dirty || createForm.submitted) && !isPurseValid(newTournament.purseAmount, newTournament.playersPerTeam, newTournament.basePrice)">
+              Purse must be ≥ {{ minPurse(newTournament.playersPerTeam, newTournament.basePrice) | currency:'INR':'symbol-narrow':'1.0-0' }} (players/team × base price).
+            </span>
           </div>
           <div class="form-group">
             <label for="tPPT">Players / Team *</label>
@@ -233,16 +246,7 @@
         </div>
 
         <!-- Status -->
-        <div class="form-row">
-          <div class="form-group">
-            <label for="tStatus">Status *</label>
-            <select id="tStatus" [(ngModel)]="newTournament.status" name="tStatus" required>
-              <option value="UPCOMING">Upcoming</option>
-              <option value="ONGOING">Ongoing</option>
-              <option value="COMPLETED">Completed</option>
-            </select>
-          </div>
-        </div>
+        <!-- Status is auto-determined from auction date; no dropdown needed -->
 
         <!-- Payment Proof Required -->
         <div class="form-row">
@@ -298,14 +302,23 @@
         <div class="form-row">
           <div class="form-group">
             <label for="eSport">Sport *</label>
-            <input type="text" id="eSport" #eSport="ngModel" [(ngModel)]="editTournament.sport" name="eSport"
-                   placeholder="e.g. Cricket" required />
+            <select id="eSport" #eSport="ngModel" [(ngModel)]="editTournament.sport" name="eSport" required>
+              <option value="">-- Select Sport --</option>
+              <option value="Cricket">Cricket</option>
+              <option value="Football">Football</option>
+              <option value="VolleyBall">VolleyBall</option>
+              <option value="Badminton">Badminton</option>
+              <option value="Hockey">Hockey</option>
+              <option value="Kho-Kho">Kho-Kho</option>
+              <option value="Other">Other</option>
+            </select>
             <span class="error-msg" *ngIf="eSport.invalid && (eSport.dirty || eSport.touched || editForm.submitted)">Sport is required.</span>
           </div>
           <div class="form-group">
-            <label for="eDate">Date *</label>
+            <label for="eDate">Auction Date *</label>
             <input type="date" id="eDate" #eDate="ngModel" [(ngModel)]="editTournament.date" name="eDate" required />
-            <span class="error-msg" *ngIf="eDate.invalid && (eDate.dirty || eDate.touched || editForm.submitted)">Date is required.</span>
+            <span class="field-hint">⚠️ Choose carefully — auction date can be changed only twice.</span>
+            <span class="error-msg" *ngIf="eDate.invalid && (eDate.dirty || eDate.touched || editForm.submitted)">Auction date is required.</span>
           </div>
         </div>
 
@@ -332,6 +345,9 @@
             <input type="number" id="ePurse" #ePurse="ngModel" [(ngModel)]="editTournament.purseAmount" name="ePurse"
                    min="0" placeholder="1000000" required />
             <span class="error-msg" *ngIf="ePurse.invalid && (ePurse.dirty || ePurse.touched || editForm.submitted)">Purse amount is required.</span>
+            <span class="error-msg" *ngIf="(editForm.dirty || editForm.submitted) && !isPurseValid(editTournament.purseAmount, editTournament.playersPerTeam, editTournament.basePrice)">
+              Purse must be ≥ {{ minPurse(editTournament.playersPerTeam, editTournament.basePrice) | currency:'INR':'symbol-narrow':'1.0-0' }} (players/team × base price).
+            </span>
           </div>
           <div class="form-group">
             <label for="ePPT">Players / Team *</label>
@@ -358,16 +374,7 @@
         </div>
 
         <!-- Status -->
-        <div class="form-row">
-          <div class="form-group">
-            <label for="eStatus">Status *</label>
-            <select id="eStatus" [(ngModel)]="editTournament.status" name="eStatus" required>
-              <option value="UPCOMING">Upcoming</option>
-              <option value="ONGOING">Ongoing</option>
-              <option value="COMPLETED">Completed</option>
-            </select>
-          </div>
-        </div>
+        <!-- Status is auto-determined from auction date; no dropdown needed -->
 
         <!-- Payment Proof Required -->
         <div class="form-row">
@@ -578,6 +585,37 @@
       <div class="modal-footer confirm-footer">
         <button class="btn btn-secondary" (click)="closeConfirmModal()">Cancel</button>
         <button class="btn btn-primary" (click)="confirmAction()">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Auction Impact Warning Modal -->
+  <div class="modal-overlay" *ngIf="showAuctionImpactWarning">
+    <div class="modal-content reset-auction-modal" (click)="$event.stopPropagation()">
+      <div class="reset-header">
+        <div class="reset-icon">⚠️</div>
+        <h2>Auction Data Will Be Reset</h2>
+      </div>
+
+      <div class="reset-body">
+        <p class="reset-warning">
+          <strong>Warning:</strong> You have modified one or more critical auction attributes.
+        </p>
+        <p class="reset-warning" style="margin-top: 12px;">
+          Saving these changes will <strong>reset all players' auction status to AVAILABLE</strong>
+          and <strong>return all bid amounts back to each team's purse</strong>.
+          This action <em>cannot be undone</em>.
+        </p>
+        <p style="margin-top: 10px; font-size: 0.9rem; color: #aaa;">Are you sure you want to proceed?</p>
+      </div>
+
+      <div class="reset-footer">
+        <button type="button" class="btn btn-secondary" (click)="cancelAuctionImpactWarning()">
+          Cancel — Keep Editing
+        </button>
+        <button type="button" class="btn btn-danger" (click)="confirmAuctionImpactWarning()">
+          Yes, Save &amp; Reset Auction
+        </button>
       </div>
     </div>
   </div>
