@@ -111,6 +111,10 @@
               </ng-template>
             </button>
           </div>
+
+          <p class="reg-config-hint">
+            💡 Click the <strong>⚙️ configure</strong> icon below to set which registration fields are required or optional for Players.
+          </p>
         </div>
 
         <div class="card-actions">
@@ -122,7 +126,11 @@
             <span class="icon">👤</span>
             <span class="tooltip">Players</span>
           </button>
-          <button class="action-btn" (click)="openRegisterLink(tournament.id)">
+          <button class="action-btn" (click)="openRegConfigModal(tournament)">
+            <span class="icon">⚙️</span>
+            <span class="tooltip">Configure Registration</span>
+          </button>
+          <button class="action-btn" (click)="openRegLinkModal(tournament.id)">
             <span class="icon">🔗</span>
             <span class="tooltip">Registration Link</span>
           </button>
@@ -142,7 +150,7 @@
             <span class="icon">🎯</span>
             <span class="tooltip">Sponsors</span>
           </button>
-          <button class="action-btn">
+          <button class="action-btn" (click)="viewResults(tournament.id)">
             <span class="icon">📊</span>
             <span class="tooltip">Results</span>
           </button>
@@ -839,4 +847,93 @@
       </div>
     </div>
   </div>
+
+  <!-- Registration Link Modal -->
+  <div class="modal-overlay reg-link-overlay" *ngIf="showRegLinkModal" (click)="closeRegLinkModal()">
+    <div class="modal-content reg-link-modal" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="closeRegLinkModal()">✕</button>
+      <h2>🔗 Registration Link</h2>
+
+      <div class="reg-link-url-box">
+        <span class="reg-link-url-text">{{ regLinkUrl }}</span>
+      </div>
+
+      <!-- Primary actions — always visible -->
+      <div class="reg-link-actions">
+        <button class="btn btn-secondary reg-link-btn" (click)="openRegPage()">
+          🌐 Open Registration Page
+        </button>
+        <button class="btn reg-link-btn" [class.btn-primary]="!regLinkCopied" [class.btn-copied]="regLinkCopied" (click)="copyRegLink()">
+          {{ regLinkCopied ? '✅ Copied!' : '📋 Copy Link' }}
+        </button>
+      </div>
+
+      <!-- Share options — shown immediately after copy -->
+      <div class="reg-link-share" [class.reg-link-share-visible]="regLinkCopied">
+        <p class="reg-link-share-label">Share via</p>
+        <div class="reg-link-share-btns">
+          <a class="share-btn share-wa" [href]="regLinkWhatsApp" target="_blank" rel="noopener">
+            💬 WhatsApp
+          </a>
+          <a class="share-btn share-email" [href]="regLinkEmail">
+            ✉️ Email
+          </a>
+          <button class="share-btn share-native" *ngIf="canNativeShare" (click)="nativeShare()">
+            📤 More…
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Configure Player Registration Modal -->
+  <div class="modal-overlay" *ngIf="showRegConfigModal" (click)="closeRegConfigModal()">
+    <div class="modal-content reg-config-modal" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="closeRegConfigModal()">✕</button>
+      <h2>Configure Player Registration</h2>
+      <p class="reg-config-subtitle">{{ regConfigTournamentName }}</p>
+
+      <!-- Loading state -->
+      <div class="reg-config-loading" *ngIf="isLoadingRegConfig">
+        <div class="spinner"></div>
+        <p>Loading configuration...</p>
+      </div>
+
+      <!-- Save success state -->
+      <div class="reg-config-success" *ngIf="regConfigSaved">
+        <div class="success-icon">✅</div>
+        <p>Configuration saved successfully!</p>
+      </div>
+
+      <!-- Fields -->
+      <ng-container *ngIf="!isLoadingRegConfig && !regConfigSaved">
+        <div class="reg-config-note">
+          <small>Note: <strong>You can set here, what each player should enter during the registration process, If you are interested in any of the fileds then tick the box and registration form will make them mandatory to fill.</strong></small>
+        </div>
+
+        <div class="reg-config-fields">
+          <label class="field-config-row" [class.always-on]="field.alwaysOn" *ngFor="let field of regConfigFieldList">
+            <input type="checkbox" [(ngModel)]="regConfigFields[field.key]" [name]="'regfield-' + field.key" [disabled]="!!field.alwaysOn" [checked]="!!field.alwaysOn || regConfigFields[field.key]" />
+            <span class="field-label">{{ field.label }}</span>
+            <span class="always-on-badge" *ngIf="field.alwaysOn">Always required</span>
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn-secondary" (click)="closeRegConfigModal()" [disabled]="isSavingRegConfig">Cancel</button>
+          <button class="btn btn-primary" (click)="saveRegConfig()" [disabled]="isSavingRegConfig">
+            {{ isSavingRegConfig ? '🔄 Saving...' : 'Save Configuration' }}
+          </button>
+        </div>
+      </ng-container>
+    </div>
+  </div>
 </div>
+
+<!-- Email verification popup -->
+<app-email-verification
+  *ngIf="showEmailVerificationModal"
+  [email]="currentUser?.email || ''"
+  (closed)="onEmailVerificationClosed()"
+  (verified)="onEmailVerified()"
+></app-email-verification>

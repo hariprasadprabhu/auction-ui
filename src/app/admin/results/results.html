@@ -1,0 +1,185 @@
+<div class="results-container">
+
+  <!-- Loading Screen -->
+  <div class="results-loading" *ngIf="isLoading">
+    <div class="loading-content">
+      <div class="loading-spinner">
+        <div class="spinner-circle"></div>
+      </div>
+      <p class="loading-text">Loading Results…</p>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div class="results-error" *ngIf="!isLoading && errorMessage">
+    <p class="error-text">{{ errorMessage }}</p>
+    <button class="btn-back" (click)="goBack()">← Back to Dashboard</button>
+  </div>
+
+  <!-- Main Content -->
+  <ng-container *ngIf="!isLoading && !errorMessage">
+
+    <!-- Header -->
+    <header class="results-header">
+      <div class="header-side">
+        <div class="header-logo-badge">
+          <img
+            src="https://res.cloudinary.com/drytm0fl7/image/upload/v1774417151/logo_resized_xnddqz.jpg"
+            alt="App Logo"
+            class="header-logo-img"
+          />
+        </div>
+      </div>
+      <div class="header-center">
+        <p class="page-subtitle">Auction Results</p>
+        <h1 class="tournament-title">{{ tournament?.name }}</h1>
+        <p class="tournament-date">{{ tournament?.date | date: 'MMM dd, yyyy' }}</p>
+      </div>
+      <div class="header-side header-side-right">
+        <button class="btn-back-header" (click)="goBack()">← Back</button>
+      </div>
+    </header>
+
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+      <div class="stat-item">
+        <span class="stat-value">{{ allRows.length }}</span>
+        <span class="stat-label">Total Players</span>
+      </div>
+      <div class="stat-item stat-sold">
+        <span class="stat-value">{{ soldCount }}</span>
+        <span class="stat-label">Sold</span>
+      </div>
+      <div class="stat-item stat-unsold">
+        <span class="stat-value">{{ unsoldCount }}</span>
+        <span class="stat-label">Unsold</span>
+      </div>
+      <div class="stat-item stat-spend">
+        <span class="stat-value">{{ totalSpend | currency:'INR':'symbol-narrow':'1.0-0' }}</span>
+        <span class="stat-label">Total Spend</span>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <span class="filter-label">Filter by Team:</span>
+      <div class="filter-chips">
+        <button
+          class="filter-chip"
+          [class.active]="selectedTeamId === 'ALL'"
+          (click)="selectTeamFilter('ALL')"
+        >
+          All Teams
+        </button>
+        <button
+          class="filter-chip filter-chip-unsold"
+          [class.active]="selectedTeamId === 'UNSOLD'"
+          (click)="selectTeamFilter('UNSOLD')"
+        >
+          Unsold
+        </button>
+        <button
+          *ngFor="let team of teams"
+          class="filter-chip"
+          [class.active]="selectedTeamId === team.id"
+          (click)="selectTeamFilter(team.id)"
+        >
+          {{ team.name }}
+        </button>
+      </div>
+      <button class="btn-download-csv" (click)="downloadCsv()" [disabled]="filteredRows.length === 0" title="Download current view as CSV">
+        ⬇ Download CSV
+      </button>
+    </div>
+
+    <!-- Results Table -->
+    <div class="results-content">
+
+      <!-- No Results -->
+      <div class="empty-state" *ngIf="filteredRows.length === 0">
+        <p class="empty-icon">📋</p>
+        <p class="empty-title">No results found</p>
+        <p class="empty-sub">Try selecting a different filter.</p>
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrapper" *ngIf="filteredRows.length > 0">
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th class="col-photo">#</th>
+              <th class="col-name">Player</th>
+              <th class="col-age">Age</th>
+              <th class="col-role">Role</th>
+              <th class="col-team">Team</th>
+              <th class="col-price">Sold Price</th>
+              <th class="col-status">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let row of filteredRows; let i = index"
+              [class.row-sold]="row.status === 'SOLD'"
+              [class.row-unsold]="row.status === 'UNSOLD'"
+            >
+              <!-- Photo + row number -->
+              <td class="col-photo">
+                <div class="player-photo-wrap">
+                  <img
+                    *ngIf="row.player.photoUrl"
+                    [src]="row.player.photoUrl | normalizePhotoUrlCached | async"
+                    [alt]="getPlayerDisplayName(row.player)"
+                    class="player-photo"
+                  />
+                  <img
+                    *ngIf="!row.player.photoUrl"
+                    [src]="DEFAULT_PHOTO"
+                    [alt]="getPlayerDisplayName(row.player)"
+                    class="player-photo player-photo-default"
+                  />
+                </div>
+              </td>
+
+              <!-- Name -->
+              <td class="col-name">
+                <span class="player-name">{{ getPlayerDisplayName(row.player) }}</span>
+                <span class="player-number">#{{ row.player.playerNumber }}</span>
+              </td>
+
+              <!-- Age -->
+              <td class="col-age">{{ row.player.age }}</td>
+
+              <!-- Role -->
+              <td class="col-role">
+                <span class="role-badge">{{ row.player.role }}</span>
+              </td>
+
+              <!-- Team -->
+              <td class="col-team">
+                <span class="team-name" [class.unsold-team]="row.status === 'UNSOLD'">
+                  {{ row.teamName }}
+                </span>
+              </td>
+
+              <!-- Sold Price -->
+              <td class="col-price">
+                <span *ngIf="row.status === 'SOLD'" class="price-sold">
+                  {{ row.soldPrice | currency:'INR':'symbol-narrow':'1.0-0' }}
+                </span>
+                <span *ngIf="row.status === 'UNSOLD'" class="price-unsold">0</span>
+              </td>
+
+              <!-- Status Badge -->
+              <td class="col-status">
+                <span class="status-badge" [class.badge-sold]="row.status === 'SOLD'" [class.badge-unsold]="row.status === 'UNSOLD'">
+                  {{ row.status }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </ng-container>
+</div>

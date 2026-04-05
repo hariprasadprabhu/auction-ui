@@ -6,11 +6,12 @@ import { TournamentService } from '../../core/services/tournament.service';
 import { AuctionPlayerService } from '../../core/services/auction-player.service';
 import { AuthService, UserProfile } from '../../core/services/auth.service';
 import { CloudinaryImageService } from '../../core/services/cloudinary-image.service';
-import { Tournament, TournamentStatus } from '../../models';
+import { Tournament, TournamentStatus, RegistrationFieldConfig } from '../../models';
+import { EmailVerification } from '../../../app/auth/email-verification/email-verification';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, EmailVerification],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.scss'],
 })
@@ -56,6 +57,51 @@ export class Dashboard implements OnInit {
   deletedTournamentName = '';
   deleteSuccessMessage = '';
 
+  // ── Registration Link Modal ──────────────────────────────────────────────
+  showRegLinkModal = false;
+  regLinkTournamentId: number | null = null;
+  regLinkUrl = '';
+  regLinkCopied = false;
+  get regLinkWhatsApp(): string {
+    return `https://wa.me/?text=${encodeURIComponent('Register here: ' + this.regLinkUrl)}`;
+  }
+  get regLinkEmail(): string {
+    return `mailto:?subject=Player Registration&body=${encodeURIComponent('Register here: ' + this.regLinkUrl)}`;
+  }
+  get canNativeShare(): boolean {
+    return typeof navigator !== 'undefined' && !!navigator.share;
+  }
+
+  // ── Configure Player Registration Modal ──────────────────────────────────
+  showRegConfigModal = false;
+  regConfigTournamentId: number | null = null;
+  regConfigTournamentName = '';
+  isSavingRegConfig = false;
+  isLoadingRegConfig = false;
+  regConfigSaved = false;
+  regConfigFields: RegistrationFieldConfig = this.defaultRegConfig();
+
+  readonly regConfigFieldList: { key: keyof RegistrationFieldConfig; label: string; alwaysOn?: boolean }[] = [
+    { key: 'requirePhoto', label: 'Profile Photo', alwaysOn: true },
+    { key: 'requirePhoto', label: 'First Name', alwaysOn: true },
+    { key: 'requireLastName', label: 'Last Name', alwaysOn: true },
+    { key: 'requireDob', label: 'Date of Birth', alwaysOn: true },
+    { key: 'requirePaymentProof', label: 'Payment Proof' },
+    { key: 'requireMobileNumber', label: 'Mobile Number' },
+    { key: 'requireHandedness', label: 'Handedness' },
+    { key: 'requireTshirtSize', label: 'T-Shirt Size' },
+    { key: 'requireTrouserSize', label: 'Trouser Size' },
+    { key: 'requireJerseyNumber', label: 'Jersey Number' },
+    { key: 'requireSleeveType', label: 'Sleeve Type' },
+    { key: 'requirePlayerLocation', label: 'Player Location' },
+    { key: 'requireLastSeasonPlayed', label: 'Last Season Played' },
+    { key: 'requireLastSeasonTeam', label: 'Last Season Team' },
+    { key: 'requireBowlingStyle', label: 'Bowling Style' },
+  ];
+
+  // ── Email Verification ─────────────────────────────────────────────────
+  showEmailVerificationModal = false;
+
   // ── Profile Menu ─────────────────────────────────────────────────────────
   showProfileMenu = false;
   showProfileModal = false;
@@ -95,7 +141,24 @@ export class Dashboard implements OnInit {
 
   ngOnInit() {
     this.currentUser = this.authService.getCurrentUser();
+    if (!this.currentUser?.emailVerified) {
+      this.showEmailVerificationModal = true;
+    }
     this.loadTournaments();
+  }
+
+  onEmailVerificationClosed(): void {
+    this.showEmailVerificationModal = false;
+  }
+
+  onEmailVerified(): void {
+    this.showEmailVerificationModal = false;
+    // Update stored user so it won't show again on next navigation
+    const user = this.authService.getCurrentUser();
+    if (user) {
+      user.emailVerified = true;
+      localStorage.setItem('auth_user', JSON.stringify(user));
+    }
   }
 
   private loadTournaments() {
@@ -570,8 +633,106 @@ export class Dashboard implements OnInit {
     this.router.navigate(['/admin/teams', tournamentId]);
   }
 
-  openRegisterLink(tournamentId: number) {
-    window.open(`/register/${tournamentId}`, '_blank');
+  openRegLinkModal(tournamentId: number) {
+    this.regLinkTournamentId = tournamentId;
+    this.regLinkUrl = `${window.location.origin}/register/${tournamentId}`;
+    this.regLinkCopied = false;
+    this.showRegLinkModal = true;
+  }
+
+  closeRegLinkModal() {
+    this.showRegLinkModal = false;
+    this.regLinkTournamentId = null;
+    this.regLinkCopied = false;
+  }
+
+  openRegPage() {
+    window.open(`/register/${this.regLinkTournamentId}`, '_blank');
+  }
+
+  copyRegLink() {
+    navigator.clipboard.writeText(this.regLinkUrl).then(() => {
+      this.regLinkCopied = true;
+      this.cdr.detectChanges();
+    });
+  }
+
+  nativeShare() {
+    navigator.share({ title: 'Player Registration', url: this.regLinkUrl }).catch(() => {});
+  }
+
+  // ── Configure Player Registration ─────────────────────────────────────────
+  private defaultRegConfig(): RegistrationFieldConfig {
+    return {
+      requirePhoto: true,
+      requireLastName: false,
+      requireDob: false,
+      requirePaymentProof: false,
+      requireMobileNumber: false,
+      requireHandedness: false,
+      requireTshirtSize: false,
+      requireTrouserSize: false,
+      requireJerseyNumber: false,
+      requireSleeveType: false,
+      requirePlayerLocation: false,
+      requireLastSeasonPlayed: false,
+      requireLastSeasonTeam: false,
+      requireBowlingStyle: false,
+    };
+  }
+
+  openRegConfigModal(tournament: Tournament) {
+    this.regConfigTournamentId = tournament.id;
+    this.regConfigTournamentName = tournament.name;
+    this.regConfigFields = this.defaultRegConfig();
+    this.isSavingRegConfig = false;
+    this.regConfigSaved = false;
+    this.isLoadingRegConfig = true;
+    this.showRegConfigModal = true;
+    this.cdr.markForCheck();
+
+    this.tournamentService.getRegistrationConfig(tournament.id).subscribe({
+      next: (config) => {
+        this.regConfigFields = config ?? this.defaultRegConfig();
+        this.isLoadingRegConfig = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.isLoadingRegConfig = false;
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  closeRegConfigModal() {
+    this.showRegConfigModal = false;
+    this.regConfigTournamentId = null;
+    this.isSavingRegConfig = false;
+    this.cdr.markForCheck();
+  }
+
+  saveRegConfig() {
+    if (!this.regConfigTournamentId) return;
+    this.isSavingRegConfig = true;
+    this.cdr.markForCheck();
+
+    this.tournamentService.updateRegistrationFieldConfig(this.regConfigTournamentId, this.regConfigFields).subscribe({
+      next: (updated) => {
+        const idx = this.tournaments.findIndex((t) => t.id === updated.id);
+        if (idx !== -1) this.tournaments[idx] = updated;
+        this.isSavingRegConfig = false;
+        this.regConfigSaved = true;
+        this.cdr.markForCheck();
+        setTimeout(() => {
+          this.closeRegConfigModal();
+        }, 1500);
+      },
+      error: (err) => {
+        this.isSavingRegConfig = false;
+        alert(err?.error?.message || 'Failed to save configuration. Please try again.');
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   startAuction(tournamentId: number) {
@@ -584,6 +745,10 @@ export class Dashboard implements OnInit {
 
   viewOwnerView(tournamentId: number) {
     window.open(`/admin/owner-view/${tournamentId}`, '_blank');
+  }
+
+  viewResults(tournamentId: number) {
+    this.router.navigate(['/admin/results', tournamentId]);
   }
 
   // ── Reset Entire Auction ────────────────────────────────────────────────

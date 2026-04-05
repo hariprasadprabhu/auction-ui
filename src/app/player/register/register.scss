@@ -191,6 +191,14 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-size: 0.85rem;
+
+  .optional-label {
+    font-weight: 400;
+    text-transform: none;
+    color: #999;
+    font-size: 0.8rem;
+    letter-spacing: 0;
+  }
 }
 
 .section-hint {
@@ -356,11 +364,23 @@
     &::placeholder {
       color: #bbb;
     }
+
+    &.input-error {
+      border-color: #e53e3e;
+      box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.15);
+    }
   }
 
   select {
     cursor: pointer;
   }
+}
+
+.field-error-msg {
+  font-size: 0.8rem;
+  color: #e53e3e;
+  font-weight: 600;
+  margin-top: 2px;
 }
 
 /* Error Messages */

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -21,6 +21,7 @@ export class Login implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private authService = inject(AuthService);
+  private cdr = inject(ChangeDetectorRef);
 
   ngOnInit() {
     if (this.route.snapshot.queryParamMap.get('registered') === '1') {
@@ -36,6 +37,7 @@ export class Login implements OnInit {
     this.authService.login({ email: this.email, password: this.password }).subscribe({
       next: () => {
         this.isLoading = false;
+        this.cdr.markForCheck();
         this.router.navigate(['/admin']);
       },
       error: (err: HttpErrorResponse) => {
@@ -45,6 +47,7 @@ export class Login implements OnInit {
         } else {
           this.errorMsg = 'Login failed. Please try again later.';
         }
+        this.cdr.markForCheck();
       },
     });
   }

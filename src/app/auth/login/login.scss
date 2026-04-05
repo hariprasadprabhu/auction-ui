@@ -131,8 +131,9 @@ $white:        #ffffff;
 
   .card-logo {
     height: 45px;
-    width: auto;
-    object-fit: contain;
+    width: 45px;
+    object-fit: cover;
+    border-radius: 50%;
     margin-bottom: 12px;
   }
 

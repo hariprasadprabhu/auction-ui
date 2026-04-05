@@ -45,8 +45,8 @@
           {{ teams.length }}/{{ tournament?.teamesAllowed }} teams
         </span>
       </div>
-      <button class="btn btn-secondary">Clear All</button>
-      <button class="btn btn-secondary">Load from Excel</button>
+      <button disabled class="btn btn-secondary">Clear All</button>
+      <button disabled class="btn btn-secondary">Load from Excel</button>
     </div>
 
     <div class="table-wrapper">
@@ -118,7 +118,11 @@
           </div>
           <div class="form-group">
             <label for="editMobileNumber">Mobile Number *</label>
-            <input type="tel" id="editMobileNumber" [(ngModel)]="editTeam.mobileNumber" name="editMobileNumber" placeholder="+91 98765 43210" required />
+            <input type="tel" id="editMobileNumber" [(ngModel)]="editTeam.mobileNumber" name="editMobileNumber" placeholder="9876543210"
+              required maxlength="10" minlength="10" pattern="[0-9]{10}"
+              #editMobileRef="ngModel"
+              [class.input-error]="editMobileRef.invalid && editMobileRef.touched" />
+            <p class="field-error" *ngIf="editMobileRef.invalid && editMobileRef.touched">Must be exactly 10 digits.</p>
           </div>
         </div>
 
@@ -144,11 +148,11 @@
       
       <button class="modal-close" (click)="closeAddTeamModal()">✕</button>
       <h2>Add New Team</h2>
-      <form (ngSubmit)="addTeam()" class="add-team-form">
+      <form (ngSubmit)="addTeam(addTeamForm)" class="add-team-form" #addTeamForm="ngForm" novalidate>
         <div class="form-group">
           <label for="teamLogo">Team Logo *</label>
           <div class="file-upload-wrapper">
-            <input type="file" id="teamLogo" accept="image/*" (change)="onTeamLogoSelected($event)" name="teamLogo" required />
+            <input type="file" id="teamLogo" accept="image/*" (change)="onTeamLogoSelected($event)" name="teamLogo" />
             <label for="teamLogo" class="file-upload-label">🎨 Choose Logo</label>
           </div>
           <div *ngIf="teamLogoPreview" class="logo-preview">
@@ -160,18 +164,27 @@
         <div class="form-group">
           <label for="teamName">Team Name *</label>
           <input type="text" id="teamName" [(ngModel)]="newTeam.name" name="name" placeholder="e.g., Mumbai Tigers" required
-            [class.input-error]="isTeamNameDuplicate" />
-          <p class="field-error" *ngIf="isTeamNameDuplicate">A team with this name already exists. Please choose a unique name.</p>
+            #teamNameRef="ngModel"
+            [class.input-error]="(teamNameRef.invalid && (teamNameRef.touched || addTeamSubmitted)) || isTeamNameDuplicate" />
+          <p class="field-error" *ngIf="teamNameRef.invalid && (teamNameRef.touched || addTeamSubmitted)">Team Name is required.</p>
+          <p class="field-error" *ngIf="!teamNameRef.invalid && isTeamNameDuplicate">A team with this name already exists.</p>
         </div>
 
         <div class="form-row">
           <div class="form-group">
             <label for="ownerName">Owner Name *</label>
-            <input type="text" id="ownerName" [(ngModel)]="newTeam.ownerName" name="ownerName" placeholder="e.g., John Doe" required />
+            <input type="text" id="ownerName" [(ngModel)]="newTeam.ownerName" name="ownerName" placeholder="e.g., John Doe" required
+              #ownerNameRef="ngModel"
+              [class.input-error]="ownerNameRef.invalid && (ownerNameRef.touched || addTeamSubmitted)" />
+            <p class="field-error" *ngIf="ownerNameRef.invalid && (ownerNameRef.touched || addTeamSubmitted)">Owner Name is required.</p>
           </div>
           <div class="form-group">
             <label for="mobileNumber">Mobile Number *</label>
-            <input type="tel" id="mobileNumber" [(ngModel)]="newTeam.mobileNumber" name="mobileNumber" placeholder="+91 98765 43210" required />
+            <input type="tel" id="mobileNumber" [(ngModel)]="newTeam.mobileNumber" name="mobileNumber" placeholder="9876543210"
+              required maxlength="10" minlength="10" pattern="[0-9]{10}"
+              #addMobileRef="ngModel"
+              [class.input-error]="addMobileRef.invalid && (addMobileRef.touched || addTeamSubmitted)" />
+            <p class="field-error" *ngIf="addMobileRef.invalid && (addMobileRef.touched || addTeamSubmitted)">Must be exactly 10 digits.</p>
           </div>
         </div>
 
@@ -221,26 +234,46 @@
           </div>
         </div>
       </div>
-
-      <div class="limit-error-footer">
-        <button type="button" class="btn btn-secondary" (click)="closeLimitErrorModal()">Close</button>
-      </div>
     </div>
   </div>
 
   <!-- Confirmation Modal -->
   <div class="modal-overlay" *ngIf="showConfirmModal" (click)="closeConfirmModal()">
     <div class="modal-content confirm-modal" (click)="$event.stopPropagation()">
+      <div class="modal-loading-overlay" *ngIf="isDeletingTeam">
+        <div class="modal-loader">
+          <div class="spinner-dot"></div>
+          <div class="spinner-dot"></div>
+          <div class="spinner-dot"></div>
+        </div>
+      </div>
       <div class="modal-header confirm-header">
         <h2>{{ confirmTitle }}</h2>
-        <button class="modal-close" (click)="closeConfirmModal()">✕</button>
+        <button class="modal-close" (click)="closeConfirmModal()" [disabled]="isDeletingTeam">✕</button>
       </div>
       <div class="modal-body">
         <p class="confirm-message">{{ confirmMessage }}</p>
       </div>
       <div class="modal-footer confirm-footer">
-        <button class="btn btn-secondary" (click)="closeConfirmModal()">Cancel</button>
-        <button class="btn btn-primary" (click)="confirmAction()">Confirm</button>
+        <button class="btn btn-secondary" (click)="closeConfirmModal()" [disabled]="isDeletingTeam">Cancel</button>
+        <button class="btn btn-primary" (click)="confirmAction()" [disabled]="isDeletingTeam">{{ isDeletingTeam ? 'Deleting...' : 'Confirm' }}</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Success Modal -->
+  <div class="modal-overlay" *ngIf="showDeleteSuccessModal" (click)="closeDeleteSuccessModal()">
+    <div class="modal-content success-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header success-header">
+        <h2>Team Deleted</h2>
+        <button class="modal-close" (click)="closeDeleteSuccessModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="success-icon">✓</div>
+        <p>"{{ deletedTeamName }}" has been successfully deleted.</p>
+      </div>
+      <div class="modal-footer confirm-footer">
+        <button class="btn btn-primary" (click)="closeDeleteSuccessModal()">Done</button>
       </div>
     </div>
   </div>

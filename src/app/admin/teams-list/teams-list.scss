@@ -620,6 +620,16 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 15px;
+
+  .form-group {
+    min-width: 0;
+
+    input,
+    select {
+      width: 100%;
+      min-width: 0;
+    }
+  }
 }
 
 .form-note {
@@ -682,6 +692,144 @@
   }
 }
 
+/* Confirmation Modal */
+.confirm-modal {
+  max-width: 440px;
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  color: white;
+
+  h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+
+  .modal-close {
+    position: static;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    width: 30px;
+    height: 30px;
+    font-size: 1rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.35);
+      transform: scale(1.1);
+      box-shadow: none;
+    }
+  }
+}
+
+.confirm-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.modal-body {
+  padding: 20px 24px;
+  background: white;
+
+  p {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #333;
+  }
+}
+
+.modal-footer {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding: 14px 24px;
+  background: #f8f9fa;
+  border-top: 1px solid #e0e0e0;
+}
+
+.confirm-footer {
+  button {
+    padding: 9px 22px;
+    border-radius: 7px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+
+    &:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    &.btn-secondary {
+      background: #f0f0f0;
+      color: #444;
+      border: 1px solid #ddd;
+
+      &:hover:not(:disabled) {
+        background: #e4e4e4;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+      }
+    }
+
+    &.btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      box-shadow: 0 3px 10px rgba(102, 126, 234, 0.35);
+
+      &:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(102, 126, 234, 0.45);
+      }
+    }
+  }
+}
+
+/* Success Modal */
+.success-modal {
+  max-width: 400px;
+  padding: 0;
+  overflow: hidden;
+}
+
+.success-header {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+
+  h2 {
+    color: #1a5c35;
+  }
+
+  .modal-close {
+    color: #1a5c35;
+    background: rgba(255, 255, 255, 0.3);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.5);
+    }
+  }
+}
+
+.success-icon {
+  text-align: center;
+  font-size: 3rem;
+  color: #27ae60;
+  margin-bottom: 8px;
+  line-height: 1;
+  font-weight: 700;
+}
+
 /* Responsive Design */
 
 /* Tablet (769px to 1200px) */
@@ -712,48 +860,68 @@
 /* Mobile (481px to 768px) */
 @media (max-width: 768px) {
   .main-content {
-    padding: 15px;
+    padding: 12px;
   }
 
   .teams-header {
-    height: 75px;
-    padding: 0 15px;
-  }
-
-  .tournament-title {
-    font-size: 1.1rem;
-  }
-
-  .header-logo-badge {
-    width: 50px;
-    height: 50px;
+    height: auto;
+    min-height: 70px;
+    padding: 10px 14px;
+    flex-wrap: wrap;
+    gap: 6px;
   }
 
   .header-side {
-    width: 120px;
+    width: auto;
+  }
+
+  .header-logo-badge {
+    width: 48px;
+    height: 48px;
+  }
+
+  .tournament-title {
+    font-size: 1.05rem;
+    white-space: normal;
+    word-break: break-word;
   }
 
   .date-value {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
   }
 
-  .action-buttons {
-    margin-bottom: 20px;
-
-    .btn {
-      flex: 1;
-      min-width: 140px;
-      font-size: 0.85rem;
-      padding: 8px 12px;
-    }
+  .teams-content {
+    padding: 16px 14px;
   }
 
   .btn-back-light {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    padding: 8px 12px;
-    font-size: 0.85rem;
+    position: static;
+    width: 100%;
+    text-align: center;
+    margin-bottom: 14px;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    margin-bottom: 16px;
+
+    .btn {
+      width: 100%;
+      font-size: 0.88rem;
+      padding: 10px 14px;
+    }
+  }
+
+  .add-team-wrapper {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+
+    .btn {
+      width: 100%;
+    }
   }
 
   .table-wrapper {
@@ -762,56 +930,79 @@
   }
 
   .teams-table {
-    font-size: 0.8rem;
+    font-size: 0.82rem;
+    min-width: 480px;
 
     th,
     td {
-      padding: 10px 6px;
+      padding: 10px 8px;
     }
 
     .logo-cell .team-logo {
-      width: 35px;
-      height: 35px;
+      width: 38px;
+      height: 38px;
     }
 
     .actions-cell {
-      flex-direction: column;
+      gap: 6px;
 
       .btn-edit,
       .btn-delete {
-        width: 28px;
-        height: 28px;
-        font-size: 0.8rem;
+        width: 30px;
+        height: 30px;
+        font-size: 0.9rem;
       }
     }
   }
 
-  .teams-footer {
-    .btn-back {
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+    gap: 8px;
+
+    .btn {
       width: 100%;
-      padding: 12px 16px;
     }
+  }
+
+  .modal-overlay {
+    padding: 12px;
+  }
+
+  .modal-content {
+    padding: 20px;
+    max-width: 100%;
+    max-height: 92vh;
+    overflow-y: auto;
+  }
+
+  .teams-footer .btn-back {
+    width: 100%;
+    padding: 12px 16px;
   }
 }
 
 /* Small Mobile (up to 480px) */
 @media (max-width: 480px) {
   .teams-header {
-    height: 65px;
-    padding: 0 12px;
+    padding: 8px 10px;
   }
 
   .tournament-title {
-    font-size: 0.95rem;
+    font-size: 0.92rem;
   }
 
   .header-logo-badge {
-    width: 42px;
-    height: 42px;
+    width: 38px;
+    height: 38px;
   }
 
-  .header-side {
-    width: 90px;
+  .page-subtitle {
+    display: none;
   }
 
   .date-label {
@@ -819,58 +1010,98 @@
   }
 
   .date-value {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
   }
 
   .main-content {
-    padding: 12px;
+    padding: 10px;
+  }
+
+  .teams-content {
+    padding: 12px 10px;
+    border-radius: 10px;
   }
 
   .action-buttons {
-    gap: 8px;
-    margin-bottom: 15px;
+    gap: 7px;
+    margin-bottom: 12px;
 
     .btn {
-      flex: 1;
-      min-width: 100px;
-      font-size: 0.75rem;
-      padding: 6px 10px;
+      font-size: 0.82rem;
+      padding: 9px 12px;
     }
   }
 
   .teams-table {
-    font-size: 0.7rem;
+    font-size: 0.76rem;
+    min-width: 440px;
 
     th,
     td {
-      padding: 8px 4px;
+      padding: 8px 5px;
     }
 
     .logo-cell .team-logo {
-      width: 30px;
-      height: 30px;
+      width: 32px;
+      height: 32px;
     }
 
     .mobile-number {
-      font-size: 0.65rem;
+      font-size: 0.72rem;
     }
 
     .actions-cell {
+      gap: 4px;
+
       .btn-edit,
       .btn-delete {
-        width: 24px;
-        height: 24px;
-        font-size: 0.7rem;
+        width: 28px;
+        height: 28px;
+        font-size: 0.82rem;
       }
     }
   }
 
-  .teams-footer {
-    .btn-back {
-      width: 100%;
-      padding: 10px 12px;
-      font-size: 0.85rem;
+  .modal-overlay {
+    padding: 8px;
+  }
+
+  .modal-content {
+    padding: 14px;
+    border-radius: 10px;
+    max-height: 95vh;
+    overflow-y: auto;
+
+    &.form-modal h2 {
+      font-size: 1.15rem;
+      padding-right: 36px;
+      margin-bottom: 16px;
     }
+  }
+
+  .modal-close {
+    width: 30px;
+    height: 30px;
+    font-size: 1rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+    gap: 8px;
+
+    .btn {
+      width: 100%;
+    }
+  }
+
+  .teams-footer .btn-back {
+    padding: 10px 12px;
+    font-size: 0.85rem;
   }
 }
 

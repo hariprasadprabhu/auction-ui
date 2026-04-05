@@ -1,9 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { Tournament, CreateTournamentRequest, UpdateTournamentRequest } from '../../models';
+import { Tournament, CreateTournamentRequest, UpdateTournamentRequest, RegistrationFieldConfig } from '../../models';
 
 @Injectable({ providedIn: 'root' })
 export class TournamentService {
@@ -52,6 +52,18 @@ export class TournamentService {
     return this.http
       .patch<Tournament>(`${this.apiUrl}/tournaments/${id}/registration`, { playerRegistrationOpen: open })
       .pipe(map((t) => this.mapTournament(t)));
+  }
+
+  updateRegistrationFieldConfig(id: number, config: RegistrationFieldConfig): Observable<Tournament> {
+    return this.http
+      .patch<Tournament>(`${this.apiUrl}/tournaments/${id}/registration-config`, config)
+      .pipe(map((t) => this.mapTournament(t)));
+  }
+
+  getRegistrationConfig(id: number | string): Observable<RegistrationFieldConfig | null> {
+    return this.http
+      .get<RegistrationFieldConfig>(`${this.apiUrl}/tournaments/${id}/registration-config`)
+      .pipe(catchError(() => of(null)));
   }
 
   getLogoUrl(id: number): string {

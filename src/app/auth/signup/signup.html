@@ -12,17 +12,12 @@
     <span class="back-arrow">←</span> Back to Home
   </button>
 
-  <!-- Brand -->
-  <div class="brand">
-    <img src="assets/images/logo_final.png" alt="AuctionDeck Logo" class="brand-logo" />
-  </div>
-
   <!-- Signup Card -->
   <div class="signup-card">
     <div class="card-header">
-      <div class="header-icon">🚀</div>
+      <img src="https://res.cloudinary.com/drytm0fl7/image/upload/v1774417151/logo_resized_xnddqz.jpg" alt="AuctionDeck Logo" class="card-logo" />
       <h2>Create Your Account</h2>
-      <p>Start hosting auctions in minutes — free for up to 2 teams</p>
+      <p>Start hosting auctions in minutes</p>
     </div>
 
     <form (ngSubmit)="submit()" class="signup-form" #signupForm="ngForm" novalidate>
@@ -89,29 +84,16 @@
               type="tel"
               [(ngModel)]="form.phoneNumber"
               name="phoneNumber"
-              placeholder="98765 43210"
+              placeholder="9876543210"
               autocomplete="tel-national"
               inputmode="numeric"
-              maxlength="15"
+              maxlength="10"
+              (keypress)="$event.charCode >= 48 && $event.charCode <= 57 || $event.preventDefault()"
+              (input)="form.phoneNumber = form.phoneNumber.replace(/[^0-9]/g, '')"
             />
           </div>
         </div>
         <span class="field-error" *ngIf="formTouched && phoneError">⚠ {{ phoneError }}</span>
-      </div>
-
-      <!-- Organisation / Club Name (optional) -->
-      <div class="field">
-        <label for="organisation">Organisation / Club Name <span class="optional">(optional)</span></label>
-        <div class="input-wrap">
-          <span class="input-icon">🏟️</span>
-          <input
-            id="organisation"
-            type="text"
-            [(ngModel)]="form.organisation"
-            name="organisation"
-            placeholder="e.g., Chennai Premier League"
-          />
-        </div>
       </div>
 
       <!-- Primary Sport -->
@@ -134,21 +116,6 @@
           </select>
         </div>
         <span class="field-error" *ngIf="formTouched && sportError">⚠ {{ sportError }}</span>
-      </div>
-
-      <!-- Expected Teams (optional) -->
-      <div class="field">
-        <label for="teams">Expected Number of Teams <span class="optional">(optional)</span></label>
-        <div class="input-wrap select-wrap">
-          <span class="input-icon">👥</span>
-          <select id="teams" [(ngModel)]="form.teams" name="teams">
-            <option value="">Select range</option>
-            <option value="2">2 teams (Free)</option>
-            <option value="3-6">3 – 6 teams</option>
-            <option value="7-12">7 – 12 teams</option>
-            <option value="13+">13+ teams</option>
-          </select>
-        </div>
       </div>
 
       <!-- Password -->
@@ -206,6 +173,13 @@
 
       <!-- Required note -->
       <p class="required-note"><span class="req">*</span> Required fields</p>
+
+      <!-- API Error Banner -->
+      <div class="api-error-banner" *ngIf="apiError">
+        <span class="api-error-icon">❌</span>
+        <span class="api-error-text">{{ apiError }}</span>
+        <button type="button" class="api-error-close" (click)="apiError = ''" aria-label="Dismiss">✕</button>
+      </div>
 
       <!-- Submit -->
       <button

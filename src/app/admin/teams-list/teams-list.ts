@@ -34,6 +34,7 @@ export class TeamsListComponent implements OnInit {
     logoUrl: '' as string,
   };
   teamLogoPreview: string | null = null;
+  addTeamSubmitted = false;
 
   // Edit Team Form
   showEditTeamModal = false;
@@ -61,6 +62,10 @@ export class TeamsListComponent implements OnInit {
   confirmTitle = '';
   confirmMessage = '';
   confirmCallback: (() => void) | null = null;
+
+  // ── Delete Success Modal ─────────────────────────────────────────────────
+  showDeleteSuccessModal = false;
+  deletedTeamName = '';
 
   private tournamentId!: number;
   private route = inject(ActivatedRoute);
@@ -132,6 +137,7 @@ export class TeamsListComponent implements OnInit {
   }
 
   resetTeamForm() {
+    this.addTeamSubmitted = false;
     this.newTeam = {
       name: '',
       ownerName: '',
@@ -172,13 +178,14 @@ export class TeamsListComponent implements OnInit {
     }
   }
 
-  addTeam() {
+  addTeam(form?: any) {
+    this.addTeamSubmitted = true;
+    if (form && form.invalid) return;
     if (!this.canAddMoreTeams()) {
       alert(`Cannot add more teams. Maximum limit of ${this.tournament?.teamesAllowed} teams reached.`);
       return;
     }
     if (!this.newTeam.name || !this.newTeam.ownerName || !this.newTeam.mobileNumber) {
-      alert('Please fill in all required fields');
       return;
     }
     if (this.isTeamNameDuplicate) {
@@ -306,10 +313,16 @@ export class TeamsListComponent implements OnInit {
           next: () => {
             this.teams = this.teams.filter((t) => t.id !== team.id);
             this.isDeletingTeam = false;
+            this.showConfirmModal = false;
+            this.confirmCallback = null;
+            this.deletedTeamName = team.name;
+            this.showDeleteSuccessModal = true;
             this.cdr.markForCheck();
           },
           error: () => {
             this.isDeletingTeam = false;
+            this.showConfirmModal = false;
+            this.confirmCallback = null;
             this.cdr.markForCheck();
           },
         });
@@ -381,6 +394,11 @@ export class TeamsListComponent implements OnInit {
     if (this.confirmCallback) {
       this.confirmCallback();
     }
-    this.closeConfirmModal();
+    // Modal is closed by the callback once the async action completes
+  }
+
+  closeDeleteSuccessModal() {
+    this.showDeleteSuccessModal = false;
+    this.deletedTeamName = '';
   }
 }

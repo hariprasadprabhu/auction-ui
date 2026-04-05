@@ -157,13 +157,25 @@ export class Players implements OnInit {
   isAddingPlayer = false;
   isUploadingPlayerPhoto = false;
   isUploadingPlayerPaymentProof = false;
+  addPlayerSubmitted = false;
   newPlayer = {
     firstName: '',
     lastName: '',
     dob: '',
-    role: 'BATSMAN',
+    role: '',
+
     photoUrl: '' as string,
     paymentProofUrl: '' as string,
+    handedness: '',
+    tshirtSize: '',
+    trouserSize: '',
+    jerseyNumber: '',
+    sleeveType: '',
+    playerLocation: '',
+    mobileNumber: '',
+    lastSeasonPlayed: '',
+    lastSeasonTeam: '',
+    bowlingStyle: '',
   };
   playerPhotoPreview: string | null = null;
 
@@ -173,6 +185,7 @@ export class Players implements OnInit {
   isDeletingPlayer = false;
   isUploadingEditPhoto = false;
   isUploadingEditPaymentProof = false;
+  editPlayerSubmitted = false;
   editingPlayer: Player | null = null;
   editPlayerForm = {
     firstName: '',
@@ -181,6 +194,15 @@ export class Players implements OnInit {
     role: 'BATSMAN',
     photoUrl: '' as string,
     paymentProofUrl: '' as string,
+    handedness: '',
+    tshirtSize: '',
+    trouserSize: '',
+    jerseyNumber: '',
+    sleeveType: '',
+    playerLocation: '',
+    mobileNumber: '',
+    lastSeasonPlayed: '',
+    lastSeasonTeam: '',
   };
   editPhotoPreview: string | null = null;
 
@@ -205,6 +227,15 @@ export class Players implements OnInit {
         this.tournamentService.getById(id).subscribe((t) => {
           this.tournament = t;
           this.completeRequest();
+          // Fetch registration field config separately and patch into tournament
+          this.tournamentService.getRegistrationConfig(id).subscribe({
+            next: (config) => {
+              if (this.tournament && config) {
+                this.tournament = { ...this.tournament, registrationFieldConfig: config };
+                this.cdr.markForCheck();
+              }
+            },
+          });
         });
         this.loadPlayers();
         this.loadAuctionPlayers();
@@ -344,13 +375,26 @@ export class Players implements OnInit {
   }
 
   resetPlayerForm() {
+    this.addPlayerSubmitted = false;
+    this.newDobError = '';
     this.newPlayer = {
       firstName: '',
       lastName: '',
       dob: '',
-      role: 'BATSMAN',
+      role: '',
+
       photoUrl: this.DEFAULT_PLAYER_PHOTO,
-      paymentProofUrl: '',
+      paymentProofUrl: this.DEFAULT_PAYMENT_PROOF,
+      handedness: '',
+      tshirtSize: '',
+      trouserSize: '',
+      jerseyNumber: '',
+      sleeveType: '',
+      playerLocation: '',
+      mobileNumber: '',
+      lastSeasonPlayed: '',
+      lastSeasonTeam: '',
+      bowlingStyle: '',
     };
     this.playerPhotoPreview = this.DEFAULT_PLAYER_PHOTO;
   }
@@ -369,8 +413,16 @@ export class Players implements OnInit {
     return age.toString();
   }
 
+  /** Today's date string for max DOB constraint (YYYY-MM-DD) */
+  readonly todayString = new Date().toISOString().split('T')[0];
+
+  /** DOB validation error messages */
+  newDobError = '';
+  editDobError = '';
+
   /** Default Cloudinary URLs */
   readonly DEFAULT_PLAYER_PHOTO = 'https://res.cloudinary.com/drytm0fl7/image/upload/v1774291008/default_player_lzyniw.png';
+  readonly DEFAULT_PAYMENT_PROOF = 'https://res.cloudinary.com/drytm0fl7/image/upload/v1775334478/payment_apq98r.png';
 
   /** Get player photo URL with default fallback */
   getPlayerPhotoUrl(photoUrl: string | undefined): string {
@@ -468,10 +520,37 @@ export class Players implements OnInit {
   }
 
   addPlayer() {
-    if (!this.newPlayer.firstName || !this.newPlayer.role) {
-      alert('Please fill in all required fields (First Name, Role)');
-      return;
+    this.addPlayerSubmitted = true;
+    const config = this.tournament?.registrationFieldConfig;
+
+    // DOB validation
+    if (!this.newPlayer.dob) {
+      this.newDobError = 'Date of Birth is required.';
+    } else if (new Date(this.newPlayer.dob) >= new Date(this.todayString)) {
+      this.newDobError = 'Date of Birth must be in the past.';
+    } else {
+      this.newDobError = '';
     }
+
+    const isValid =
+      !!this.newPlayer.firstName &&
+      !!this.newPlayer.lastName &&
+      !!this.newPlayer.dob && !this.newDobError &&
+      !!this.newPlayer.role &&
+      (!config?.requireMobileNumber || !!this.newPlayer.mobileNumber) &&
+      (!config?.requireHandedness || !!this.newPlayer.handedness) &&
+      (!config?.requireTshirtSize || !!this.newPlayer.tshirtSize) &&
+      (!config?.requireTrouserSize || !!this.newPlayer.trouserSize) &&
+      (!config?.requireJerseyNumber || !!this.newPlayer.jerseyNumber) &&
+      (!config?.requireSleeveType || !!this.newPlayer.sleeveType) &&
+      (!config?.requirePlayerLocation || !!this.newPlayer.playerLocation) &&
+      (!config?.requireLastSeasonPlayed || !!this.newPlayer.lastSeasonPlayed) &&
+      (!config?.requireLastSeasonTeam || !!this.newPlayer.lastSeasonTeam) &&
+      (!config?.requireBowlingStyle || !!this.newPlayer.bowlingStyle);
+
+    if (!isValid) return;
+
+    const paymentProofUrl = this.newPlayer.paymentProofUrl || this.DEFAULT_PAYMENT_PROOF;
 
     this.isAddingPlayer = true;
     // Use public registration endpoint (admin adds player directly)
@@ -482,7 +561,17 @@ export class Players implements OnInit {
         dob: this.newPlayer.dob || undefined,
         role: this.newPlayer.role,
         photo: this.newPlayer.photoUrl || this.DEFAULT_PLAYER_PHOTO,
-        paymentProof: this.newPlayer.paymentProofUrl || undefined,
+        paymentProof: paymentProofUrl,
+        handedness: this.newPlayer.handedness || undefined,
+        tshirtSize: this.newPlayer.tshirtSize || undefined,
+        trouserSize: this.newPlayer.trouserSize || undefined,
+        jerseyNumber: this.newPlayer.jerseyNumber ? Number(this.newPlayer.jerseyNumber) : undefined,
+        sleeveType: this.newPlayer.sleeveType || undefined,
+        playerLocation: this.newPlayer.playerLocation || undefined,
+        mobileNumber: this.newPlayer.mobileNumber || undefined,
+        lastSeasonPlayed: this.newPlayer.lastSeasonPlayed || undefined,
+        lastSeasonTeam: this.newPlayer.lastSeasonTeam || undefined,
+        bowlingStyle: this.newPlayer.bowlingStyle || undefined,
       })
       .subscribe({
         next: (p) => {
@@ -491,9 +580,11 @@ export class Players implements OnInit {
           this.closeAddPlayerModal();
           this.cdr.markForCheck();
         },
-        error: () => {
+        error: (err) => {
           this.isAddingPlayer = false;
-          alert('Failed to add player.');
+          const msg = err?.error?.message || 'Failed to add player. Please check the details and try again.';
+          this.openErrorModal('Failed to Add Player', msg);
+          this.cdr.markForCheck();
         },
       });
   }
@@ -937,6 +1028,15 @@ export class Players implements OnInit {
       role: player.role,
       photoUrl: player.photoUrl || this.DEFAULT_PLAYER_PHOTO,
       paymentProofUrl: player.paymentProofUrl || '',
+      handedness: player.handedness || '',
+      tshirtSize: player.tshirtSize || '',
+      trouserSize: player.trouserSize || '',
+      jerseyNumber: player.jerseyNumber != null ? String(player.jerseyNumber) : '',
+      sleeveType: player.sleeveType || '',
+      playerLocation: player.playerLocation || '',
+      mobileNumber: player.mobileNumber || '',
+      lastSeasonPlayed: player.lastSeasonPlayed || '',
+      lastSeasonTeam: player.lastSeasonTeam || '',
     };
     this.editPhotoPreview = player.photoUrl || this.DEFAULT_PLAYER_PHOTO;
     this.showEditPlayerModal = true;
@@ -946,6 +1046,8 @@ export class Players implements OnInit {
     this.showEditPlayerModal = false;
     this.editingPlayer = null;
     this.editPhotoPreview = null;
+    this.editPlayerSubmitted = false;
+    this.editDobError = '';
   }
 
   onEditPhotoSelected(event: any) {
@@ -995,9 +1097,13 @@ export class Players implements OnInit {
 
   saveEditPlayer() {
     if (!this.editingPlayer) return;
-    if (!this.editPlayerForm.firstName) {
-      alert('First Name is required');
+    this.editPlayerSubmitted = true;
+    if (!this.editPlayerForm.firstName) return;
+    if (this.editPlayerForm.dob && new Date(this.editPlayerForm.dob) >= new Date(this.todayString)) {
+      this.editDobError = 'Date of Birth must be in the past.';
       return;
+    } else {
+      this.editDobError = '';
     }
     this.isEditingPlayer = true;
     this.playerService
@@ -1008,6 +1114,15 @@ export class Players implements OnInit {
         role: this.editPlayerForm.role,
         photo: this.editPlayerForm.photoUrl || this.editingPlayer?.photoUrl || this.DEFAULT_PLAYER_PHOTO,
         paymentProof: this.editPlayerForm.paymentProofUrl || this.editingPlayer?.paymentProofUrl || undefined,
+        handedness: this.editPlayerForm.handedness || undefined,
+        tshirtSize: this.editPlayerForm.tshirtSize || undefined,
+        trouserSize: this.editPlayerForm.trouserSize || undefined,
+        jerseyNumber: this.editPlayerForm.jerseyNumber ? Number(this.editPlayerForm.jerseyNumber) : undefined,
+        sleeveType: this.editPlayerForm.sleeveType || undefined,
+        playerLocation: this.editPlayerForm.playerLocation || undefined,
+        mobileNumber: this.editPlayerForm.mobileNumber || undefined,
+        lastSeasonPlayed: this.editPlayerForm.lastSeasonPlayed || undefined,
+        lastSeasonTeam: this.editPlayerForm.lastSeasonTeam || undefined,
       })
       .subscribe({
         next: (updated) => {
@@ -1107,7 +1222,7 @@ export class Players implements OnInit {
     this.showErrorModal = false;
   }
 
-  // ── Excel / CSV Bulk Upload ───────────────────────────────────────────────
+  // ── Excel Bulk Upload ────────────────────────────────────────────────────
 
   openExcelModal() {
     this.showExcelModal = true;
@@ -1122,65 +1237,259 @@ export class Players implements OnInit {
     this.showExcelModal = false;
   }
 
-  downloadCsvTemplate() {
-    const headers = 'firstName,lastName,dob,role';
-    const sample = 'John,Doe,1995-06-15,Batsman';
-    const csv = `${headers}\n${sample}\n`;
-    const blob = new Blob([csv], { type: 'text/csv' });
+  async downloadExcelTemplate() {
+    const ExcelJS = await import('exceljs');
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Players');
+    const config = this.tournament?.registrationFieldConfig;
+
+    // Always-mandatory columns
+    const columns: { header: string; key: string; width: number }[] = [
+      { header: 'firstName *', key: 'firstName', width: 22 },
+      { header: 'lastName *', key: 'lastName', width: 22 },
+      { header: 'dob * (YYYY-MM-DD)', key: 'dob', width: 22 },
+      { header: 'role *', key: 'role', width: 20 },
+    ];
+
+    // Append config-driven required columns
+    if (config?.requireMobileNumber)     columns.push({ header: 'mobileNumber *',     key: 'mobileNumber',     width: 18 });
+    if (config?.requireHandedness)       columns.push({ header: 'batting style *',     key: 'handedness',       width: 16 });
+    if (config?.requireTshirtSize)       columns.push({ header: 'tshirtSize *',       key: 'tshirtSize',       width: 14 });
+    if (config?.requireTrouserSize)      columns.push({ header: 'trouserSize *',      key: 'trouserSize',      width: 14 });
+    if (config?.requireJerseyNumber)     columns.push({ header: 'jerseyNumber *',     key: 'jerseyNumber',     width: 14 });
+    if (config?.requireSleeveType)       columns.push({ header: 'sleeveType *',       key: 'sleeveType',       width: 16 });
+    if (config?.requirePlayerLocation)   columns.push({ header: 'playerLocation *',   key: 'playerLocation',   width: 20 });
+    if (config?.requireLastSeasonPlayed) columns.push({ header: 'lastSeasonPlayed *', key: 'lastSeasonPlayed', width: 16 });
+    if (config?.requireLastSeasonTeam)   columns.push({ header: 'lastSeasonTeam *',   key: 'lastSeasonTeam',   width: 22 });
+    if (config?.requireBowlingStyle)     columns.push({ header: 'bowlingStyle *',     key: 'bowlingStyle',     width: 20 });
+
+    sheet.columns = columns;
+
+    // Helper: get Excel column letter by key
+    const colLetter = (key: string): string | null => {
+      const idx = columns.findIndex(c => c.key === key);
+      return idx >= 0 ? String.fromCharCode(65 + idx) : null;
+    };
+
+    // Force DOB column to text so Excel never converts to a date serial
+    const dobCol = colLetter('dob');
+    if (dobCol) sheet.getColumn(dobCol).numFmt = '@';
+
+    // Style header row
+    const headerRow = sheet.getRow(1);
+    headerRow.eachCell(cell => {
+      cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4472C4' } };
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
+      cell.border = {
+        bottom: { style: 'medium', color: { argb: 'FF2F54A6' } },
+      };
+    });
+    headerRow.height = 24;
+
+    // Apply dropdown data validation to rows 2–500 for relevant columns
+    for (let row = 2; row <= 500; row++) {
+      const roleCol = colLetter('role');
+      if (roleCol) sheet.getCell(`${roleCol}${row}`).dataValidation = {
+        type: 'list', allowBlank: true,
+        formulae: ['"Batsman,Bowler,All-rounder,Wicket Keeper"'],
+        showErrorMessage: true, errorTitle: 'Invalid Role',
+        error: 'Please select from: Batsman, Bowler, All-rounder, Wicket Keeper',
+      };
+      const handednessCol = colLetter('handedness');
+      if (handednessCol) sheet.getCell(`${handednessCol}${row}`).dataValidation = {
+        type: 'list', allowBlank: true,
+        formulae: ['"Right,Left"'],
+        showErrorMessage: true, errorTitle: 'Invalid Batting Style',
+        error: 'Please select Right or Left',
+      };
+      const tshirtCol = colLetter('tshirtSize');
+      if (tshirtCol) sheet.getCell(`${tshirtCol}${row}`).dataValidation = {
+        type: 'list', allowBlank: true,
+        formulae: ['"XS,S,M,L,XL,XXL"'],
+        showErrorMessage: true, errorTitle: 'Invalid T-Shirt Size',
+        error: 'Please select a valid size',
+      };
+      const trouserCol = colLetter('trouserSize');
+      if (trouserCol) sheet.getCell(`${trouserCol}${row}`).dataValidation = {
+        type: 'list', allowBlank: true,
+        formulae: ['"26,28,30,32,34,36,38,40"'],
+        showErrorMessage: true, errorTitle: 'Invalid Trouser Size',
+        error: 'Please select a valid size',
+      };
+      const sleeveCol = colLetter('sleeveType');
+      if (sleeveCol) sheet.getCell(`${sleeveCol}${row}`).dataValidation = {
+        type: 'list', allowBlank: true,
+        formulae: ['"Full Sleeves,Half Sleeves"'],
+        showErrorMessage: true, errorTitle: 'Invalid Sleeve Type',
+        error: 'Please select Full Sleeves or Half Sleeves',
+      };
+      const lastSeasonCol = colLetter('lastSeasonPlayed');
+      if (lastSeasonCol) sheet.getCell(`${lastSeasonCol}${row}`).dataValidation = {
+        type: 'list', allowBlank: true,
+        formulae: ['"Yes,No"'],
+        showErrorMessage: true, errorTitle: 'Invalid Value',
+        error: 'Please select Yes or No',
+      };
+      const bowlingStyleCol = colLetter('bowlingStyle');
+      if (bowlingStyleCol) sheet.getCell(`${bowlingStyleCol}${row}`).dataValidation = {
+        type: 'list', allowBlank: true,
+        formulae: ['"Right hand Fast Bowler,Left hand Fast Bowler,Right hand Fast-Medium,Left hand Fast-Medium,Right hand Medium-Fast,Left hand Medium-Fast,Right hand Medium Pacer,Left hand Medium Pacer,Right hand Off-Spinner,Left hand Off-Spinner,Right hand Leg-Spinner,Left hand Leg-Spinner"'],
+        showErrorMessage: true, errorTitle: 'Invalid Bowling Style',
+        error: 'Please select a valid bowling style (e.g. Right hand Fast Bowler, Left hand Off-Spinner)',
+      };
+    }
+
+    // Freeze header row
+    sheet.views = [{ state: 'frozen', xSplit: 0, ySplit: 1, topLeftCell: 'A2', activeCell: 'A2' }];
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'players_template.csv';
+    a.download = 'players_template.xlsx';
     a.click();
     URL.revokeObjectURL(url);
   }
 
-  onCsvFileSelected(event: any) {
+  async onExcelFileSelected(event: any) {
     const file: File = event.target.files[0];
     if (!file) return;
     this.csvFileName = file.name;
     this.bulkUploadSuccess = false;
-    const reader = new FileReader();
-    reader.onload = (e: any) => {
-      const text: string = e.target.result;
-      this.parseCsv(text);
-      this.cdr.markForCheck();
-    };
-    reader.readAsText(file);
-    // Reset input so same file can be re-selected
+    this.excelBulkRows = [];
+    this.excelBulkErrors = [];
+
+    try {
+      const ExcelJS = await import('exceljs');
+      const workbook = new ExcelJS.Workbook();
+      const buffer = await file.arrayBuffer();
+      await workbook.xlsx.load(buffer);
+
+      const sheet = workbook.getWorksheet('Players') ?? workbook.worksheets[0];
+      if (!sheet) {
+        this.excelBulkErrors = [{ row: 0, field: 'file', message: 'No worksheet found in the uploaded file.' }];
+        this.cdr.markForCheck();
+        return;
+      }
+      this.parseExcelSheet(sheet);
+    } catch {
+      this.excelBulkErrors = [{ row: 0, field: 'file', message: 'Could not read the file. Please use the provided Excel template.' }];
+    }
+
+    this.cdr.markForCheck();
     event.target.value = '';
   }
 
-  parseCsv(text: string) {
+  parseExcelSheet(sheet: any) {
     const VALID_ROLES = ['batsman', 'bowler', 'all-rounder', 'wicket keeper'];
-    const lines = text.replace(/\r/g, '').split('\n').filter(l => l.trim() !== '');
-    if (lines.length < 2) {
-      this.excelBulkErrors = [{ row: 0, field: 'file', message: 'CSV file is empty or has no data rows.' }];
-      this.excelBulkRows = [];
-      return;
-    }
-    const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+    const config = this.tournament?.registrationFieldConfig;
     this.excelBulkRows = [];
     this.excelBulkErrors = [];
-    for (let i = 1; i < lines.length; i++) {
-      const rowNum = i;
-      const values = lines[i].split(',').map(v => v.trim());
-      const rowData: Record<string, string> = {};
-      headers.forEach((h, idx) => { rowData[h] = values[idx] || ''; });
-      if (!rowData['firstname']) {
-        this.excelBulkErrors.push({ row: rowNum, field: 'firstName', message: `Row ${rowNum}: firstName is mandatory.` });
+
+    const cellToString = (value: any): string => {
+      if (value == null) return '';
+      if (value instanceof Date) {
+        const y = value.getFullYear();
+        const m = String(value.getMonth() + 1).padStart(2, '0');
+        const d = String(value.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
       }
-      if (!rowData['role']) {
-        this.excelBulkErrors.push({ row: rowNum, field: 'role', message: `Row ${rowNum}: role is mandatory.` });
-      } else if (!VALID_ROLES.includes(rowData['role'].toLowerCase())) {
-        this.excelBulkErrors.push({ row: rowNum, field: 'role', message: `Row ${rowNum}: role must be one of Batsman, Bowler, All-rounder, Wicket Keeper.` });
+      // ExcelJS rich-text object
+      if (typeof value === 'object' && value.richText) {
+        return value.richText.map((r: any) => r.text).join('');
       }
-      this.excelBulkRows.push({
-        firstName: rowData['firstname'] || '',
-        lastName: rowData['lastname'] || undefined,
-        dob: rowData['dob'] || undefined,
-        role: rowData['role'] || '',
+      return String(value).trim();
+    };
+
+    // Build header index from row 1
+    const headerMap: Record<number, string> = {};
+    const headerRow = sheet.getRow(1);
+    headerRow.eachCell((cell: any, colNum: number) => {
+      const raw = cellToString(cell.value).toLowerCase().match(/^[a-z]+/)?.[0] ?? '';
+      headerMap[colNum] = raw;
+    });
+
+    let dataRowCount = 0;
+    sheet.eachRow((row: any, rowIndex: number) => {
+      if (rowIndex === 1) return;
+
+      const vals: Record<string, string> = {};
+      row.eachCell({ includeEmpty: false }, (cell: any, colNum: number) => {
+        const key = headerMap[colNum];
+        if (key) vals[key] = cellToString(cell.value);
       });
+
+      // Skip completely empty rows
+      if (!Object.values(vals).some(v => v)) return;
+
+      dataRowCount++;
+      const dataRow = rowIndex - 1;
+      const firstName = vals['firstname'] || '';
+      const role = vals['role'] || '';
+
+      if (!firstName) {
+        this.excelBulkErrors.push({ row: dataRow, field: 'firstName', message: `Row ${dataRow}: firstName is required.` });
+      }
+      if (!vals['lastname']) {
+        this.excelBulkErrors.push({ row: dataRow, field: 'lastName', message: `Row ${dataRow}: lastName is required.` });
+      }
+      if (!vals['dob']) {
+        this.excelBulkErrors.push({ row: dataRow, field: 'dob', message: `Row ${dataRow}: dob is required (YYYY-MM-DD).` });
+      }
+      if (!role) {
+        this.excelBulkErrors.push({ row: dataRow, field: 'role', message: `Row ${dataRow}: role is required.` });
+      } else if (!VALID_ROLES.includes(role.toLowerCase())) {
+        this.excelBulkErrors.push({ row: dataRow, field: 'role', message: `Row ${dataRow}: role must be one of Batsman, Bowler, All-rounder, Wicket Keeper.` });
+      }
+      // Config-driven required field validation
+      if (config?.requireMobileNumber && !vals['mobilenumber'])
+        this.excelBulkErrors.push({ row: dataRow, field: 'mobileNumber', message: `Row ${dataRow}: mobileNumber is required for this tournament.` });
+      else if (vals['mobilenumber'] && !/^[0-9]{10}$/.test(vals['mobilenumber']))
+        this.excelBulkErrors.push({ row: dataRow, field: 'mobileNumber', message: `Row ${dataRow}: mobileNumber must be exactly 10 digits.` });
+      if (config?.requireHandedness && !vals['batting'])
+        this.excelBulkErrors.push({ row: dataRow, field: 'handedness', message: `Row ${dataRow}: handedness is required for this tournament.` });
+      if (config?.requireTshirtSize && !vals['tshirtsize'])
+        this.excelBulkErrors.push({ row: dataRow, field: 'tshirtSize', message: `Row ${dataRow}: tshirtSize is required for this tournament.` });
+      if (config?.requireTrouserSize && !vals['trousersize'])
+        this.excelBulkErrors.push({ row: dataRow, field: 'trouserSize', message: `Row ${dataRow}: trouserSize is required for this tournament.` });
+      if (config?.requireJerseyNumber && !vals['jerseynumber'])
+        this.excelBulkErrors.push({ row: dataRow, field: 'jerseyNumber', message: `Row ${dataRow}: jerseyNumber is required for this tournament.` });
+      if (config?.requireSleeveType && !vals['sleevetype'])
+        this.excelBulkErrors.push({ row: dataRow, field: 'sleeveType', message: `Row ${dataRow}: sleeveType is required for this tournament.` });
+      if (config?.requirePlayerLocation && !vals['playerlocation'])
+        this.excelBulkErrors.push({ row: dataRow, field: 'playerLocation', message: `Row ${dataRow}: playerLocation is required for this tournament.` });
+      if (config?.requireLastSeasonPlayed && !vals['lastseasonplayed'])
+        this.excelBulkErrors.push({ row: dataRow, field: 'lastSeasonPlayed', message: `Row ${dataRow}: lastSeasonPlayed is required for this tournament.` });
+      if (config?.requireLastSeasonTeam && !vals['lastseasonteam'])
+        this.excelBulkErrors.push({ row: dataRow, field: 'lastSeasonTeam', message: `Row ${dataRow}: lastSeasonTeam is required for this tournament.` });
+      if (config?.requireBowlingStyle && !vals['bowlingstyle'])
+        this.excelBulkErrors.push({ row: dataRow, field: 'bowlingStyle', message: `Row ${dataRow}: bowlingStyle is required for this tournament.` });
+
+      this.excelBulkRows.push({
+        firstName,
+        lastName: vals['lastname'] || undefined,
+        dob: vals['dob'] || undefined,
+        role,
+        handedness: vals['batting'] || undefined,
+        tshirtSize: vals['tshirtsize'] || undefined,
+        trouserSize: vals['trousersize'] || undefined,
+        jerseyNumber: vals['jerseynumber'] ? Number(vals['jerseynumber']) : undefined,
+        sleeveType: vals['sleevetype'] || undefined,
+        playerLocation: vals['playerlocation'] || undefined,
+        mobileNumber: vals['mobilenumber'] || undefined,
+        lastSeasonPlayed: vals['lastseasonplayed'] || undefined,
+        lastSeasonTeam: vals['lastseasonteam'] || undefined,
+        bowlingStyle: vals['bowlingstyle'] || undefined,
+      });
+    });
+
+    if (dataRowCount === 0) {
+      this.excelBulkErrors = [{ row: 0, field: 'file', message: 'The file has no data rows. Please fill in the template and re-upload.' }];
+      this.excelBulkRows = [];
     }
   }
 
@@ -1188,9 +1497,11 @@ export class Players implements OnInit {
     if (this.excelBulkErrors.length > 0 || this.excelBulkRows.length === 0) return;
     this.isBulkUploading = true;
     this.cdr.markForCheck();
+    const config = this.tournament?.registrationFieldConfig;
     const rowsWithDefaults = this.excelBulkRows.map(r => ({
       ...r,
       photo: r.photo || this.DEFAULT_PLAYER_PHOTO,
+      paymentProof: r.paymentProof || this.DEFAULT_PAYMENT_PROOF,
     }));
     this.playerService.bulkRegister(this.tournamentId, rowsWithDefaults).subscribe({
       next: (created) => {
@@ -1205,11 +1516,61 @@ export class Players implements OnInit {
         const msg = err?.error?.message || 'Failed to bulk upload players. Please check the data and try again.';
         if (msg.toLowerCase().includes('limited to 30') || msg.toLowerCase().includes('bulk registration is limited')) {
           this.showBulkLimitModal = true;
+        } else if (msg.toLowerCase().includes('localdatetime') || msg.toLowerCase().includes('localdate') || msg.toLowerCase().includes('datetimeparseexception') || msg.toLowerCase().includes('could not be parsed')) {
+          this.excelBulkErrors = [{ row: 0, field: 'dob', message: 'DOB format is incorrect. Please use YYYY-MM-DD format (e.g. 1990-05-25).' }];
         } else {
           this.excelBulkErrors = [{ row: 0, field: 'server', message: msg }];
         }
         this.cdr.markForCheck();
       },
     });
+  }
+
+  downloadPlayerDetails() {
+    const headers = [
+      'Player Number', 'First Name', 'Last Name', 'Date of Birth', 'Age',
+      'Role', 'Status', 'Batting Style', 'Bowling Style', 'T-Shirt Size',
+      'Trouser Size', 'Jersey Number', 'Sleeve Type', 'Location',
+      'Mobile Number', 'Last Season Played', 'Last Season Team'
+    ];
+
+    const escape = (val: any): string => {
+      if (val === null || val === undefined) return '';
+      const str = String(val);
+      if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+        return '"' + str.replace(/"/g, '""') + '"';
+      }
+      return str;
+    };
+
+    const rows = this.players.map(p => [
+      escape(p.playerNumber),
+      escape(p.firstName),
+      escape(p.lastName),
+      escape(p.dob),
+      escape(this.calculateAge(p.dob)),
+      escape(p.role),
+      escape(p.status),
+      escape(p.handedness),
+      escape((p as any).bowlingStyle),
+      escape(p.tshirtSize),
+      escape(p.trouserSize),
+      escape(p.jerseyNumber),
+      escape(p.sleeveType),
+      escape(p.playerLocation),
+      escape(p.mobileNumber),
+      escape(p.lastSeasonPlayed),
+      escape(p.lastSeasonTeam),
+    ].join(','));
+
+    const csvContent = [headers.map(escape).join(','), ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const tournamentName = this.tournament?.name?.replace(/\s+/g, '_') || 'tournament';
+    link.href = url;
+    link.download = `players_${tournamentName}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
   }
 }

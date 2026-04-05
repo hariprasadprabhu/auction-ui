@@ -1,0 +1,68 @@
+<!-- Backdrop -->
+<div class="ev-backdrop" (click)="close()"></div>
+
+<!-- Modal card -->
+<div class="ev-modal" role="dialog" aria-modal="true">
+
+  <!-- ── PROMPT: confirm email & initiate ── -->
+  <ng-container *ngIf="step === 'prompt'">
+    <div class="ev-icon">📧</div>
+    <h2 class="ev-title">Verify Your Email</h2>
+    <p class="ev-subtitle">We'll send a 6-digit code to confirm your email address.</p>
+    <div class="ev-email-pill">{{ email }}</div>
+
+    <div class="ev-error" *ngIf="errorMsg">⚠️ {{ errorMsg }}</div>
+
+    <div class="ev-actions">
+      <button class="btn-ev-close" (click)="close()" [disabled]="isLoading">I'll do it later</button>
+      <button class="btn-ev-primary" (click)="sendVerification()"
+              [disabled]="isLoading" [class.loading]="isLoading">
+        <span *ngIf="!isLoading">Verify Email</span>
+        <span *ngIf="isLoading" class="ev-spinner"></span>
+      </button>
+    </div>
+  </ng-container>
+
+  <!-- ── OTP: enter the code ── -->
+  <ng-container *ngIf="step === 'otp'">
+    <div class="ev-icon">🔢</div>
+    <h2 class="ev-title">Enter OTP</h2>
+    <p class="ev-subtitle">A 6-digit code was sent to<br /><strong>{{ email }}</strong></p>
+
+    <div class="ev-otp-row">
+      <input
+        *ngFor="let digit of otpDigits; let i = index; trackBy: trackByIndex"
+        #otpInput
+        type="text"
+        inputmode="numeric"
+        maxlength="1"
+        class="ev-otp-box"
+        [value]="digit"
+        [attr.aria-label]="'Digit ' + (i + 1)"
+        autocomplete="one-time-code"
+        (keydown)="onOtpKeydown(i, $event)"
+        (paste)="onOtpPaste($event)"
+      />
+    </div>
+
+    <div class="ev-error" *ngIf="errorMsg">⚠️ {{ errorMsg }}</div>
+
+    <button class="btn-ev-primary full" (click)="submitOtp()"
+            [disabled]="otp.length < 6 || isLoading" [class.loading]="isLoading">
+      <span *ngIf="!isLoading">Submit</span>
+      <span *ngIf="isLoading" class="ev-spinner"></span>
+    </button>
+
+    <button class="btn-ev-resend" (click)="sendVerification()" [disabled]="isLoading">
+      Resend Code
+    </button>
+  </ng-container>
+
+  <!-- ── VERIFIED ── -->
+  <ng-container *ngIf="step === 'verified'">
+    <div class="ev-icon success-icon">✅</div>
+    <h2 class="ev-title success-title">Email Verified!</h2>
+    <p class="ev-subtitle">Your email address has been successfully verified.</p>
+  </ng-container>
+
+</div>

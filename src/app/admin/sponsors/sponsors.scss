@@ -530,6 +530,144 @@
       box-shadow: 0 6px 20px rgba(102, 126, 234, 0.45);
     }
   }
+
+  &.btn-danger {
+    background: linear-gradient(135deg, #e53935 0%, #b71c1c 100%);
+    color: white;
+
+    &:hover:not(:disabled) {
+      box-shadow: 0 6px 20px rgba(229, 57, 53, 0.45);
+    }
+  }
+
+  &.btn-success {
+    background: linear-gradient(135deg, #43a047 0%, #1b5e20 100%);
+    color: white;
+
+    &:hover:not(:disabled) {
+      box-shadow: 0 6px 20px rgba(67, 160, 71, 0.45);
+    }
+  }
+}
+
+/* ── Custom Confirm / Success / Error Modals ───────────────────────────── */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+}
+
+.page-loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  backdrop-filter: blur(2px);
+}
+
+.delete-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.delete-spinner {
+  width: 52px;
+  height: 52px;
+  border: 5px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.delete-loader-text {
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+.modal-card {
+  background: white;
+  border-radius: 12px;
+  padding: 32px;
+  width: 90%;
+  max-width: 450px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+
+  h2 {
+    margin: 0;
+    flex: 1;
+    font-size: 1.3rem;
+    color: #333;
+    font-weight: 700;
+  }
+}
+
+.modal-x-close {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: #666;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+
+  &:hover { background: #f0f0f0; }
+}
+
+.modal-card-body {
+  margin: 12px 0 24px;
+}
+
+.modal-body-text {
+  margin: 0;
+  color: #555;
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.modal-card-footer {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.success-header {
+  .success-icon {
+    font-size: 1.8rem;
+    color: #4caf50;
+  }
+}
+
+.error-header {
+  .error-icon {
+    font-size: 1.8rem;
+    color: #f44336;
+    font-weight: 700;
+  }
 }
 
 @media (max-width: 768px) {
@@ -556,16 +694,103 @@
   }
 
   .sponsors-content {
-    padding: 20px;
+    padding: 16px;
   }
 
-  .sponsors-grid {
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 16px;
+  .actions-bar {
+    flex-direction: column;
+    padding: 14px 16px;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  .action-buttons {
+    width: 100%;
+
+    .btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .btn-back-light {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .grid-container {
+    margin-top: 16px;
+    margin-bottom: 20px;
   }
 
   .form-modal {
     width: 95%;
+  }
+}
+
+@media (max-width: 600px) {
+  .sponsors-table {
+    thead {
+      display: none;
+    }
+
+    tbody {
+      tr {
+        display: block;
+        border: 1px solid #e8e8e8;
+        border-radius: 10px;
+        margin: 0 0 12px;
+        padding: 10px 12px;
+        background: #fff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+        &:hover {
+          background: #fafafa;
+        }
+      }
+
+      td {
+        display: flex;
+        align-items: center;
+        padding: 6px 4px;
+        font-size: 0.9rem;
+        border: none;
+
+        &::before {
+          content: attr(data-label);
+          font-weight: 600;
+          color: #555;
+          min-width: 90px;
+          flex-shrink: 0;
+          font-size: 0.78rem;
+          text-transform: uppercase;
+          letter-spacing: 0.4px;
+        }
+      }
+
+      .sponsor-number {
+        font-weight: 700;
+        color: #667eea;
+
+        &::before {
+          display: none;
+        }
+      }
+
+      .logo-cell {
+        justify-content: flex-start;
+      }
+
+      .actions-cell {
+        justify-content: flex-end;
+        gap: 12px;
+
+        &::before {
+          display: none;
+        }
+      }
+    }
   }
 }
 
@@ -594,5 +819,23 @@
 
   .date-value {
     font-size: 0.75rem;
+  }
+
+  .form-modal-footer {
+    flex-direction: column;
+
+    .btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .modal-card-footer {
+    flex-direction: column;
+
+    .btn {
+      width: 100%;
+      justify-content: center;
+    }
   }
 }

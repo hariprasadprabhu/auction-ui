@@ -1,4 +1,4 @@
-import { Component, ViewChild, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -75,8 +75,7 @@ export class Signup {
   get phoneError(): string {
     const v = this.form.phoneNumber.trim();
     if (!v) return 'Phone number is required.';
-    if (!/^\d+$/.test(v)) return 'Enter digits only — no spaces or dashes.';
-    if (v.length < 6 || v.length > 15) return 'Phone number must be 6–15 digits.';
+    if (v.length !== 10) return 'Phone number must be exactly 10 digits.';
     return '';
   }
 
@@ -149,17 +148,20 @@ export class Signup {
       .subscribe({
         next: () => {
           this.isLoading = false;
+          this.cdr.markForCheck();
           this.router.navigate(['/login'], { queryParams: { registered: '1' } });
         },
         error: (err: HttpErrorResponse) => {
           this.isLoading = false;
-          if (err.status === 400 && err.error?.errors?.email) {
-            this.serverEmailError = err.error.errors.email;
-          } else if (err.status === 400 && err.error?.email) {
-            this.serverEmailError = err.error.email;
+          const body = err.error;
+          if (body?.message) {
+            this.apiError = body.message;
+          } else if (err.status === 0) {
+            this.apiError = 'Unable to reach the server. Please check your connection.';
           } else {
-            this.serverEmailError = 'Registration failed. Please try again.';
+            this.apiError = 'Registration failed. Please try again.';
           }
+          this.cdr.markForCheck();
         },
       });
   }
@@ -168,7 +170,8 @@ export class Signup {
   goToLogin() { this.router.navigate(['/login']); }
 
   private readonly authService = inject(AuthService);
+  private readonly cdr = inject(ChangeDetectorRef);
   constructor(private router: Router) {}
 
-  serverEmailError = '';
+  apiError = '';
 }

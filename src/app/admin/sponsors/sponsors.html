@@ -18,13 +18,21 @@
     </div>
   </header>
 
+  <!-- Initial Loading Overlay -->
+  <div class="page-loading-overlay" *ngIf="isLoading">
+    <div class="delete-loader">
+      <div class="delete-spinner"></div>
+      <p class="delete-loader-text">Loading sponsors...</p>
+    </div>
+  </div>
+
   <!-- Error Message -->
   <div class="error-message" *ngIf="errorMessage">
     {{ errorMessage }}
   </div>
 
   <!-- Sponsors Table -->
-  <div class="sponsors-content">
+  <div class="sponsors-content" *ngIf="!isLoading">
     <div class="actions-bar">
       <div class="action-buttons">
         <button class="btn btn-primary" (click)="openForm()">
@@ -47,15 +55,15 @@
         </thead>
         <tbody>
           <tr *ngFor="let sponsor of sponsors; let i = index">
-            <td class="sponsor-number">{{ i + 1 }}</td>
-            <td class="logo-cell">
+            <td class="sponsor-number" data-label="#">{{ i + 1 }}</td>
+            <td class="logo-cell" data-label="Logo">
               <img [src]="sponsor.personImageUrl" [alt]="sponsor.personName" class="sponsor-thumbnail" />
             </td>
-            <td class="sponsor-name">{{ sponsor.name }}</td>
-            <td class="person-name">{{ sponsor.personName }}</td>
-            <td class="actions-cell">
+            <td class="sponsor-name" data-label="Name">{{ sponsor.name }}</td>
+            <td class="person-name" data-label="Sub Title">{{ sponsor.personName }}</td>
+            <td class="actions-cell" data-label="Actions">
               <button class="btn-edit" (click)="openForm(sponsor.id)" [disabled]="isSaving" title="Edit">✏️</button>
-              <button class="btn-delete" (click)="deleteSponsor(sponsor.id)" [disabled]="isSaving" title="Delete">🗑️</button>
+              <button class="btn-delete" (click)="openDeleteConfirm(sponsor.id)" [disabled]="isSaving" title="Delete">🗑️</button>
             </td>
           </tr>
         </tbody>
@@ -115,6 +123,58 @@
       <button class="btn btn-primary" (click)="saveSponsor()" [disabled]="isSaving">
         {{ isSaving ? '💾 Saving...' : '💾 Save Sponsor' }}
       </button>
+    </div>
+  </div>
+
+  <!-- Save Loading Overlay -->
+  <div class="modal-overlay" *ngIf="isSaving">
+    <div class="delete-loader">
+      <div class="delete-spinner"></div>
+      <p class="delete-loader-text">{{ editingId ? 'Updating sponsor...' : 'Adding sponsor...' }}</p>
+    </div>
+  </div>
+
+  <!-- Delete Loading Overlay -->
+  <div class="modal-overlay" *ngIf="isDeleting">
+    <div class="delete-loader">
+      <div class="delete-spinner"></div>
+      <p class="delete-loader-text">Deleting sponsor...</p>
+    </div>
+  </div>
+
+  <!-- Confirm Delete Modal -->
+  <div class="modal-overlay" *ngIf="showConfirmModal" (click)="closeConfirmModal()">
+    <div class="modal-card confirm-modal" (click)="$event.stopPropagation()">
+      <div class="modal-card-header">
+        <h2>Delete Sponsor</h2>
+        <button class="modal-x-close" (click)="closeConfirmModal()">✕</button>
+      </div>
+      <div class="modal-card-body">
+        <p class="modal-body-text">Are you sure you want to delete this sponsor? This action cannot be undone.</p>
+      </div>
+      <div class="modal-card-footer">
+        <button class="btn btn-secondary" (click)="closeConfirmModal()" [disabled]="isSaving">Cancel</button>
+        <button class="btn btn-danger" (click)="confirmDelete()" [disabled]="isSaving">
+          {{ isSaving ? '🔄 Deleting...' : 'Delete' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Error Modal -->
+  <div class="modal-overlay" *ngIf="showDeleteErrorModal" (click)="closeDeleteErrorModal()">
+    <div class="modal-card delete-error-modal" (click)="$event.stopPropagation()">
+      <div class="modal-card-header error-header">
+        <span class="error-icon">!</span>
+        <h2>Delete Failed</h2>
+        <button class="modal-x-close" (click)="closeDeleteErrorModal()">✕</button>
+      </div>
+      <div class="modal-card-body">
+        <p class="modal-body-text">{{ deleteErrorMessage }}</p>
+      </div>
+      <div class="modal-card-footer">
+        <button class="btn btn-danger" (click)="closeDeleteErrorModal()">Close</button>
+      </div>
     </div>
   </div>
 </div>

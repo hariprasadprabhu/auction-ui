@@ -14,6 +14,7 @@ interface StoredUser {
   name: string;
   email: string;
   role: string;
+  emailVerified: boolean;
 }
 
 export interface UserProfile {
@@ -47,6 +48,7 @@ export class AuthService {
               name: response.name,
               email: response.email,
               role: response.role,
+              emailVerified: response.emailVerified ?? false,
             }),
           );
         }),
@@ -119,5 +121,13 @@ export class AuthService {
 
   changePassword(currentPassword: string, newPassword: string): Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/users/change-password`, { currentPassword, newPassword });
+  }
+
+  sendVerificationEmail(): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/auth/email/send-otp`, {});
+  }
+
+  verifyEmailOtp(otp: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/auth/email/verify-otp`, { otp });
   }
 }
