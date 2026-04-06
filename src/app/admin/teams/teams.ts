@@ -1238,7 +1238,8 @@ export class Players implements OnInit {
   }
 
   async downloadExcelTemplate() {
-    const ExcelJS = await import('exceljs');
+    const ExcelJSModule = await import('exceljs');
+    const ExcelJS = (ExcelJSModule as any).default ?? ExcelJSModule;
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet('Players');
     const config = this.tournament?.registrationFieldConfig;
@@ -1277,7 +1278,7 @@ export class Players implements OnInit {
 
     // Style header row
     const headerRow = sheet.getRow(1);
-    headerRow.eachCell(cell => {
+    headerRow.eachCell((cell: any) => {
       cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
       cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4472C4' } };
       cell.alignment = { vertical: 'middle', horizontal: 'center' };
@@ -1364,7 +1365,8 @@ export class Players implements OnInit {
     this.excelBulkErrors = [];
 
     try {
-      const ExcelJS = await import('exceljs');
+      const ExcelJSModule = await import('exceljs');
+      const ExcelJS = (ExcelJSModule as any).default ?? ExcelJSModule;
       const workbook = new ExcelJS.Workbook();
       const buffer = await file.arrayBuffer();
       await workbook.xlsx.load(buffer);
