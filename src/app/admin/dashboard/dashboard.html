@@ -24,7 +24,7 @@
           <button class="profile-dropdown-item" (click)="openProfileModal()">
             <span class="item-icon">👤</span> Profile
           </button>
-          <button class="profile-dropdown-item" (click)="openChangePasswordModal()">
+          <button class="profile-dropdown-item" (click)="openResetPasswordModal()">
             <span class="item-icon">🔑</span> Reset Password
           </button>
           <div class="profile-dropdown-divider"></div>
@@ -792,7 +792,16 @@
         </div>
         <div class="profile-field">
           <span class="profile-field-label">Email Address</span>
-          <span class="profile-field-value">{{ profileData.email }}</span>
+          <span class="profile-field-value profile-email-row">
+            {{ profileData.email }}
+            <span *ngIf="currentUser?.emailVerified" class="email-verified-badge">✓ Verified</span>
+            <ng-container *ngIf="!currentUser?.emailVerified">
+              <span class="email-unverified-badge">Unverified</span>
+              <button class="btn-inline-verify" (click)="closeProfileModal(); showEmailVerificationModal = true">
+                Verify Email
+              </button>
+            </ng-container>
+          </span>
         </div>
         <div class="profile-field">
           <span class="profile-field-label">Mobile Number</span>
@@ -812,39 +821,97 @@
     </div>
   </div>
 
-  <!-- Change Password Modal -->
-  <div class="modal-overlay" *ngIf="showChangePasswordModal" (click)="closeChangePasswordModal()">
+  <!-- Reset Password Modal -->
+  <div class="modal-overlay" *ngIf="showResetPasswordModal" (click)="closeResetPasswordModal()">
     <div class="modal-content change-password-modal-content" (click)="$event.stopPropagation()">
-      <button class="modal-close" (click)="closeChangePasswordModal()">✕</button>
-      <h2>🔑 Reset Password</h2>
-
-      <div class="change-password-success" *ngIf="changePasswordSuccess">
-        <div class="success-icon">✓</div>
-        <p>Password changed successfully!</p>
-        <button class="btn btn-primary" (click)="closeChangePasswordModal()">Close</button>
+      <button class="modal-close" (click)="closeResetPasswordModal()">✕</button>
+      <div class="modal-logo-header">
+        <img src="assets/images/logo_final.png" alt="AuctionDeck" class="modal-logo-img" />
       </div>
+      <h2>Reset Password</h2>
 
-      <div *ngIf="!changePasswordSuccess">
-        <div class="form-group full-width">
-          <label>Current Password</label>
-          <input type="password" [(ngModel)]="changePasswordForm.currentPassword" placeholder="Enter current password" />
+      <!-- Email not verified -->
+      <ng-container *ngIf="resetPasswordStep === 'unverified'">
+        <div class="reset-pw-unverified">
+          <div class="unverified-icon">⚠️</div>
+          <p class="reset-pw-unverified-msg">
+            Your email address is <strong>not verified</strong>. You must verify your email before you can reset your password.
+          </p>
+          <div class="form-actions">
+            <button class="btn btn-secondary" (click)="closeResetPasswordModal()">Cancel</button>
+            <button class="btn btn-primary" (click)="openVerifyEmailFromReset()">Verify Email</button>
+          </div>
         </div>
+      </ng-container>
+
+      <!-- Step 1: Enter new password -->
+      <ng-container *ngIf="resetPasswordStep === 'form'">
+        <p class="reset-pw-hint">Enter your new password. We'll send a one-time code to your email to confirm the change.</p>
         <div class="form-group full-width">
           <label>New Password</label>
-          <input type="password" [(ngModel)]="changePasswordForm.newPassword" placeholder="At least 8 characters" />
+          <input type="password" [(ngModel)]="resetPasswordForm.newPassword" placeholder="At least 8 characters" autocomplete="new-password" />
         </div>
         <div class="form-group full-width">
           <label>Confirm New Password</label>
-          <input type="password" [(ngModel)]="changePasswordForm.confirmPassword" placeholder="Repeat new password" />
+          <input type="password" [(ngModel)]="resetPasswordForm.confirmPassword" placeholder="Repeat new password" autocomplete="new-password" />
         </div>
-        <p class="error-msg" *ngIf="changePasswordError">{{ changePasswordError }}</p>
+        <p class="error-msg" *ngIf="resetPasswordError">{{ resetPasswordError }}</p>
         <div class="form-actions">
-          <button class="btn btn-secondary" (click)="closeChangePasswordModal()" [disabled]="isChangingPassword">Cancel</button>
-          <button class="btn btn-primary" (click)="submitChangePassword()" [disabled]="isChangingPassword">
-            {{ isChangingPassword ? '🔄 Saving...' : 'Change Password' }}
+          <button class="btn btn-secondary" (click)="closeResetPasswordModal()" [disabled]="isResettingPassword">Cancel</button>
+          <button class="btn btn-primary" (click)="sendResetPasswordOtp()" [disabled]="isResettingPassword">
+            <span *ngIf="!isResettingPassword">Send OTP</span>
+            <span *ngIf="isResettingPassword" class="ev-spinner"></span>
           </button>
         </div>
-      </div>
+      </ng-container>
+
+      <!-- Step 2: Enter OTP -->
+      <ng-container *ngIf="resetPasswordStep === 'otp'">
+        <p class="reset-pw-hint">A 6-digit code was sent to <strong>{{ currentUser?.email }}</strong>. Enter it below to confirm your password reset.</p>
+        <div class="form-group full-width">
+          <label>One-Time Password (OTP)</label>
+          <input
+            type="text"
+            inputmode="numeric"
+            maxlength="6"
+            [(ngModel)]="resetPasswordOtp"
+            placeholder="6-digit code"
+            autocomplete="one-time-code"
+            class="otp-single-input"
+          />
+        </div>
+        <p class="error-msg" *ngIf="resetPasswordError">{{ resetPasswordError }}</p>
+        <div class="form-actions">
+          <button class="btn btn-secondary" (click)="closeResetPasswordModal()">Cancel</button>
+          <button class="btn btn-primary" (click)="submitResetPassword()" [disabled]="resetPasswordOtp.length < 6">
+            Reset Password
+          </button>
+        </div>
+        <div class="resend-row">
+          <button class="btn-ev-resend" (click)="resendResetPasswordOtp()" [disabled]="!canResendResetOtp || isResettingPassword">
+            <ng-container *ngIf="canResendResetOtp">Resend OTP</ng-container>
+            <ng-container *ngIf="!canResendResetOtp">Resend in {{ resetPasswordResendTimerLabel }}</ng-container>
+          </button>
+        </div>
+      </ng-container>
+
+      <!-- Loading -->
+      <ng-container *ngIf="resetPasswordStep === 'loading'">
+        <div class="reset-pw-loading">
+          <div class="spinner-circle"></div>
+          <p>Resetting your password…</p>
+        </div>
+      </ng-container>
+
+      <!-- Success -->
+      <ng-container *ngIf="resetPasswordStep === 'success'">
+        <div class="change-password-success">
+          <img src="assets/images/logo_final.png" alt="AuctionDeck" class="success-logo-img" />
+          <p>Password reset successfully!</p>
+          <button class="btn btn-primary" (click)="closeResetPasswordModal()">Close</button>
+        </div>
+      </ng-container>
+
     </div>
   </div>
 
@@ -936,4 +1003,5 @@
   [email]="currentUser?.email || ''"
   (closed)="onEmailVerificationClosed()"
   (verified)="onEmailVerified()"
+  (emailChanged)="onEmailChanged($event)"
 ></app-email-verification>

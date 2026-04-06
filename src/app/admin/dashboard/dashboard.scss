@@ -319,6 +319,53 @@
     font-size: 0.95rem;
     color: #222;
     font-weight: 500;
+
+    &.profile-email-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+  }
+}
+
+.email-verified-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: #e8f5e9;
+  color: #2e7d32;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.email-unverified-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: #fff3e0;
+  color: #e65100;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.btn-inline-verify {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.85;
   }
 }
 
@@ -332,13 +379,26 @@
   font-size: 0.9rem;
 }
 
-// ── Change Password Modal ──────────────────────────────────────────────────
+// ── Change / Reset Password Modal ─────────────────────────────────────────
 .change-password-modal-content {
   max-width: 420px;
   width: 90%;
 
+  .modal-logo-header {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 12px;
+  }
+
+  .modal-logo-img {
+    height: 48px;
+    max-width: 160px;
+    object-fit: contain;
+  }
+
   h2 {
     margin-bottom: 20px;
+    text-align: center;
   }
 
   .form-group {
@@ -365,6 +425,12 @@
         border-color: #667eea;
       }
     }
+
+    input.otp-single-input {
+      letter-spacing: 0.25em;
+      font-size: 1.1rem;
+      text-align: center;
+    }
   }
 
   .error-msg {
@@ -379,6 +445,52 @@
     justify-content: flex-end;
     margin-top: 4px;
   }
+
+  .reset-pw-hint {
+    font-size: 0.85rem;
+    color: #555;
+    margin-bottom: 18px;
+    line-height: 1.5;
+  }
+
+  .reset-pw-unverified {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 0 8px;
+    text-align: center;
+
+    .unverified-icon {
+      font-size: 2rem;
+    }
+
+    .reset-pw-unverified-msg {
+      font-size: 0.9rem;
+      color: #555;
+      line-height: 1.6;
+    }
+
+    .form-actions {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .reset-pw-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 24px 0;
+    color: #555;
+    font-size: 0.9rem;
+  }
+
+  .resend-row {
+    margin-top: 12px;
+    text-align: center;
+  }
 }
 
 .change-password-success {
@@ -389,17 +501,10 @@
   padding: 16px 0 8px;
   text-align: center;
 
-  .success-icon {
-    width: 56px;
+  .success-logo-img {
     height: 56px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #00c853, #69f0ae);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.6rem;
-    font-weight: 700;
+    max-width: 180px;
+    object-fit: contain;
   }
 
   p {

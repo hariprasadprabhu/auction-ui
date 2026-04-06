@@ -95,6 +95,14 @@ $success:       #28c878;
 }
 
 /* ─── EMAIL PILL ───────────────────── */
+.ev-email-pill-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+
 .ev-email-pill {
   display: inline-block;
   background: rgba(102, 126, 234, 0.18);
@@ -106,6 +114,82 @@ $success:       #28c878;
   padding: 8px 20px;
   margin-bottom: 22px;
   word-break: break-all;
+}
+
+.btn-ev-edit-email {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 4px 6px;
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.55);
+  transition: color 0.2s, background 0.2s;
+  line-height: 1;
+
+  &:hover:not(:disabled) {
+    color: $white;
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+
+.ev-email-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.ev-email-input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1.5px solid rgba(102, 126, 234, 0.55);
+  border-radius: 10px;
+  color: $white;
+  font-size: 0.9rem;
+  padding: 9px 12px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+
+  &::placeholder { color: rgba(255, 255, 255, 0.3); }
+  &:focus { border-color: $primary; }
+}
+
+.btn-ev-edit-confirm,
+.btn-ev-edit-cancel {
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: opacity 0.2s;
+
+  &:hover { opacity: 0.8; }
+}
+
+.btn-ev-edit-confirm {
+  background: linear-gradient(135deg, $primary, $primary-dark);
+  color: $white;
+}
+
+.btn-ev-edit-cancel {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.ev-email-edit-error {
+  color: #ffaaaa;
+  font-size: 0.8rem;
+  margin-bottom: 10px;
+  text-align: left;
 }
 
 /* ─── ERROR ────────────────────────── */

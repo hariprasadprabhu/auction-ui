@@ -1,5 +1,6 @@
-import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, QueryList, ViewChildren, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, QueryList, ViewChildren, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../core/services/auth.service';
 
@@ -8,14 +9,15 @@ type Step = 'prompt' | 'otp' | 'verified';
 @Component({
   selector: 'app-email-verification',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './email-verification.html',
   styleUrls: ['./email-verification.scss'],
 })
-export class EmailVerification implements OnInit {
+export class EmailVerification implements OnInit, OnDestroy {
   @Input() email: string = '';
   @Output() closed = new EventEmitter<void>();
   @Output() verified = new EventEmitter<void>();
+  @Output() emailChanged = new EventEmitter<string>();
 
   @ViewChildren('otpInput') otpInputs!: QueryList<ElementRef<HTMLInputElement>>;
 
@@ -23,23 +25,94 @@ export class EmailVerification implements OnInit {
   isLoading = false;
   errorMsg = '';
   otpDigits: string[] = ['', '', '', '', '', ''];
+  resendCountdown = 0;
+
+  editedEmail = '';
+  isEditingEmail = false;
+  emailEditError = '';
 
   private authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
+  private resendInterval: ReturnType<typeof setInterval> | null = null;
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.editedEmail = this.email;
+  }
+
+  ngOnDestroy(): void {
+    this.clearResendTimer();
+  }
+
+  get canResend(): boolean {
+    return this.resendCountdown === 0;
+  }
+
+  private startResendTimer(): void {
+    this.clearResendTimer();
+    this.resendCountdown = 120;
+    this.resendInterval = setInterval(() => {
+      this.resendCountdown--;
+      this.cdr.markForCheck();
+      if (this.resendCountdown <= 0) {
+        this.clearResendTimer();
+      }
+    }, 1000);
+  }
+
+  private clearResendTimer(): void {
+    if (this.resendInterval !== null) {
+      clearInterval(this.resendInterval);
+      this.resendInterval = null;
+    }
+  }
+
+  get resendTimerLabel(): string {
+    const m = Math.floor(this.resendCountdown / 60);
+    const s = this.resendCountdown % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  }
 
   get otp(): string {
     return this.otpDigits.join('');
   }
 
+  startEditEmail(): void {
+    this.isEditingEmail = true;
+    this.emailEditError = '';
+  }
+
+  cancelEditEmail(): void {
+    this.isEditingEmail = false;
+    this.editedEmail = this.email;
+    this.emailEditError = '';
+  }
+
+  confirmEditEmail(): void {
+    const trimmed = this.editedEmail.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmed)) {
+      this.emailEditError = 'Please enter a valid email address.';
+      return;
+    }
+    this.editedEmail = trimmed;
+    this.isEditingEmail = false;
+    this.emailEditError = '';
+    this.cdr.markForCheck();
+  }
+
   sendVerification(): void {
     this.isLoading = true;
     this.errorMsg = '';
-    this.authService.sendVerificationEmail().subscribe({
+    const emailToVerify = this.editedEmail.trim() || this.email;
+    this.authService.sendVerificationEmail(emailToVerify).subscribe({
       next: () => {
         this.isLoading = false;
         this.step = 'otp';
+        this.startResendTimer();
+        // If user changed the email, notify parent
+        if (this.editedEmail.trim() && this.editedEmail.trim() !== this.email) {
+          this.emailChanged.emit(this.editedEmail.trim());
+        }
         this.cdr.markForCheck();
         // Focus first OTP box after view updates
         setTimeout(() => {
@@ -112,7 +185,8 @@ export class EmailVerification implements OnInit {
         this.isLoading = false;
         this.step = 'verified';
         this.cdr.markForCheck();
-        setTimeout(() => this.verified.emit(), 2500);
+        // Small delay so the user sees the ✅ before the page reloads
+        setTimeout(() => this.verified.emit(), 1500);
       },
       error: (err: HttpErrorResponse) => {
         this.isLoading = false;

@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -15,7 +15,7 @@ import { EmailVerification } from '../../../app/auth/email-verification/email-ve
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.scss'],
 })
-export class Dashboard implements OnInit {
+export class Dashboard implements OnInit, OnDestroy {
   tournaments: Tournament[] = [];
   isLoading = false;
   errorMsg = '';
@@ -108,12 +108,23 @@ export class Dashboard implements OnInit {
   profileData: UserProfile | null = null;
   isLoadingProfile = false;
 
-  // ── Change Password Modal ─────────────────────────────────────────────────
-  showChangePasswordModal = false;
-  changePasswordForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
-  isChangingPassword = false;
-  changePasswordError = '';
-  changePasswordSuccess = false;
+  // ── Reset Password Modal ─────────────────────────────────────────────────
+  showResetPasswordModal = false;
+  /** 'unverified' | 'form' | 'otp' | 'loading' | 'success' */
+  resetPasswordStep: 'unverified' | 'form' | 'otp' | 'loading' | 'success' = 'form';
+  resetPasswordForm = { newPassword: '', confirmPassword: '' };
+  resetPasswordOtp = '';
+  isResettingPassword = false;
+  resetPasswordError = '';
+  resetPasswordResendCountdown = 0;
+  private resetPasswordResendInterval: ReturnType<typeof setInterval> | null = null;
+
+  get canResendResetOtp(): boolean { return this.resetPasswordResendCountdown === 0; }
+  get resetPasswordResendTimerLabel(): string {
+    const m = Math.floor(this.resetPasswordResendCountdown / 60);
+    const s = this.resetPasswordResendCountdown % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  }
 
   // ── Confirm Modal ────────────────────────────────────────────────────────
   showConfirmModal = false;
@@ -139,12 +150,19 @@ export class Dashboard implements OnInit {
   /** Default Cloudinary URLs */
   readonly DEFAULT_TEAM_LOGO = 'https://res.cloudinary.com/drytm0fl7/image/upload/v1774291008/default_player_lzyniw.png';
 
+  private readonly VERIFY_PROMPTED_KEY = 'email_verify_prompted';
+
   ngOnInit() {
     this.currentUser = this.authService.getCurrentUser();
-    if (!this.currentUser?.emailVerified) {
+    if (!this.currentUser?.emailVerified && !sessionStorage.getItem(this.VERIFY_PROMPTED_KEY)) {
+      sessionStorage.setItem(this.VERIFY_PROMPTED_KEY, '1');
       this.showEmailVerificationModal = true;
     }
     this.loadTournaments();
+  }
+
+  ngOnDestroy(): void {
+    this.clearResetPasswordResendTimer();
   }
 
   onEmailVerificationClosed(): void {
@@ -153,12 +171,19 @@ export class Dashboard implements OnInit {
 
   onEmailVerified(): void {
     this.showEmailVerificationModal = false;
-    // Update stored user so it won't show again on next navigation
+    // Token and emailVerified flag are already persisted by verifyEmailOtp.
+    // Hard-reload so the entire app re-initialises with the new token.
+    window.location.reload();
+  }
+
+  onEmailChanged(newEmail: string): void {
     const user = this.authService.getCurrentUser();
     if (user) {
-      user.emailVerified = true;
+      user.email = newEmail;
       localStorage.setItem('auth_user', JSON.stringify(user));
+      this.currentUser = { ...user };
     }
+    this.cdr.markForCheck();
   }
 
   private loadTournaments() {
@@ -830,6 +855,7 @@ export class Dashboard implements OnInit {
   }
 
   logout() {
+    sessionStorage.removeItem(this.VERIFY_PROMPTED_KEY);
     this.authService.logout();
     this.router.navigate(['/login']);
   }
@@ -870,47 +896,141 @@ export class Dashboard implements OnInit {
     this.profileData = null;
   }
 
-  openChangePasswordModal() {
+  openResetPasswordModal() {
     this.showProfileMenu = false;
-    this.changePasswordForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
-    this.changePasswordError = '';
-    this.changePasswordSuccess = false;
-    this.showChangePasswordModal = true;
+    this.resetPasswordForm = { newPassword: '', confirmPassword: '' };
+    this.resetPasswordOtp = '';
+    this.resetPasswordError = '';
+    this.isResettingPassword = false;
+    this.clearResetPasswordResendTimer();
+    this.resetPasswordResendCountdown = 0;
+    const user = this.authService.getCurrentUser();
+    this.resetPasswordStep = user?.emailVerified ? 'form' : 'unverified';
+    this.showResetPasswordModal = true;
+    this.cdr.markForCheck();
   }
 
-  closeChangePasswordModal() {
-    this.showChangePasswordModal = false;
+  closeResetPasswordModal() {
+    this.showResetPasswordModal = false;
+    this.clearResetPasswordResendTimer();
+    this.resetPasswordResendCountdown = 0;
   }
 
-  submitChangePassword() {
-    const { currentPassword, newPassword, confirmPassword } = this.changePasswordForm;
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      this.changePasswordError = 'All fields are required.';
+  private startResetPasswordResendTimer(): void {
+    this.clearResetPasswordResendTimer();
+    this.resetPasswordResendCountdown = 120;
+    this.resetPasswordResendInterval = setInterval(() => {
+      this.resetPasswordResendCountdown--;
+      this.cdr.markForCheck();
+      if (this.resetPasswordResendCountdown <= 0) {
+        this.clearResetPasswordResendTimer();
+      }
+    }, 1000);
+  }
+
+  private clearResetPasswordResendTimer(): void {
+    if (this.resetPasswordResendInterval !== null) {
+      clearInterval(this.resetPasswordResendInterval);
+      this.resetPasswordResendInterval = null;
+    }
+  }
+
+  sendResetPasswordOtp(): void {
+    const { newPassword, confirmPassword } = this.resetPasswordForm;
+    if (!newPassword || !confirmPassword) {
+      this.resetPasswordError = 'Please fill in both password fields.';
       return;
     }
     if (newPassword !== confirmPassword) {
-      this.changePasswordError = 'New passwords do not match.';
+      this.resetPasswordError = 'Passwords do not match.';
       return;
     }
     if (newPassword.length < 8) {
-      this.changePasswordError = 'New password must be at least 8 characters.';
+      this.resetPasswordError = 'Password must be at least 8 characters.';
       return;
     }
-    this.isChangingPassword = true;
-    this.changePasswordError = '';
+    this.resetPasswordError = '';
+    this.isResettingPassword = true;
     this.cdr.markForCheck();
-    this.authService.changePassword(currentPassword, newPassword).subscribe({
+    const user = this.authService.getCurrentUser();
+    if (!user?.email) {
+      this.isResettingPassword = false;
+      this.resetPasswordError = 'Session expired. Please log in again.';
+      return;
+    }
+    this.authService.sendPasswordResetOtp(user.email).subscribe({
       next: () => {
-        this.isChangingPassword = false;
-        this.changePasswordSuccess = true;
+        this.isResettingPassword = false;
+        this.resetPasswordStep = 'otp';
+        this.startResetPasswordResendTimer();
         this.cdr.markForCheck();
       },
-      error: (err) => {
-        this.isChangingPassword = false;
-        this.changePasswordError = err?.error?.message || 'Failed to change password. Please try again.';
+      error: (err: any) => {
+        this.isResettingPassword = false;
+        this.resetPasswordError = err?.error?.message || 'Failed to send OTP. Please try again.';
         this.cdr.markForCheck();
       }
     });
+  }
+
+  resendResetPasswordOtp(): void {
+    if (!this.canResendResetOtp) return;
+    this.resetPasswordError = '';
+    this.isResettingPassword = true;
+    this.cdr.markForCheck();
+    const resendUser = this.authService.getCurrentUser();
+    if (!resendUser?.email) {
+      this.isResettingPassword = false;
+      this.resetPasswordError = 'Session expired. Please log in again.';
+      return;
+    }
+    this.authService.sendPasswordResetOtp(resendUser.email).subscribe({
+      next: () => {
+        this.isResettingPassword = false;
+        this.startResetPasswordResendTimer();
+        this.cdr.markForCheck();
+      },
+      error: (err: any) => {
+        this.isResettingPassword = false;
+        this.resetPasswordError = err?.error?.message || 'Failed to resend OTP. Please try again.';
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  submitResetPassword(): void {
+    if (this.resetPasswordOtp.replace(/\s/g, '').length !== 6) {
+      this.resetPasswordError = 'Please enter the 6-digit OTP.';
+      return;
+    }
+    const user = this.authService.getCurrentUser();
+    if (!user) {
+      this.resetPasswordError = 'Session expired. Please log in again.';
+      return;
+    }
+    this.resetPasswordError = '';
+    this.resetPasswordStep = 'loading';
+    this.isResettingPassword = true;
+    this.cdr.markForCheck();
+    this.authService.resetPassword(user.id, user.email, this.resetPasswordForm.newPassword, this.resetPasswordOtp.trim()).subscribe({
+      next: () => {
+        this.isResettingPassword = false;
+        this.resetPasswordStep = 'success';
+        this.clearResetPasswordResendTimer();
+        this.cdr.markForCheck();
+      },
+      error: (err: any) => {
+        this.isResettingPassword = false;
+        this.resetPasswordStep = 'otp';
+        this.resetPasswordError = err?.error?.message || 'Failed to reset password. Please check your OTP and try again.';
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  openVerifyEmailFromReset(): void {
+    this.closeResetPasswordModal();
+    this.showEmailVerificationModal = true;
   }
 
   getInitials(): string {

@@ -22,6 +22,7 @@ export interface UserProfile {
   name: string;
   email: string;
   role: string;
+  emailVerified?: boolean;
   phoneCountryCode?: string;
   phoneNumber?: string;
   organisation?: string;
@@ -106,6 +107,18 @@ export class AuthService {
       .pipe(
         tap((response) => {
           localStorage.setItem(this.TOKEN_KEY, response.token);
+          // Merge fresh server data into stored user
+          const stored = this.getCurrentUser();
+          localStorage.setItem(
+            this.USER_KEY,
+            JSON.stringify({
+              id: response.id ?? stored?.id,
+              name: response.name ?? stored?.name,
+              email: response.email ?? stored?.email,
+              role: response.role ?? stored?.role,
+              emailVerified: response.emailVerified ?? stored?.emailVerified ?? false,
+            }),
+          );
         }),
       );
   }
@@ -123,11 +136,42 @@ export class AuthService {
     return this.http.post<void>(`${this.apiUrl}/users/change-password`, { currentPassword, newPassword });
   }
 
-  sendVerificationEmail(): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(`${this.apiUrl}/auth/email/send-otp`, {});
+  sendVerificationEmail(email?: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/auth/email/send-otp`, email ? { email } : {});
   }
 
-  verifyEmailOtp(otp: string): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/auth/email/verify-otp`, { otp });
+  verifyEmailOtp(otp: string): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.apiUrl}/auth/email/verify-otp`, { otp }).pipe(
+      tap((response) => {
+        if (response?.token) {
+          localStorage.setItem(this.TOKEN_KEY, response.token);
+        }
+        const stored = this.getCurrentUser();
+        if (stored) {
+          localStorage.setItem(
+            this.USER_KEY,
+            JSON.stringify({
+              id: response.id ?? stored.id,
+              name: response.name ?? stored.name,
+              email: response.email ?? stored.email,
+              role: response.role ?? stored.role,
+              emailVerified: true,
+            }),
+          );
+        }
+      }),
+    );
+  }
+
+  sendPasswordResetOtp(email: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/auth/password/send-otp`, { email });
+  }
+
+  resetPassword(userId: number, email: string, newPassword: string, otp: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/auth/password/reset`, { userId, email, newPassword, otp });
+  }
+
+  forgotPasswordReset(email: string, newPassword: string, otp: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/auth/password/reset`, { email, newPassword, otp });
   }
 }

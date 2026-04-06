@@ -9,13 +9,41 @@
     <div class="ev-icon">📧</div>
     <h2 class="ev-title">Verify Your Email</h2>
     <p class="ev-subtitle">We'll send a 6-digit code to confirm your email address.</p>
-    <div class="ev-email-pill">{{ email }}</div>
+
+    <!-- Email display / edit row -->
+    <ng-container *ngIf="!isEditingEmail">
+      <div class="ev-email-pill-row">
+        <span class="ev-email-pill">{{ editedEmail || email }}</span>
+        <button class="btn-ev-edit-email" (click)="startEditEmail()" [disabled]="isLoading" title="Edit email">✏️</button>
+      </div>
+    </ng-container>
+    <ng-container *ngIf="isEditingEmail">
+      <div class="ev-email-edit-row">
+        <input
+          class="ev-email-input"
+          type="email"
+          [(ngModel)]="editedEmail"
+          placeholder="Enter your email"
+          autocomplete="email"
+          (keydown.enter)="confirmEditEmail()"
+          (keydown.escape)="cancelEditEmail()"
+        />
+        <button class="btn-ev-edit-confirm" (click)="confirmEditEmail()" title="Confirm">✔</button>
+        <button class="btn-ev-edit-cancel" (click)="cancelEditEmail()" title="Cancel">✕</button>
+      </div>
+      <p class="ev-email-edit-error" *ngIf="emailEditError">{{ emailEditError }}</p>
+    </ng-container>
 
     <div class="ev-error" *ngIf="errorMsg">⚠️ {{ errorMsg }}</div>
 
     <div class="ev-actions">
       <button class="btn-ev-close" (click)="close()" [disabled]="isLoading">I'll do it later</button>
-      <button class="btn-ev-primary" (click)="sendVerification()"
+      <button class="btn-ev-primary" (click)="confirmEditEmail(); sendVerification()" *ngIf="isEditingEmail"
+              [disabled]="isLoading" [class.loading]="isLoading">
+        <span *ngIf="!isLoading">Verify Email</span>
+        <span *ngIf="isLoading" class="ev-spinner"></span>
+      </button>
+      <button class="btn-ev-primary" (click)="sendVerification()" *ngIf="!isEditingEmail"
               [disabled]="isLoading" [class.loading]="isLoading">
         <span *ngIf="!isLoading">Verify Email</span>
         <span *ngIf="isLoading" class="ev-spinner"></span>
@@ -27,7 +55,7 @@
   <ng-container *ngIf="step === 'otp'">
     <div class="ev-icon">🔢</div>
     <h2 class="ev-title">Enter OTP</h2>
-    <p class="ev-subtitle">A 6-digit code was sent to<br /><strong>{{ email }}</strong></p>
+    <p class="ev-subtitle">A 6-digit code was sent to<br /><strong>{{ editedEmail || email }}</strong></p>
 
     <div class="ev-otp-row">
       <input
@@ -53,8 +81,9 @@
       <span *ngIf="isLoading" class="ev-spinner"></span>
     </button>
 
-    <button class="btn-ev-resend" (click)="sendVerification()" [disabled]="isLoading">
-      Resend Code
+    <button class="btn-ev-resend" (click)="sendVerification()" [disabled]="!canResend || isLoading">
+      <ng-container *ngIf="canResend">Resend Code</ng-container>
+      <ng-container *ngIf="!canResend">Resend in {{ resendTimerLabel }}</ng-container>
     </button>
   </ng-container>
 

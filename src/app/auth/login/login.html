@@ -15,8 +15,8 @@
     <span class="back-arrow">←</span> Back to Home
   </button>
 
-  <!-- Card -->
-  <div class="login-card">
+  <!-- ══ LOGIN CARD ══ -->
+  <div class="login-card" *ngIf="view === 'login'">
     <div class="card-header">
       <img src="https://res.cloudinary.com/drytm0fl7/image/upload/v1774417151/logo_resized_xnddqz.jpg" alt="AuctionDeck Logo" class="card-logo" />
       <h2>Login</h2>
@@ -55,6 +55,10 @@
         </div>
       </div>
 
+      <div class="forgot-link-row">
+        <button type="button" class="forgot-link" (click)="showForgotPassword()">Forgot password?</button>
+      </div>
+
       <button type="submit" class="btn-login" [class.loading]="isLoading">
         <span *ngIf="!isLoading">Sign In</span>
         <span *ngIf="isLoading" class="spinner"></span>
@@ -68,11 +72,143 @@
 
     <div class="card-footer">
       <p>New organiser? <a (click)="goToSignup()">Create a free account</a></p>
-      <p class="footer-divider">Need help? <a href="mailto:support@auctiondeck.in">Contact Support</a></p>
+      <p class="footer-divider">Need help?</p>
+      <div class="support-links">
+        <a href="mailto:auction.deck@gmail.com" class="support-btn support-btn--email">
+          <span>✉</span> Email
+        </a>
+        <a href="https://wa.me/916360634388?text=Hi%2C%20I%20need%20support%20with%20AuctionDeck" target="_blank" rel="noopener noreferrer" class="support-btn support-btn--whatsapp">
+          <span>💬</span> WhatsApp
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ FORGOT PASSWORD – STEP 1 (email + new password) ══ -->
+  <div class="login-card" *ngIf="view === 'forgot-step1'">
+    <div class="card-header">
+      <div class="fp-icon">🔑</div>
+      <h2>Forgot Password</h2>
+      <p>Enter your email and new password. We'll send an OTP to verify.</p>
+    </div>
+
+    <form (ngSubmit)="sendOtp()" class="login-form">
+
+      <div class="field">
+        <label for="fp-email">Email</label>
+        <div class="input-wrap">
+          <span class="input-icon">📧</span>
+          <input
+            id="fp-email"
+            type="email"
+            [(ngModel)]="fpEmail"
+            name="fpEmail"
+            placeholder="Enter your registered email"
+            autocomplete="email"
+          />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="fp-new-password">New Password</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input
+            id="fp-new-password"
+            type="password"
+            [(ngModel)]="fpNewPassword"
+            name="fpNewPassword"
+            placeholder="Enter new password"
+            autocomplete="new-password"
+          />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="fp-confirm-password">Confirm Password</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input
+            id="fp-confirm-password"
+            type="password"
+            [(ngModel)]="fpConfirmPassword"
+            name="fpConfirmPassword"
+            placeholder="Confirm new password"
+            autocomplete="new-password"
+          />
+        </div>
+      </div>
+
+      <div class="error-msg" *ngIf="fpError">
+        ⚠️ {{ fpError }}
+      </div>
+
+      <button type="submit" class="btn-login" [class.loading]="fpLoading">
+        <span *ngIf="!fpLoading">Next – Send OTP</span>
+        <span *ngIf="fpLoading" class="spinner"></span>
+      </button>
+
+      <button type="button" class="btn-back-link" (click)="backToLogin()">← Back to Login</button>
+
+    </form>
+  </div>
+
+  <!-- ══ FORGOT PASSWORD – STEP 2 (OTP entry) ══ -->
+  <div class="login-card" *ngIf="view === 'forgot-otp'">
+    <div class="card-header">
+      <div class="fp-icon">📩</div>
+      <h2>Enter OTP</h2>
+      <p>An OTP has been sent to <strong>{{ fpEmail }}</strong>. Enter it below to reset your password.</p>
+    </div>
+
+    <form (ngSubmit)="verifyOtpAndReset()" class="login-form">
+
+      <div class="field">
+        <label for="fp-otp">OTP</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔢</span>
+          <input
+            id="fp-otp"
+            type="text"
+            [(ngModel)]="fpOtp"
+            name="fpOtp"
+            placeholder="Enter OTP"
+            autocomplete="one-time-code"
+            inputmode="numeric"
+            maxlength="6"
+          />
+        </div>
+      </div>
+
+      <div class="error-msg" *ngIf="fpError">
+        ⚠️ {{ fpError }}
+      </div>
+
+      <button type="submit" class="btn-login" [class.loading]="fpLoading">
+        <span *ngIf="!fpLoading">Verify & Reset Password</span>
+        <span *ngIf="fpLoading" class="spinner"></span>
+      </button>
+
+      <button type="button" class="btn-back-link" (click)="showForgotPassword()">← Start Over</button>
+
+    </form>
+  </div>
+
+  <!-- ══ FORGOT PASSWORD – SUCCESS ══ -->
+  <div class="login-card" *ngIf="view === 'forgot-success'">
+    <div class="card-header">
+      <div class="fp-icon success-icon">✅</div>
+      <h2>Password Reset!</h2>
+      <p>Your password has been updated successfully. You can now log in with your new password.</p>
+    </div>
+
+    <div class="success-actions">
+      <button type="button" class="btn-login" (click)="backToLogin()">Go to Login</button>
     </div>
   </div>
 
   <p class="tagline">Trusted by 120+ auction organisers across the country</p>
 
 </div>
+
 
