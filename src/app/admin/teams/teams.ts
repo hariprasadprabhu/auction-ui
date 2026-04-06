@@ -1238,8 +1238,8 @@ export class Players implements OnInit {
   }
 
   async downloadExcelTemplate() {
-    const { Workbook } = await import('exceljs');
-    const workbook = new Workbook();
+    const ExcelJS = ((await import('exceljs')) as any).default;
+    const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet('Players');
     const config = this.tournament?.registrationFieldConfig;
 
@@ -1364,8 +1364,8 @@ export class Players implements OnInit {
     this.excelBulkErrors = [];
 
     try {
-      const { Workbook } = await import('exceljs');
-      const workbook = new Workbook();
+      const ExcelJS = ((await import('exceljs')) as any).default;
+      const workbook = new ExcelJS.Workbook();
       const buffer = await file.arrayBuffer();
       await workbook.xlsx.load(buffer);
 
