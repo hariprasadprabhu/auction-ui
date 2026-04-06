@@ -5,7 +5,7 @@
 ### API URL Centralization
 - **Status**: ✅ Complete
 - **Location**: All services use `environment.apiUrl` from single source
-- **Production URL**: `https://auctiondeck-api-production.up.railway.app/api`
+- **Production URL**: `https://api.bidplayers.in/api`
 - **Files Modified**:
   - `src/environments/environment.prod.ts` - Updated with production API URL
 
