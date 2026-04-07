@@ -324,6 +324,34 @@
         <!-- Payment Proof -->
         <div class="form-section" *ngIf="isFieldMandatory('requirePaymentProof')">
           <h3 class="section-title">Payment Proof *</h3>
+
+          <!-- Payment instruction banner (shown when collection number is configured) -->
+          <div class="payment-info-banner" *ngIf="regConfig?.paymentCollectionNumber">
+            <div class="payment-info-icon">💳</div>
+            <div class="payment-info-body">
+              <p class="payment-info-title">Make payment before uploading proof</p>
+              <div class="payment-info-row" *ngIf="regConfig?.paymentAmount">
+                <span class="payment-info-label">Amount:</span>
+                <strong class="payment-info-value">₹{{ regConfig?.paymentAmount }}</strong>
+              </div>
+              <div class="payment-info-row">
+                <span class="payment-info-label">Pay to:</span>
+                <strong class="payment-info-value">{{ regConfig?.paymentCollectionNumber }}</strong>
+              </div>
+              <div class="payment-info-row" *ngIf="regConfig?.acceptedPaymentMethods">
+                <span class="payment-info-label">Via:</span>
+                <span class="payment-method-badge">
+                  <ng-container [ngSwitch]="regConfig?.acceptedPaymentMethods">
+                    <ng-container *ngSwitchCase="'GPAY'">Google Pay (GPay)</ng-container>
+                    <ng-container *ngSwitchCase="'PHONEPAY'">PhonePe</ng-container>
+                    <ng-container *ngSwitchCase="'BOTH'">Google Pay / PhonePe</ng-container>
+                    <ng-container *ngSwitchDefault>{{ regConfig?.acceptedPaymentMethods }}</ng-container>
+                  </ng-container>
+                </span>
+              </div>
+            </div>
+          </div>
+
           <p class="section-hint">Upload a screenshot of your payment confirmation</p>
           <div class="file-upload-wrapper">
             <input type="file" id="paymentProof" accept="image/*" (change)="onPaymentProofSelected($event)" name="paymentProof" [disabled]="isUploadingPaymentProof" [required]="tournament?.paymentProofRequired" />

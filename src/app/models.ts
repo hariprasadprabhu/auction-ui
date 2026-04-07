@@ -64,6 +64,9 @@ export interface Tournament {
   logoUrl?: string;
   teamesAllowed?: number;
   paymentProofRequired?: boolean;
+  paymentCollectionNumber?: string;
+  acceptedPaymentMethods?: string;
+  paymentAmount?: number;
   playerRegistrationOpen?: boolean;
   registrationFieldConfig?: RegistrationFieldConfig;
 }
@@ -83,6 +86,9 @@ export interface RegistrationFieldConfig {
   requireLastSeasonPlayed: boolean;
   requireLastSeasonTeam: boolean;
   requireBowlingStyle: boolean;
+  paymentCollectionNumber?: string;
+  acceptedPaymentMethods?: string;
+  paymentAmount?: number;
 }
 
 export interface CreateTournamentRequest {
@@ -98,6 +104,9 @@ export interface CreateTournamentRequest {
   status?: TournamentStatus;
   logo?: File | string;
   paymentProofRequired?: boolean;
+  paymentCollectionNumber?: string;
+  acceptedPaymentMethods?: string;
+  paymentAmount?: number;
 }
 
 export type UpdateTournamentRequest = Partial<CreateTournamentRequest>;

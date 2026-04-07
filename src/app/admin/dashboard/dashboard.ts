@@ -221,6 +221,9 @@ export class Dashboard implements OnInit, OnDestroy {
     status: TournamentStatus;
     logoUrl: string;
     paymentProofRequired: boolean;
+    paymentCollectionNumber: string;
+    acceptedPaymentMethods: string;
+    paymentAmount: number | null;
   } = this.blankForm();
 
   private blankForm() {
@@ -237,6 +240,9 @@ export class Dashboard implements OnInit, OnDestroy {
       status: 'UPCOMING' as TournamentStatus,
       logoUrl: this.DEFAULT_TEAM_LOGO,
       paymentProofRequired: false,
+      paymentCollectionNumber: '',
+      acceptedPaymentMethods: '',
+      paymentAmount: null as number | null,
     };
   }
 
@@ -341,6 +347,9 @@ export class Dashboard implements OnInit, OnDestroy {
         status: this.statusFromDate(this.newTournament.date),
         logo: this.newTournament.logoUrl || this.DEFAULT_TEAM_LOGO,
         paymentProofRequired: this.newTournament.paymentProofRequired,
+        paymentCollectionNumber: this.newTournament.paymentProofRequired ? this.newTournament.paymentCollectionNumber : undefined,
+        acceptedPaymentMethods: this.newTournament.paymentProofRequired ? this.newTournament.acceptedPaymentMethods : undefined,
+        paymentAmount: this.newTournament.paymentProofRequired && this.newTournament.paymentAmount != null ? this.newTournament.paymentAmount : undefined,
       })
       .subscribe({
         next: (t) => {
@@ -479,6 +488,9 @@ export class Dashboard implements OnInit, OnDestroy {
     status: TournamentStatus;
     logoUrl: string;
     paymentProofRequired: boolean;
+    paymentCollectionNumber: string;
+    acceptedPaymentMethods: string;
+    paymentAmount: number | null;
   } = this.blankForm();
 
   openEditModal(tournament: Tournament) {
@@ -496,6 +508,9 @@ export class Dashboard implements OnInit, OnDestroy {
       status: tournament.status,
       logoUrl: tournament.logoUrl || this.DEFAULT_TEAM_LOGO,
       paymentProofRequired: tournament.paymentProofRequired || false,
+      paymentCollectionNumber: tournament.paymentCollectionNumber || '',
+      acceptedPaymentMethods: tournament.acceptedPaymentMethods || '',
+      paymentAmount: tournament.paymentAmount ?? null,
     };
     // Snapshot sensitive fields to detect impactful changes
     this.originalBasePrice = tournament.basePrice;
@@ -598,6 +613,9 @@ export class Dashboard implements OnInit, OnDestroy {
         status: this.statusFromDate(this.editTournament.date),
         logo: this.editTournament.logoUrl || this.DEFAULT_TEAM_LOGO,
         paymentProofRequired: this.editTournament.paymentProofRequired,
+        paymentCollectionNumber: this.editTournament.paymentProofRequired ? this.editTournament.paymentCollectionNumber : undefined,
+        acceptedPaymentMethods: this.editTournament.paymentProofRequired ? this.editTournament.acceptedPaymentMethods : undefined,
+        paymentAmount: this.editTournament.paymentProofRequired && this.editTournament.paymentAmount != null ? this.editTournament.paymentAmount : undefined,
       })
       .subscribe({
         next: (updated) => {
@@ -703,6 +721,9 @@ export class Dashboard implements OnInit, OnDestroy {
       requireLastSeasonPlayed: false,
       requireLastSeasonTeam: false,
       requireBowlingStyle: false,
+      paymentCollectionNumber: '',
+      acceptedPaymentMethods: '',
+      paymentAmount: undefined,
     };
   }
 

@@ -92,6 +92,12 @@ export class TournamentService {
     if (request.status !== undefined) fd.append('status', request.status);
     if (request.paymentProofRequired !== undefined)
       fd.append('paymentProofRequired', String(request.paymentProofRequired));
+    if (request.paymentCollectionNumber !== undefined)
+      fd.append('paymentCollectionNumber', request.paymentCollectionNumber);
+    if (request.acceptedPaymentMethods !== undefined)
+      fd.append('acceptedPaymentMethods', request.acceptedPaymentMethods);
+    if (request.paymentAmount !== undefined)
+      fd.append('paymentAmount', String(request.paymentAmount));
     if ((request as any).playerRegistrationOpen !== undefined)
       fd.append('playerRegistrationOpen', String((request as any).playerRegistrationOpen));
     // Only append to FormData if it's a File object
@@ -117,6 +123,9 @@ export class TournamentService {
     if (request.initialIncrementAmount !== undefined) obj.initialIncrement = request.initialIncrementAmount;
     if (request.status !== undefined) obj.status = request.status;
     if (request.paymentProofRequired !== undefined) obj.paymentProofRequired = request.paymentProofRequired;
+    if (request.paymentCollectionNumber !== undefined) obj.paymentCollectionNumber = request.paymentCollectionNumber;
+    if (request.acceptedPaymentMethods !== undefined) obj.acceptedPaymentMethods = request.acceptedPaymentMethods;
+    if (request.paymentAmount !== undefined) obj.paymentAmount = request.paymentAmount;
     if ((request as any).playerRegistrationOpen !== undefined) obj.playerRegistrationOpen = (request as any).playerRegistrationOpen;
     // Attach Cloudinary URL directly to original field name
     if (request.logo && typeof request.logo === 'string') {
