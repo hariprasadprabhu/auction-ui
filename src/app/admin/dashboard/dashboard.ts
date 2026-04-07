@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -6,15 +6,16 @@ import { TournamentService } from '../../core/services/tournament.service';
 import { AuctionPlayerService } from '../../core/services/auction-player.service';
 import { AuthService, UserProfile } from '../../core/services/auth.service';
 import { CloudinaryImageService } from '../../core/services/cloudinary-image.service';
-import { Tournament, TournamentStatus } from '../../models';
+import { Tournament, TournamentStatus, RegistrationFieldConfig } from '../../models';
+import { EmailVerification } from '../../../app/auth/email-verification/email-verification';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, EmailVerification],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.scss'],
 })
-export class Dashboard implements OnInit {
+export class Dashboard implements OnInit, OnDestroy {
   tournaments: Tournament[] = [];
   isLoading = false;
   errorMsg = '';
@@ -31,7 +32,7 @@ export class Dashboard implements OnInit {
   // ── Reset Entire Auction Modal ───────────────────────────────────────────
   showResetAuctionModal = false;
   resetAuctionConfirmText = '';
-  resetAuctionExpectedText = 'reset ins';
+  resetAuctionExpectedText = 'reset';
   isResettingAuction = false;
   resetAuctionMessage = '';
   resetAuctionTournamentId: number | null = null;
@@ -45,10 +46,61 @@ export class Dashboard implements OnInit {
   deleteTournamentId: number | null = null;
   deleteTournamentName = '';
 
+  // ── Reset Success / Error Notification Modal ───────────────────────────
+  showResetNotificationModal = false;
+  resetNotificationTitle = '';
+  resetNotificationMessage = '';
+  resetNotificationIsSuccess = true;
+
   // ── Delete Success Modal ─────────────────────────────────────────────────
   showDeleteSuccessModal = false;
   deletedTournamentName = '';
   deleteSuccessMessage = '';
+
+  // ── Registration Link Modal ──────────────────────────────────────────────
+  showRegLinkModal = false;
+  regLinkTournamentId: number | null = null;
+  regLinkUrl = '';
+  regLinkCopied = false;
+  get regLinkWhatsApp(): string {
+    return `https://wa.me/?text=${encodeURIComponent('Register here: ' + this.regLinkUrl)}`;
+  }
+  get regLinkEmail(): string {
+    return `mailto:?subject=Player Registration&body=${encodeURIComponent('Register here: ' + this.regLinkUrl)}`;
+  }
+  get canNativeShare(): boolean {
+    return typeof navigator !== 'undefined' && !!navigator.share;
+  }
+
+  // ── Configure Player Registration Modal ──────────────────────────────────
+  showRegConfigModal = false;
+  regConfigTournamentId: number | null = null;
+  regConfigTournamentName = '';
+  isSavingRegConfig = false;
+  isLoadingRegConfig = false;
+  regConfigSaved = false;
+  regConfigFields: RegistrationFieldConfig = this.defaultRegConfig();
+
+  readonly regConfigFieldList: { key: keyof RegistrationFieldConfig; label: string; alwaysOn?: boolean }[] = [
+    { key: 'requirePhoto', label: 'Profile Photo', alwaysOn: true },
+    { key: 'requirePhoto', label: 'First Name', alwaysOn: true },
+    { key: 'requireLastName', label: 'Last Name', alwaysOn: true },
+    { key: 'requireDob', label: 'Date of Birth', alwaysOn: true },
+    { key: 'requirePaymentProof', label: 'Payment Proof' },
+    { key: 'requireMobileNumber', label: 'Mobile Number' },
+    { key: 'requireHandedness', label: 'Handedness' },
+    { key: 'requireTshirtSize', label: 'T-Shirt Size' },
+    { key: 'requireTrouserSize', label: 'Trouser Size' },
+    { key: 'requireJerseyNumber', label: 'Jersey Number' },
+    { key: 'requireSleeveType', label: 'Sleeve Type' },
+    { key: 'requirePlayerLocation', label: 'Player Location' },
+    { key: 'requireLastSeasonPlayed', label: 'Last Season Played' },
+    { key: 'requireLastSeasonTeam', label: 'Last Season Team' },
+    { key: 'requireBowlingStyle', label: 'Bowling Style' },
+  ];
+
+  // ── Email Verification ─────────────────────────────────────────────────
+  showEmailVerificationModal = false;
 
   // ── Profile Menu ─────────────────────────────────────────────────────────
   showProfileMenu = false;
@@ -56,12 +108,23 @@ export class Dashboard implements OnInit {
   profileData: UserProfile | null = null;
   isLoadingProfile = false;
 
-  // ── Change Password Modal ─────────────────────────────────────────────────
-  showChangePasswordModal = false;
-  changePasswordForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
-  isChangingPassword = false;
-  changePasswordError = '';
-  changePasswordSuccess = false;
+  // ── Reset Password Modal ─────────────────────────────────────────────────
+  showResetPasswordModal = false;
+  /** 'unverified' | 'form' | 'otp' | 'loading' | 'success' */
+  resetPasswordStep: 'unverified' | 'form' | 'otp' | 'loading' | 'success' = 'form';
+  resetPasswordForm = { newPassword: '', confirmPassword: '' };
+  resetPasswordOtp = '';
+  isResettingPassword = false;
+  resetPasswordError = '';
+  resetPasswordResendCountdown = 0;
+  private resetPasswordResendInterval: ReturnType<typeof setInterval> | null = null;
+
+  get canResendResetOtp(): boolean { return this.resetPasswordResendCountdown === 0; }
+  get resetPasswordResendTimerLabel(): string {
+    const m = Math.floor(this.resetPasswordResendCountdown / 60);
+    const s = this.resetPasswordResendCountdown % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  }
 
   // ── Confirm Modal ────────────────────────────────────────────────────────
   showConfirmModal = false;
@@ -87,9 +150,40 @@ export class Dashboard implements OnInit {
   /** Default Cloudinary URLs */
   readonly DEFAULT_TEAM_LOGO = 'https://res.cloudinary.com/drytm0fl7/image/upload/v1774291008/default_player_lzyniw.png';
 
+  private readonly VERIFY_PROMPTED_KEY = 'email_verify_prompted';
+
   ngOnInit() {
     this.currentUser = this.authService.getCurrentUser();
+    if (!this.currentUser?.emailVerified && !sessionStorage.getItem(this.VERIFY_PROMPTED_KEY)) {
+      sessionStorage.setItem(this.VERIFY_PROMPTED_KEY, '1');
+      this.showEmailVerificationModal = true;
+    }
     this.loadTournaments();
+  }
+
+  ngOnDestroy(): void {
+    this.clearResetPasswordResendTimer();
+  }
+
+  onEmailVerificationClosed(): void {
+    this.showEmailVerificationModal = false;
+  }
+
+  onEmailVerified(): void {
+    this.showEmailVerificationModal = false;
+    // Token and emailVerified flag are already persisted by verifyEmailOtp.
+    // Hard-reload so the entire app re-initialises with the new token.
+    window.location.reload();
+  }
+
+  onEmailChanged(newEmail: string): void {
+    const user = this.authService.getCurrentUser();
+    if (user) {
+      user.email = newEmail;
+      localStorage.setItem('auth_user', JSON.stringify(user));
+      this.currentUser = { ...user };
+    }
+    this.cdr.markForCheck();
   }
 
   private loadTournaments() {
@@ -127,6 +221,9 @@ export class Dashboard implements OnInit {
     status: TournamentStatus;
     logoUrl: string;
     paymentProofRequired: boolean;
+    paymentCollectionNumber: string;
+    acceptedPaymentMethods: string;
+    paymentAmount: number | null;
   } = this.blankForm();
 
   private blankForm() {
@@ -143,6 +240,9 @@ export class Dashboard implements OnInit {
       status: 'UPCOMING' as TournamentStatus,
       logoUrl: this.DEFAULT_TEAM_LOGO,
       paymentProofRequired: false,
+      paymentCollectionNumber: '',
+      acceptedPaymentMethods: '',
+      paymentAmount: null as number | null,
     };
   }
 
@@ -247,6 +347,9 @@ export class Dashboard implements OnInit {
         status: this.statusFromDate(this.newTournament.date),
         logo: this.newTournament.logoUrl || this.DEFAULT_TEAM_LOGO,
         paymentProofRequired: this.newTournament.paymentProofRequired,
+        paymentCollectionNumber: this.newTournament.paymentProofRequired ? this.newTournament.paymentCollectionNumber : undefined,
+        acceptedPaymentMethods: this.newTournament.paymentProofRequired ? this.newTournament.acceptedPaymentMethods : undefined,
+        paymentAmount: this.newTournament.paymentProofRequired && this.newTournament.paymentAmount != null ? this.newTournament.paymentAmount : undefined,
       })
       .subscribe({
         next: (t) => {
@@ -276,6 +379,35 @@ export class Dashboard implements OnInit {
           }
         },
       });
+  }
+
+  togglingRegistrationIds = new Set<number>();
+
+  togglePlayerRegistration(tournament: Tournament) {
+    const newValue = !tournament.playerRegistrationOpen;
+    this.togglingRegistrationIds.add(tournament.id);
+    this.cdr.markForCheck();
+    this.tournamentService.togglePlayerRegistration(tournament.id, newValue).subscribe({
+      next: (updated) => {
+        tournament.playerRegistrationOpen = updated.playerRegistrationOpen;
+        this.togglingRegistrationIds.delete(tournament.id);
+        this.resetNotificationIsSuccess = true;
+        this.resetNotificationTitle = updated.playerRegistrationOpen ? '✓ Registration Opened' : '✓ Registration Closed';
+        this.resetNotificationMessage = updated.playerRegistrationOpen
+          ? `Player registration for "${tournament.name}" is now open.`
+          : `Player registration for "${tournament.name}" is now closed.`;
+        this.showResetNotificationModal = true;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.togglingRegistrationIds.delete(tournament.id);
+        this.resetNotificationIsSuccess = false;
+        this.resetNotificationTitle = '✗ Update Failed';
+        this.resetNotificationMessage = 'Could not update player registration status. Please try again.';
+        this.showResetNotificationModal = true;
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   deleteTournament(id: number) {
@@ -356,6 +488,9 @@ export class Dashboard implements OnInit {
     status: TournamentStatus;
     logoUrl: string;
     paymentProofRequired: boolean;
+    paymentCollectionNumber: string;
+    acceptedPaymentMethods: string;
+    paymentAmount: number | null;
   } = this.blankForm();
 
   openEditModal(tournament: Tournament) {
@@ -373,6 +508,9 @@ export class Dashboard implements OnInit {
       status: tournament.status,
       logoUrl: tournament.logoUrl || this.DEFAULT_TEAM_LOGO,
       paymentProofRequired: tournament.paymentProofRequired || false,
+      paymentCollectionNumber: tournament.paymentCollectionNumber || '',
+      acceptedPaymentMethods: tournament.acceptedPaymentMethods || '',
+      paymentAmount: tournament.paymentAmount ?? null,
     };
     // Snapshot sensitive fields to detect impactful changes
     this.originalBasePrice = tournament.basePrice;
@@ -475,6 +613,9 @@ export class Dashboard implements OnInit {
         status: this.statusFromDate(this.editTournament.date),
         logo: this.editTournament.logoUrl || this.DEFAULT_TEAM_LOGO,
         paymentProofRequired: this.editTournament.paymentProofRequired,
+        paymentCollectionNumber: this.editTournament.paymentProofRequired ? this.editTournament.paymentCollectionNumber : undefined,
+        acceptedPaymentMethods: this.editTournament.paymentProofRequired ? this.editTournament.acceptedPaymentMethods : undefined,
+        paymentAmount: this.editTournament.paymentProofRequired && this.editTournament.paymentAmount != null ? this.editTournament.paymentAmount : undefined,
       })
       .subscribe({
         next: (updated) => {
@@ -484,6 +625,10 @@ export class Dashboard implements OnInit {
             t.id === updated.id ? updated : t,
           );
           this.closeEditModal();
+          this.resetNotificationTitle = '✓ Tournament Saved';
+          this.resetNotificationMessage = 'Tournament details have been saved successfully.';
+          this.resetNotificationIsSuccess = true;
+          this.showResetNotificationModal = true;
           this.cdr.markForCheck();
         },
         error: (err: any) => {
@@ -503,8 +648,20 @@ export class Dashboard implements OnInit {
             this.showLimitErrorModal = true;
             this.limitErrorMessage = errorBody.message || '';
             this.cdr.markForCheck();
+          } else if (errorBody?.message?.includes('Auction date has already been modified once')) {
+            this.closeEditModal();
+            this.resetNotificationTitle = '✗ Date Change Not Allowed';
+            this.resetNotificationMessage = 'You already edited the tournament date once, so you can no longer edit the auction date for this tournament.';
+            this.resetNotificationIsSuccess = false;
+            this.showResetNotificationModal = true;
+            this.cdr.markForCheck();
           } else {
-            alert('Failed to update tournament. Please try again.');
+            this.closeEditModal();
+            this.resetNotificationTitle = '✗ Update Failed';
+            this.resetNotificationMessage = 'Failed to update tournament. Please try again.';
+            this.resetNotificationIsSuccess = false;
+            this.showResetNotificationModal = true;
+            this.cdr.markForCheck();
           }
         },
       });
@@ -519,8 +676,109 @@ export class Dashboard implements OnInit {
     this.router.navigate(['/admin/teams', tournamentId]);
   }
 
-  openRegisterLink(tournamentId: number) {
-    window.open(`/register/${tournamentId}`, '_blank');
+  openRegLinkModal(tournamentId: number) {
+    this.regLinkTournamentId = tournamentId;
+    this.regLinkUrl = `${window.location.origin}/register/${tournamentId}`;
+    this.regLinkCopied = false;
+    this.showRegLinkModal = true;
+  }
+
+  closeRegLinkModal() {
+    this.showRegLinkModal = false;
+    this.regLinkTournamentId = null;
+    this.regLinkCopied = false;
+  }
+
+  openRegPage() {
+    window.open(`/register/${this.regLinkTournamentId}`, '_blank');
+  }
+
+  copyRegLink() {
+    navigator.clipboard.writeText(this.regLinkUrl).then(() => {
+      this.regLinkCopied = true;
+      this.cdr.detectChanges();
+    });
+  }
+
+  nativeShare() {
+    navigator.share({ title: 'Player Registration', url: this.regLinkUrl }).catch(() => {});
+  }
+
+  // ── Configure Player Registration ─────────────────────────────────────────
+  private defaultRegConfig(): RegistrationFieldConfig {
+    return {
+      requirePhoto: true,
+      requireLastName: false,
+      requireDob: false,
+      requirePaymentProof: false,
+      requireMobileNumber: false,
+      requireHandedness: false,
+      requireTshirtSize: false,
+      requireTrouserSize: false,
+      requireJerseyNumber: false,
+      requireSleeveType: false,
+      requirePlayerLocation: false,
+      requireLastSeasonPlayed: false,
+      requireLastSeasonTeam: false,
+      requireBowlingStyle: false,
+      paymentCollectionNumber: '',
+      acceptedPaymentMethods: '',
+      paymentAmount: undefined,
+    };
+  }
+
+  openRegConfigModal(tournament: Tournament) {
+    this.regConfigTournamentId = tournament.id;
+    this.regConfigTournamentName = tournament.name;
+    this.regConfigFields = this.defaultRegConfig();
+    this.isSavingRegConfig = false;
+    this.regConfigSaved = false;
+    this.isLoadingRegConfig = true;
+    this.showRegConfigModal = true;
+    this.cdr.markForCheck();
+
+    this.tournamentService.getRegistrationConfig(tournament.id).subscribe({
+      next: (config) => {
+        this.regConfigFields = config ?? this.defaultRegConfig();
+        this.isLoadingRegConfig = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.isLoadingRegConfig = false;
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  closeRegConfigModal() {
+    this.showRegConfigModal = false;
+    this.regConfigTournamentId = null;
+    this.isSavingRegConfig = false;
+    this.cdr.markForCheck();
+  }
+
+  saveRegConfig() {
+    if (!this.regConfigTournamentId) return;
+    this.isSavingRegConfig = true;
+    this.cdr.markForCheck();
+
+    this.tournamentService.updateRegistrationFieldConfig(this.regConfigTournamentId, this.regConfigFields).subscribe({
+      next: (updated) => {
+        const idx = this.tournaments.findIndex((t) => t.id === updated.id);
+        if (idx !== -1) this.tournaments[idx] = updated;
+        this.isSavingRegConfig = false;
+        this.regConfigSaved = true;
+        this.cdr.markForCheck();
+        setTimeout(() => {
+          this.closeRegConfigModal();
+        }, 1500);
+      },
+      error: (err) => {
+        this.isSavingRegConfig = false;
+        alert(err?.error?.message || 'Failed to save configuration. Please try again.');
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   startAuction(tournamentId: number) {
@@ -533,6 +791,10 @@ export class Dashboard implements OnInit {
 
   viewOwnerView(tournamentId: number) {
     window.open(`/admin/owner-view/${tournamentId}`, '_blank');
+  }
+
+  viewResults(tournamentId: number) {
+    this.router.navigate(['/admin/results', tournamentId]);
   }
 
   // ── Reset Entire Auction ────────────────────────────────────────────────
@@ -568,20 +830,31 @@ export class Dashboard implements OnInit {
       next: (response) => {
         this.isResettingAuction = false;
         this.resetAuctionMessage = '';
-        alert('Auction has been reset successfully!\n\n' + (response?.message || 'All auction data has been reset.'));
         this.closeResetAuctionModal();
+        this.resetNotificationTitle = '✓ Auction Reset Successfully';
+        this.resetNotificationMessage = response?.message || 'All auction data has been reset.';
+        this.resetNotificationIsSuccess = true;
+        this.showResetNotificationModal = true;
         this.cdr.markForCheck();
       },
       error: (err) => {
         this.isResettingAuction = false;
         this.resetAuctionMessage = '';
-        alert('Failed to reset auction. ' + (err?.error?.message || 'Please try again.'));
+        this.resetNotificationTitle = '✗ Reset Failed';
+        this.resetNotificationMessage = err?.error?.message || 'Failed to reset auction. Please try again.';
+        this.resetNotificationIsSuccess = false;
+        this.showResetNotificationModal = true;
         this.cdr.markForCheck();
       },
     });
   }
 
   // ── Custom Modal Methods ──────────────────────────────────────────────────
+
+  closeResetNotificationModal() {
+    this.showResetNotificationModal = false;
+    this.cdr.markForCheck();
+  }
 
   openConfirmModal(title: string, message: string, onConfirm: () => void) {
     this.confirmTitle = title;
@@ -603,6 +876,7 @@ export class Dashboard implements OnInit {
   }
 
   logout() {
+    sessionStorage.removeItem(this.VERIFY_PROMPTED_KEY);
     this.authService.logout();
     this.router.navigate(['/login']);
   }
@@ -643,47 +917,141 @@ export class Dashboard implements OnInit {
     this.profileData = null;
   }
 
-  openChangePasswordModal() {
+  openResetPasswordModal() {
     this.showProfileMenu = false;
-    this.changePasswordForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
-    this.changePasswordError = '';
-    this.changePasswordSuccess = false;
-    this.showChangePasswordModal = true;
+    this.resetPasswordForm = { newPassword: '', confirmPassword: '' };
+    this.resetPasswordOtp = '';
+    this.resetPasswordError = '';
+    this.isResettingPassword = false;
+    this.clearResetPasswordResendTimer();
+    this.resetPasswordResendCountdown = 0;
+    const user = this.authService.getCurrentUser();
+    this.resetPasswordStep = user?.emailVerified ? 'form' : 'unverified';
+    this.showResetPasswordModal = true;
+    this.cdr.markForCheck();
   }
 
-  closeChangePasswordModal() {
-    this.showChangePasswordModal = false;
+  closeResetPasswordModal() {
+    this.showResetPasswordModal = false;
+    this.clearResetPasswordResendTimer();
+    this.resetPasswordResendCountdown = 0;
   }
 
-  submitChangePassword() {
-    const { currentPassword, newPassword, confirmPassword } = this.changePasswordForm;
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      this.changePasswordError = 'All fields are required.';
+  private startResetPasswordResendTimer(): void {
+    this.clearResetPasswordResendTimer();
+    this.resetPasswordResendCountdown = 120;
+    this.resetPasswordResendInterval = setInterval(() => {
+      this.resetPasswordResendCountdown--;
+      this.cdr.markForCheck();
+      if (this.resetPasswordResendCountdown <= 0) {
+        this.clearResetPasswordResendTimer();
+      }
+    }, 1000);
+  }
+
+  private clearResetPasswordResendTimer(): void {
+    if (this.resetPasswordResendInterval !== null) {
+      clearInterval(this.resetPasswordResendInterval);
+      this.resetPasswordResendInterval = null;
+    }
+  }
+
+  sendResetPasswordOtp(): void {
+    const { newPassword, confirmPassword } = this.resetPasswordForm;
+    if (!newPassword || !confirmPassword) {
+      this.resetPasswordError = 'Please fill in both password fields.';
       return;
     }
     if (newPassword !== confirmPassword) {
-      this.changePasswordError = 'New passwords do not match.';
+      this.resetPasswordError = 'Passwords do not match.';
       return;
     }
     if (newPassword.length < 8) {
-      this.changePasswordError = 'New password must be at least 8 characters.';
+      this.resetPasswordError = 'Password must be at least 8 characters.';
       return;
     }
-    this.isChangingPassword = true;
-    this.changePasswordError = '';
+    this.resetPasswordError = '';
+    this.isResettingPassword = true;
     this.cdr.markForCheck();
-    this.authService.changePassword(currentPassword, newPassword).subscribe({
+    const user = this.authService.getCurrentUser();
+    if (!user?.email) {
+      this.isResettingPassword = false;
+      this.resetPasswordError = 'Session expired. Please log in again.';
+      return;
+    }
+    this.authService.sendPasswordResetOtp(user.email).subscribe({
       next: () => {
-        this.isChangingPassword = false;
-        this.changePasswordSuccess = true;
+        this.isResettingPassword = false;
+        this.resetPasswordStep = 'otp';
+        this.startResetPasswordResendTimer();
         this.cdr.markForCheck();
       },
-      error: (err) => {
-        this.isChangingPassword = false;
-        this.changePasswordError = err?.error?.message || 'Failed to change password. Please try again.';
+      error: (err: any) => {
+        this.isResettingPassword = false;
+        this.resetPasswordError = err?.error?.message || 'Failed to send OTP. Please try again.';
         this.cdr.markForCheck();
       }
     });
+  }
+
+  resendResetPasswordOtp(): void {
+    if (!this.canResendResetOtp) return;
+    this.resetPasswordError = '';
+    this.isResettingPassword = true;
+    this.cdr.markForCheck();
+    const resendUser = this.authService.getCurrentUser();
+    if (!resendUser?.email) {
+      this.isResettingPassword = false;
+      this.resetPasswordError = 'Session expired. Please log in again.';
+      return;
+    }
+    this.authService.sendPasswordResetOtp(resendUser.email).subscribe({
+      next: () => {
+        this.isResettingPassword = false;
+        this.startResetPasswordResendTimer();
+        this.cdr.markForCheck();
+      },
+      error: (err: any) => {
+        this.isResettingPassword = false;
+        this.resetPasswordError = err?.error?.message || 'Failed to resend OTP. Please try again.';
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  submitResetPassword(): void {
+    if (this.resetPasswordOtp.replace(/\s/g, '').length !== 6) {
+      this.resetPasswordError = 'Please enter the 6-digit OTP.';
+      return;
+    }
+    const user = this.authService.getCurrentUser();
+    if (!user) {
+      this.resetPasswordError = 'Session expired. Please log in again.';
+      return;
+    }
+    this.resetPasswordError = '';
+    this.resetPasswordStep = 'loading';
+    this.isResettingPassword = true;
+    this.cdr.markForCheck();
+    this.authService.resetPassword(user.id, user.email, this.resetPasswordForm.newPassword, this.resetPasswordOtp.trim()).subscribe({
+      next: () => {
+        this.isResettingPassword = false;
+        this.resetPasswordStep = 'success';
+        this.clearResetPasswordResendTimer();
+        this.cdr.markForCheck();
+      },
+      error: (err: any) => {
+        this.isResettingPassword = false;
+        this.resetPasswordStep = 'otp';
+        this.resetPasswordError = err?.error?.message || 'Failed to reset password. Please check your OTP and try again.';
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  openVerifyEmailFromReset(): void {
+    this.closeResetPasswordModal();
+    this.showEmailVerificationModal = true;
   }
 
   getInitials(): string {

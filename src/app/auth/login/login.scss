@@ -131,8 +131,9 @@ $white:        #ffffff;
 
   .card-logo {
     height: 45px;
-    width: auto;
-    object-fit: contain;
+    width: 45px;
+    object-fit: cover;
+    border-radius: 50%;
     margin-bottom: 12px;
   }
 
@@ -293,6 +294,39 @@ $white:        #ffffff;
 
     &:hover { text-decoration: underline; }
   }
+
+  .support-links {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .support-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none !important;
+    transition: opacity 0.2s, transform 0.15s;
+
+    &:hover { opacity: 0.85; transform: translateY(-1px); text-decoration: none !important; }
+
+    &--email {
+      background: rgba(102, 126, 234, 0.25);
+      border: 1px solid rgba(102, 126, 234, 0.55);
+      color: #a5b4fc;
+    }
+
+    &--whatsapp {
+      background: rgba(37, 211, 102, 0.18);
+      border: 1px solid rgba(37, 211, 102, 0.45);
+      color: #6ee89a;
+    }
+  }
 }
 
 /* ─── REGISTRATION TOAST ───────────── */
@@ -375,4 +409,57 @@ $white:        #ffffff;
   .input-wrap .input-icon { left: 12px; }
 
   .btn-login { padding: 12px; font-size: 0.95rem; }
+}
+
+/* ─── FORGOT PASSWORD ──────────────── */
+.forgot-link-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -6px;
+}
+
+.forgot-link {
+  background: none;
+  border: none;
+  color: $gold;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  text-decoration: none;
+  transition: opacity 0.2s;
+
+  &:hover { opacity: 0.75; text-decoration: underline; }
+}
+
+.fp-icon {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+
+  &.success-icon {
+    font-size: 3rem;
+  }
+}
+
+.btn-back-link {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.5);
+  font-size: 0.88rem;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: center;
+  padding: 4px 0;
+  transition: color 0.2s;
+  align-self: center;
+
+  &:hover { color: rgba(255,255,255,0.85); }
+}
+
+.success-actions {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }

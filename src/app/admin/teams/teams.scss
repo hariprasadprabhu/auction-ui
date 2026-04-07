@@ -304,6 +304,15 @@
   }
 }
 
+.btn-info {
+  background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+  color: white;
+
+  &:hover {
+    background: linear-gradient(135deg, #138496 0%, #0f6674 100%);
+  }
+}
+
 .btn-back {
   background: white;
   color: #667eea;
@@ -663,46 +672,100 @@
 
 /* Add Form Modal */
 .form-modal {
-  max-width: 500px;
+  max-width: 560px;
 
   h2 {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     color: #333;
-    margin-bottom: 25px;
+    margin-bottom: 16px;
     font-weight: 700;
+  }
+}
+
+.add-player-modal {
+  max-width: 600px;
+  width: 95vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+
+  .add-player-form {
+    overflow-y: auto;
+    flex: 1;
+    padding-right: 4px;
   }
 }
 
 .add-player-form {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 12px;
+}
+
+.form-section-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #667eea;
+  border-bottom: 1px solid #e8eaf6;
+  padding-bottom: 4px;
+  margin-bottom: -4px;
+
+  &.optional-label {
+    color: #999;
+    border-color: #f0f0f0;
+    margin-top: 4px;
+  }
+}
+
+.add-player-photo-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .photo-thumb {
+    flex-shrink: 0;
+    .preview-img-sm {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #667eea;
+    }
+  }
+}
+
+.optional-tag {
+  font-size: 0.72rem;
+  color: #999;
+  font-weight: 400;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 
   label {
-    font-size: 0.9rem;
+    font-size: 0.82rem;
     font-weight: 600;
     color: #333;
   }
 
   input,
   select {
-    padding: 10px 12px;
+    padding: 8px 10px;
     border: 2px solid #e0e0e0;
     border-radius: 6px;
-    font-size: 0.95rem;
-    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 
     &:focus {
       outline: none;
       border-color: #667eea;
-      box-shadow: 0 0 8px rgba(102, 126, 234, 0.2);
+      box-shadow: 0 0 6px rgba(102, 126, 234, 0.2);
     }
 
     &:readonly {
@@ -710,7 +773,19 @@
       color: #666;
       cursor: not-allowed;
     }
+
+    &.input-error {
+      border-color: #e53e3e;
+      box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.15);
+    }
   }
+}
+
+.field-error-msg {
+  font-size: 0.78rem;
+  color: #e53e3e;
+  font-weight: 600;
+  margin-top: 2px;
 }
 
 .file-upload-wrapper {
@@ -770,7 +845,18 @@
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 15px;
+  gap: 12px;
+
+  &.form-row-3 {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .form-row,
+  .form-row.form-row-3 {
+    grid-template-columns: 1fr;
+  }
 }
 
 .proof-selected {
@@ -886,98 +972,147 @@
 
 @media (max-width: 768px) {
   .teams-content {
-    padding: 15px;
+    padding: 12px;
   }
 
   .teams-header {
-    height: 75px;
-    padding: 0 15px;
-  }
-
-  .tournament-title {
-    font-size: 1.1rem;
-  }
-
-  .header-logo-badge {
-    width: 50px;
-    height: 50px;
+    height: auto;
+    min-height: 70px;
+    padding: 10px 14px;
+    flex-wrap: wrap;
+    gap: 6px;
   }
 
   .header-side {
-    width: 120px;
+    width: auto;
+  }
+
+  .header-logo-badge {
+    width: 48px;
+    height: 48px;
+  }
+
+  .tournament-title {
+    font-size: 1.05rem;
+    white-space: normal;
+    word-break: break-word;
   }
 
   .date-value {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
+  }
+
+  .player-stats-bar {
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 0.92rem;
+    padding: 8px 12px;
   }
 
   .actions-bar {
-    padding: 15px 20px;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 14px 16px;
+    gap: 10px;
   }
 
   .action-buttons {
     flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .batch-actions {
+    flex-direction: column;
+    align-items: stretch;
+    margin-left: 0;
+    padding-left: 0;
+    border-left: none;
+    border-top: 2px solid #e0e0e0;
+    padding-top: 10px;
+    gap: 8px;
+
+    .selected-count {
+      text-align: center;
+    }
   }
 
   .btn {
     width: 100%;
+    justify-content: center;
   }
 
   .btn-back-light {
     width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .search-sort-bar {
+    .search-input {
+      width: 100%;
+      min-width: unset;
+      box-sizing: border-box;
+    }
   }
 
   .players-table {
-    font-size: 0.8rem;
+    font-size: 0.82rem;
 
     thead th {
-      padding: 10px;
+      padding: 10px 8px;
     }
 
     tbody td {
-      padding: 10px;
+      padding: 10px 8px;
     }
   }
 
   .player-photo {
-    width: 40px;
-    height: 40px;
+    width: 38px;
+    height: 38px;
   }
 
   .payment-proof-thumbnail {
-    width: 50px;
-    height: 50px;
+    width: 48px;
+    height: 48px;
   }
 
   .btn-approve,
   .btn-reject {
-    width: 32px;
-    height: 32px;
-    font-size: 1rem;
+    width: 30px;
+    height: 30px;
+    font-size: 0.95rem;
   }
 
   .modal-content {
-    padding: 20px;
+    padding: 18px;
+    max-width: 96vw;
+    max-height: 92vh;
+    overflow-y: auto;
+  }
+
+  .add-player-modal {
+    max-height: 92vh;
+  }
+
+  .excel-modal {
+    max-width: 96vw;
   }
 }
 
 @media (max-width: 480px) {
   .teams-header {
-    height: 65px;
-    padding: 0 12px;
+    padding: 8px 10px;
   }
 
   .tournament-title {
-    font-size: 0.95rem;
+    font-size: 0.92rem;
   }
 
   .header-logo-badge {
-    width: 42px;
-    height: 42px;
-  }
-
-  .header-side {
-    width: 90px;
+    width: 38px;
+    height: 38px;
   }
 
   .date-label {
@@ -985,71 +1120,139 @@
   }
 
   .date-value {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
+  }
+
+  .page-subtitle {
+    display: none;
   }
 
   .actions-bar {
-    padding: 12px 15px;
+    padding: 10px 12px;
   }
 
   .action-buttons {
-    flex-direction: column;
-    gap: 8px;
+    gap: 7px;
   }
 
   .btn {
-    padding: 8px 12px;
+    padding: 9px 12px;
     font-size: 0.85rem;
   }
 
   .grid-container {
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     margin-bottom: 20px;
   }
 
   .players-table {
-    font-size: 0.75rem;
-    min-width: 500px;
+    font-size: 0.76rem;
+    min-width: 540px;
 
     thead th {
-      padding: 8px;
+      padding: 8px 6px;
     }
 
     tbody td {
-      padding: 8px;
+      padding: 8px 6px;
     }
   }
 
   .player-photo {
-    width: 35px;
-    height: 35px;
+    width: 32px;
+    height: 32px;
   }
 
   .payment-proof-thumbnail {
-    width: 45px;
-    height: 45px;
+    width: 40px;
+    height: 40px;
   }
 
   .btn-approve,
   .btn-reject {
     width: 28px;
     height: 28px;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+  }
+
+  .btn-edit,
+  .btn-delete,
+  .btn-reset-player {
+    width: 28px;
+    height: 28px;
+    font-size: 0.8rem;
+    padding: 4px 6px;
+  }
+
+  .delete-cell,
+  .action-cell {
+    gap: 4px;
   }
 
   .status-badge {
-    padding: 4px 8px;
-    font-size: 0.75rem;
+    padding: 3px 7px;
+    font-size: 0.72rem;
+  }
+
+  .auction-status-info {
+    flex-wrap: wrap;
+    gap: 3px;
+  }
+
+  .modal-overlay {
+    padding: 10px;
   }
 
   .modal-content {
-    padding: 15px;
-    max-width: 95vw;
+    padding: 14px;
+    max-width: 100%;
+    border-radius: 10px;
+    max-height: 95vh;
+    overflow-y: auto;
   }
 
   .modal-close {
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
+    font-size: 1rem;
+  }
+
+  .add-player-modal {
+    max-height: 95vh;
+    width: 100%;
+  }
+
+  .excel-modal {
+    max-width: 100%;
+    max-height: 95vh;
+    overflow-y: auto;
+  }
+
+  .form-modal h2 {
+    font-size: 1.1rem;
+    padding-right: 36px;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+    gap: 8px;
+
+    .btn {
+      width: 100%;
+    }
+  }
+
+  .player-stats-bar {
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.88rem;
+  }
+
+  .confirm-modal,
+  .success-modal,
+  .error-modal {
+    max-width: 100%;
   }
 }
 
@@ -1522,10 +1725,25 @@
     font-weight: 700;
   }
 
+  &.dropdown-tag {
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
+
   small {
     font-weight: 400;
     color: #888;
   }
+}
+
+.dropdown-tag-legend {
+  display: inline-block;
+  background: #e8f5e9;
+  color: #2e7d32;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
 }
 
 .csv-file-name {
@@ -1541,6 +1759,75 @@
   border-radius: 8px;
   padding: 14px 16px;
   margin-bottom: 16px;
+}
+
+.limit-modal {
+  max-width: 420px;
+  text-align: center;
+  padding: 36px 28px 28px;
+
+  .limit-icon {
+    font-size: 3rem;
+    margin-bottom: 14px;
+  }
+
+  .limit-title {
+    font-size: 1.5rem;
+    color: #c62828;
+    margin-bottom: 10px;
+    font-weight: 700;
+  }
+
+  .limit-message {
+    font-size: 1rem;
+    color: #333;
+    margin-bottom: 6px;
+  }
+
+  .limit-sub {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 20px;
+  }
+
+  .limit-contact {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-whatsapp {
+    background: #25d366;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    &:hover { background: #1ebe5a; }
+  }
+
+  .btn-email {
+    background: #1976d2;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    &:hover { background: #1565c0; }
+  }
 }
 
 .errors-title {

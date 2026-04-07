@@ -63,6 +63,9 @@
       <button class="btn btn-secondary" title="Load from Excel" (click)="openExcelModal()">
         <span>📊</span> Load from Excel
       </button>
+      <button class="btn btn-info" title="Download Player Details" (click)="downloadPlayerDetails()">
+        <span>⬇️</span> Download Player Details
+      </button>
       <div class="batch-actions" *ngIf="selectedPlayers.size > 0">
         <span class="selected-count">{{ selectedPlayers.size }} selected</span>
         <button class="btn btn-success" title="Approve Selected" (click)="approveSelectedPlayers()" [disabled]="isProcessingBatchAction">
@@ -228,7 +231,10 @@
         <div class="form-row">
           <div class="form-group">
             <label for="editFirstName">First Name *</label>
-            <input type="text" id="editFirstName" [(ngModel)]="editPlayerForm.firstName" name="editFirstName" placeholder="e.g., John" required />
+            <input type="text" id="editFirstName" [(ngModel)]="editPlayerForm.firstName" name="editFirstName" placeholder="e.g., John" required
+              #editFirstNameRef="ngModel"
+              [class.input-error]="editFirstNameRef.invalid && (editFirstNameRef.touched || editPlayerSubmitted)" />
+            <span class="field-error-msg" *ngIf="editFirstNameRef.invalid && (editFirstNameRef.touched || editPlayerSubmitted)">First Name is required.</span>
           </div>
           <div class="form-group">
             <label for="editLastName">Last Name</label>
@@ -239,7 +245,11 @@
         <div class="form-row">
           <div class="form-group">
             <label for="editDob">Date of Birth</label>
-            <input type="date" id="editDob" [(ngModel)]="editPlayerForm.dob" name="editDob" />
+            <input type="date" id="editDob" [(ngModel)]="editPlayerForm.dob" name="editDob"
+              [max]="todayString"
+              [class.input-error]="editDobError"
+              (change)="editDobError = ''" />
+            <span class="field-error-msg" *ngIf="editDobError">{{ editDobError }}</span>
           </div>
           <div class="form-group">
             <label for="editRole">Role *</label>
@@ -265,6 +275,80 @@
           </div>
         </div>
 
+        <!-- Additional Details -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editHandedness">Batting Style</label>
+            <select id="editHandedness" [(ngModel)]="editPlayerForm.handedness" name="editHandedness">
+              <option value="">Select batting style</option>
+              <option value="RIGHT_HANDED">Right Handed</option>
+              <option value="LEFT_HANDED">Left Handed</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="editSleeveType">Sleeve Type</label>
+            <select id="editSleeveType" [(ngModel)]="editPlayerForm.sleeveType" name="editSleeveType">
+              <option value="">Select sleeve type</option>
+              <option value="FULL_SLEEVES">Full Sleeves</option>
+              <option value="HALF_SLEEVES">Half Sleeves</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editTshirtSize">T-Shirt Size</label>
+            <select id="editTshirtSize" [(ngModel)]="editPlayerForm.tshirtSize" name="editTshirtSize">
+              <option value="">Select size</option>
+              <option value="XS">XS</option>
+              <option value="S">S</option>
+              <option value="M">M</option>
+              <option value="L">L</option>
+              <option value="XL">XL</option>
+              <option value="XXL">XXL</option>
+              <option value="XXXL">XXXL</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="editTrouserSize">Trouser Size</label>
+            <input type="text" id="editTrouserSize" [(ngModel)]="editPlayerForm.trouserSize" name="editTrouserSize" placeholder="e.g., 30, 32" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editJerseyNumber">Preferred Jersey No.</label>
+            <input type="number" id="editJerseyNumber" [(ngModel)]="editPlayerForm.jerseyNumber" name="editJerseyNumber" placeholder="e.g., 7" min="1" max="999" />
+          </div>
+          <div class="form-group">
+            <label for="editPlayerLocation">Player Location</label>
+            <input type="text" id="editPlayerLocation" [(ngModel)]="editPlayerForm.playerLocation" name="editPlayerLocation" placeholder="e.g., Udupi" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editMobileNumber">Mobile Number</label>
+            <input type="tel" id="editMobileNumber" [(ngModel)]="editPlayerForm.mobileNumber" name="editMobileNumber" placeholder="e.g., 9876543210" maxlength="10" minlength="10" pattern="[0-9]{10}" #editMobileRef="ngModel" [class.input-error]="editMobileRef.invalid && editMobileRef.touched" />
+            <span class="field-error-msg" *ngIf="editMobileRef.invalid && editMobileRef.touched">Must be exactly 10 digits.</span>
+          </div>
+          <div class="form-group">
+            <label for="editLastSeasonPlayed">Played Last Season?</label>
+            <select id="editLastSeasonPlayed" [(ngModel)]="editPlayerForm.lastSeasonPlayed" name="editLastSeasonPlayed">
+              <option value="">Select</option>
+              <option value="YES">Yes</option>
+              <option value="NO">No</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row" *ngIf="editPlayerForm.lastSeasonPlayed === 'YES'">
+          <div class="form-group">
+            <label for="editLastSeasonTeam">Last Season Team</label>
+            <input type="text" id="editLastSeasonTeam" [(ngModel)]="editPlayerForm.lastSeasonTeam" name="editLastSeasonTeam" placeholder="e.g., Royal Challengers" />
+          </div>
+        </div>
+
         <div class="form-actions">
           <button type="button" class="btn btn-secondary" (click)="closeEditPlayerModal()">Cancel</button>
           <button type="submit" class="btn btn-primary">Save Changes</button>
@@ -275,7 +359,7 @@
 
   <!-- Add Player Modal -->
   <div class="modal-overlay" *ngIf="showAddPlayerModal" (click)="closeAddPlayerModal()">
-    <div class="modal-content form-modal" (click)="$event.stopPropagation()">
+    <div class="modal-content form-modal add-player-modal" (click)="$event.stopPropagation()">
       <!-- Loading Overlay -->
       <div class="modal-loading-overlay" *ngIf="isAddingPlayer">
         <div class="modal-loader">
@@ -284,69 +368,213 @@
           <div class="spinner-dot"></div>
         </div>
       </div>
-      
-      <button class="modal-close" (click)="closeAddPlayerModal()">✕</button>
-      <h2>Add New Player</h2>
-      <form (ngSubmit)="addPlayer()" class="add-player-form">
-        <div class="form-group">
-          <label for="playerPhoto">Player Photo *</label>
-          <div class="file-upload-wrapper">
-            <input type="file" id="playerPhoto" accept="image/*" (change)="onPlayerPhotoSelected($event)" name="playerPhoto" [disabled]="isUploadingPlayerPhoto" required />
-            <label for="playerPhoto" class="file-upload-label" [class.disabled]="isUploadingPlayerPhoto">
-              {{ isUploadingPlayerPhoto ? '⏳ Uploading...' : '📷 Choose Photo' }}
-            </label>
-          </div>
-          <div *ngIf="playerPhotoPreview" class="photo-preview">
-            <img [src]="playerPhotoPreview" alt="Player preview" class="preview-img" />
-            <p>Photo selected ✓</p>
-          </div>
-        </div>
 
+      <button class="modal-close" (click)="closeAddPlayerModal()">✕</button>
+      <h2>➕ Add New Player</h2>
+
+      <form (ngSubmit)="addPlayer()" class="add-player-form">
+
+        <!-- Required fields -->
+        <div class="form-section-label">Required</div>
         <div class="form-row">
           <div class="form-group">
             <label for="firstName">First Name *</label>
-            <input type="text" id="firstName" [(ngModel)]="newPlayer.firstName" name="firstName" placeholder="e.g., John" required />
+            <input type="text" id="firstName" [(ngModel)]="newPlayer.firstName" name="firstName" placeholder="John" required
+              #firstNameRef="ngModel"
+              [class.input-error]="firstNameRef.invalid && (firstNameRef.touched || addPlayerSubmitted)" />
+            <span class="field-error-msg" *ngIf="firstNameRef.invalid && (firstNameRef.touched || addPlayerSubmitted)">First Name is required.</span>
           </div>
           <div class="form-group">
-            <label for="lastName">Last Name</label>
-            <input type="text" id="lastName" [(ngModel)]="newPlayer.lastName" name="lastName" placeholder="e.g., Doe (optional)" />
+            <label for="lastName">Last Name *</label>
+            <input type="text" id="lastName" [(ngModel)]="newPlayer.lastName" name="lastName" placeholder="Doe" required
+              #lastNameRef="ngModel"
+              [class.input-error]="lastNameRef.invalid && (lastNameRef.touched || addPlayerSubmitted)" />
+            <span class="field-error-msg" *ngIf="lastNameRef.invalid && (lastNameRef.touched || addPlayerSubmitted)">Last Name is required.</span>
           </div>
         </div>
-
         <div class="form-row">
           <div class="form-group">
-            <label for="dob">Date of Birth</label>
-            <input type="date" id="dob" [(ngModel)]="newPlayer.dob" name="dob" />
+            <label for="dob">Date of Birth *</label>
+            <input type="date" id="dob" [(ngModel)]="newPlayer.dob" name="dob" required
+              [max]="todayString"
+              #dobRef="ngModel"
+              [class.input-error]="newDobError || (dobRef.invalid && (dobRef.touched || addPlayerSubmitted))"
+              (change)="newDobError = ''" />
+            <span class="field-error-msg" *ngIf="newDobError">{{ newDobError }}</span>
+            <span class="field-error-msg" *ngIf="!newDobError && dobRef.invalid && (dobRef.touched || addPlayerSubmitted)">Date of Birth is required.</span>
           </div>
           <div class="form-group">
             <label for="role">Role *</label>
-            <select id="role" [(ngModel)]="newPlayer.role" name="role" required>
+            <select id="role" [(ngModel)]="newPlayer.role" name="role" required
+              #roleRef="ngModel"
+              [class.input-error]="roleRef.invalid && (roleRef.touched || addPlayerSubmitted)">
+              <option value="">Select role</option>
               <option value="Batsman">Batsman</option>
               <option value="Bowler">Bowler</option>
               <option value="All-rounder">All-rounder</option>
               <option value="Wicket Keeper">Wicket Keeper</option>
             </select>
+            <span class="field-error-msg" *ngIf="roleRef.invalid && (roleRef.touched || addPlayerSubmitted)">Role is required.</span>
           </div>
         </div>
 
-        <div class="form-group" *ngIf="tournament?.paymentProofRequired">
-          <label for="paymentProof">Payment Proof Screenshot</label>
-          <div class="file-upload-wrapper">
-            <input type="file" id="paymentProof" accept="image/*" (change)="onPaymentProofSelected($event)" name="paymentProof" [disabled]="isUploadingPlayerPaymentProof" />
-            <label for="paymentProof" class="file-upload-label" [class.disabled]="isUploadingPlayerPaymentProof">
-              {{ isUploadingPlayerPaymentProof ? '⏳ Uploading...' : '📄 Upload Payment Screenshot' }}
-            </label>
+        <!-- Optional fields -->
+        <div class="form-section-label optional-label">Optional</div>
+        <div class="form-row form-row-3">
+          <div class="form-group">
+            <label for="newHandedness">Batting Style{{ tournament?.registrationFieldConfig?.requireHandedness ? ' *' : '' }}</label>
+            <select id="newHandedness" [(ngModel)]="newPlayer.handedness" name="newHandedness"
+              [required]="tournament?.registrationFieldConfig?.requireHandedness === true"
+              #handednessRef="ngModel"
+              [class.input-error]="handednessRef.invalid && (handednessRef.touched || addPlayerSubmitted)">
+              <option value="">—</option>
+              <option value="Right">Right</option>
+              <option value="Left">Left</option>
+            </select>
+            <span class="field-error-msg" *ngIf="handednessRef.invalid && (handednessRef.touched || addPlayerSubmitted)">Batting Style is required.</span>
           </div>
-          <div *ngIf="newPlayer.paymentProofUrl" class="proof-selected">
-            <span>✅ Payment proof uploaded</span>
+          <div class="form-group">
+            <label for="newTshirtSize">T-Shirt Size{{ tournament?.registrationFieldConfig?.requireTshirtSize ? ' *' : '' }}</label>
+            <select id="newTshirtSize" [(ngModel)]="newPlayer.tshirtSize" name="newTshirtSize"
+              [required]="tournament?.registrationFieldConfig?.requireTshirtSize === true"
+              #tshirtRef="ngModel"
+              [class.input-error]="tshirtRef.invalid && (tshirtRef.touched || addPlayerSubmitted)">
+              <option value="">—</option>
+              <option value="XS">XS</option>
+              <option value="S">S</option>
+              <option value="M">M</option>
+              <option value="L">L</option>
+              <option value="XL">XL</option>
+              <option value="XXL">XXL</option>
+              <option value="XXXL">XXXL</option>
+            </select>
+            <span class="field-error-msg" *ngIf="tshirtRef.invalid && (tshirtRef.touched || addPlayerSubmitted)">T-Shirt Size is required.</span>
+          </div>
+          <div class="form-group">
+            <label for="newTrouserSize">Trouser Size{{ tournament?.registrationFieldConfig?.requireTrouserSize ? ' *' : '' }}</label>
+            <input type="text" id="newTrouserSize" [(ngModel)]="newPlayer.trouserSize" name="newTrouserSize" placeholder="32"
+              [required]="tournament?.registrationFieldConfig?.requireTrouserSize === true"
+              #trouserRef="ngModel"
+              [class.input-error]="trouserRef.invalid && (trouserRef.touched || addPlayerSubmitted)" />
+            <span class="field-error-msg" *ngIf="trouserRef.invalid && (trouserRef.touched || addPlayerSubmitted)">Trouser Size is required.</span>
+          </div>
+        </div>
+        <div class="form-row form-row-3">
+          <div class="form-group">
+            <label for="newJerseyNumber">Jersey No.{{ tournament?.registrationFieldConfig?.requireJerseyNumber ? ' *' : '' }}</label>
+            <input type="number" id="newJerseyNumber" [(ngModel)]="newPlayer.jerseyNumber" name="newJerseyNumber" placeholder="7" min="1" max="999"
+              [required]="tournament?.registrationFieldConfig?.requireJerseyNumber === true"
+              #jerseyRef="ngModel"
+              [class.input-error]="jerseyRef.invalid && (jerseyRef.touched || addPlayerSubmitted)" />
+            <span class="field-error-msg" *ngIf="jerseyRef.invalid && (jerseyRef.touched || addPlayerSubmitted)">Jersey Number is required.</span>
+          </div>
+          <div class="form-group">
+            <label for="newMobileNumber">Mobile{{ tournament?.registrationFieldConfig?.requireMobileNumber ? ' *' : '' }}</label>
+            <input type="tel" id="newMobileNumber" [(ngModel)]="newPlayer.mobileNumber" name="newMobileNumber" placeholder="9876543210" maxlength="10" minlength="10" pattern="[0-9]{10}"
+              [required]="tournament?.registrationFieldConfig?.requireMobileNumber === true"
+              #mobileRef="ngModel"
+              [class.input-error]="mobileRef.invalid && (mobileRef.touched || addPlayerSubmitted)" />
+            <span class="field-error-msg" *ngIf="mobileRef.invalid && (mobileRef.touched || addPlayerSubmitted)">Must be exactly 10 digits.</span>
+          </div>
+          <div class="form-group">
+            <label for="newPlayerLocation">Location{{ tournament?.registrationFieldConfig?.requirePlayerLocation ? ' *' : '' }}</label>
+            <input type="text" id="newPlayerLocation" [(ngModel)]="newPlayer.playerLocation" name="newPlayerLocation" placeholder="Udupi"
+              [required]="tournament?.registrationFieldConfig?.requirePlayerLocation === true"
+              #locationRef="ngModel"
+              [class.input-error]="locationRef.invalid && (locationRef.touched || addPlayerSubmitted)" />
+            <span class="field-error-msg" *ngIf="locationRef.invalid && (locationRef.touched || addPlayerSubmitted)">Player Location is required.</span>
+          </div>
+        </div>
+        <div class="form-row form-row-3">
+          <div class="form-group">
+            <label for="newSleeveType">Sleeve Type{{ tournament?.registrationFieldConfig?.requireSleeveType ? ' *' : '' }}</label>
+            <select id="newSleeveType" [(ngModel)]="newPlayer.sleeveType" name="newSleeveType"
+              [required]="tournament?.registrationFieldConfig?.requireSleeveType === true"
+              #sleeveRef="ngModel"
+              [class.input-error]="sleeveRef.invalid && (sleeveRef.touched || addPlayerSubmitted)">
+              <option value="">—</option>
+              <option value="FULL_SLEEVES">Full Sleeves</option>
+              <option value="HALF_SLEEVES">Half Sleeves</option>
+            </select>
+            <span class="field-error-msg" *ngIf="sleeveRef.invalid && (sleeveRef.touched || addPlayerSubmitted)">Sleeve Type is required.</span>
+          </div>
+          <div class="form-group">
+            <label for="newLastSeasonPlayed">Played Last Season?{{ tournament?.registrationFieldConfig?.requireLastSeasonPlayed ? ' *' : '' }}</label>
+            <select id="newLastSeasonPlayed" [(ngModel)]="newPlayer.lastSeasonPlayed" name="newLastSeasonPlayed"
+              [required]="tournament?.registrationFieldConfig?.requireLastSeasonPlayed === true"
+              #lastSeasonRef="ngModel"
+              [class.input-error]="lastSeasonRef.invalid && (lastSeasonRef.touched || addPlayerSubmitted)">
+              <option value="">—</option>
+              <option value="YES">Yes</option>
+              <option value="NO">No</option>
+            </select>
+            <span class="field-error-msg" *ngIf="lastSeasonRef.invalid && (lastSeasonRef.touched || addPlayerSubmitted)">This field is required.</span>
+          </div>
+          <div class="form-group">
+            <label for="newLastSeasonTeam">Last Season Team{{ tournament?.registrationFieldConfig?.requireLastSeasonTeam ? ' *' : '' }}</label>
+            <input type="text" id="newLastSeasonTeam" [(ngModel)]="newPlayer.lastSeasonTeam" name="newLastSeasonTeam" placeholder="e.g. Royal XI"
+              [required]="tournament?.registrationFieldConfig?.requireLastSeasonTeam === true"
+              #lastTeamRef="ngModel"
+              [class.input-error]="lastTeamRef.invalid && (lastTeamRef.touched || addPlayerSubmitted)" />
+            <span class="field-error-msg" *ngIf="lastTeamRef.invalid && (lastTeamRef.touched || addPlayerSubmitted)">Last Season Team is required.</span>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="newBowlingStyle">Bowling Style{{ tournament?.registrationFieldConfig?.requireBowlingStyle ? ' *' : '' }}</label>
+            <select id="newBowlingStyle" [(ngModel)]="newPlayer.bowlingStyle" name="newBowlingStyle"
+              [required]="tournament?.registrationFieldConfig?.requireBowlingStyle === true"
+              #bowlingRef="ngModel"
+              [class.input-error]="bowlingRef.invalid && (bowlingRef.touched || addPlayerSubmitted)">
+              <option value="">Select bowling style</option>
+              <option value="Right hand Fast Bowler">Right hand Fast Bowler</option>
+              <option value="Left hand Fast Bowler">Left hand Fast Bowler</option>
+              <option value="Right hand Fast-Medium">Right hand Fast-Medium</option>
+              <option value="Left hand Fast-Medium">Left hand Fast-Medium</option>
+              <option value="Right hand Medium-Fast">Right hand Medium-Fast</option>
+              <option value="Left hand Medium-Fast">Left hand Medium-Fast</option>
+              <option value="Right hand Medium Pacer">Right hand Medium Pacer</option>
+              <option value="Left hand Medium Pacer">Left hand Medium Pacer</option>
+              <option value="Right hand Off-Spinner">Right hand Off-Spinner</option>
+              <option value="Left hand Off-Spinner">Left hand Off-Spinner</option>
+              <option value="Right hand Leg-Spinner">Right hand Leg-Spinner</option>
+              <option value="Left hand Leg-Spinner">Left hand Leg-Spinner</option>
+            </select>
+            <span class="field-error-msg" *ngIf="bowlingRef.invalid && (bowlingRef.touched || addPlayerSubmitted)">Bowling Style is required.</span>
+          </div>
+          <div class="form-group">
+            <label for="newPaymentProof">Payment Proof</label>
+            <div class="file-upload-wrapper">
+              <input type="file" id="newPaymentProof" accept="image/*" (change)="onPaymentProofSelected($event)" name="newPaymentProof" [disabled]="isUploadingPlayerPaymentProof" />
+              <label for="newPaymentProof" class="file-upload-label" [class.disabled]="isUploadingPlayerPaymentProof">
+                {{ isUploadingPlayerPaymentProof ? '⏳ Uploading...' : newPlayer.paymentProofUrl === DEFAULT_PAYMENT_PROOF ? '🖼️ Default Updated — Click to Check' : newPlayer.paymentProofUrl ? '✅ Uploaded' : '📄 Upload Proof' }}
+              </label>
+            </div>
           </div>
         </div>
 
-        <p class="form-note">Status will be 'Pending'. Last Name and Date of Birth are optional.</p>
+        <!-- Photo upload (optional for admin) -->
+        <div class="add-player-photo-row">
+          <div class="form-group" style="flex:1">
+            <label>Photo <span class="optional-tag">(optional)</span></label>
+            <div class="file-upload-wrapper">
+              <input type="file" id="playerPhoto" accept="image/*" (change)="onPlayerPhotoSelected($event)" name="playerPhoto" [disabled]="isUploadingPlayerPhoto" />
+              <label for="playerPhoto" class="file-upload-label" [class.disabled]="isUploadingPlayerPhoto">
+                {{ isUploadingPlayerPhoto ? '⏳ Uploading...' : '📷 Choose Photo' }}
+              </label>
+            </div>
+          </div>
+          <div class="photo-thumb" *ngIf="playerPhotoPreview">
+            <img [src]="playerPhotoPreview" alt="preview" class="preview-img-sm" />
+          </div>
+        </div>
 
         <div class="form-actions">
           <button type="button" class="btn btn-secondary" (click)="closeAddPlayerModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary" [disabled]="!newPlayer.firstName || !newPlayer.role || !newPlayer.photoUrl || (tournament?.paymentProofRequired && !newPlayer.paymentProofUrl) || isAddingPlayer || isUploadingPlayerPhoto || isUploadingPlayerPaymentProof">Add Player</button>
+          <button type="submit" class="btn btn-primary"
+            [disabled]="isAddingPlayer || isUploadingPlayerPhoto">
+            {{ isAddingPlayer ? '⏳ Adding...' : 'Add Player' }}
+          </button>
         </div>
       </form>
     </div>
@@ -415,39 +643,54 @@
     </div>
   </div>
 
-  <!-- Excel / CSV Bulk Upload Modal -->
+  <!-- Excel Bulk Upload Modal -->
   <div class="modal-overlay" *ngIf="showExcelModal" (click)="closeExcelModal()">
     <div class="modal-content form-modal excel-modal" (click)="$event.stopPropagation()">
       <button class="modal-close" (click)="closeExcelModal()">✕</button>
-      <h2>📊 Load Players from CSV</h2>
+      <h2>📊 Load Players from Excel</h2>
 
       <!-- Step 1: Download template -->
       <div class="excel-section">
         <h3 class="excel-step-title">Step 1 — Download Template</h3>
-        <p class="excel-hint">The template contains the required columns. Do not include Player ID, Photo or Payment Proof.</p>
-        <button class="btn btn-secondary" (click)="downloadCsvTemplate()">⬇ Download CSV Template</button>
+        <p class="excel-hint">Download the Excel template and fill in all required fields. Columns marked <strong>▾</strong> have built-in dropdown lists.</p>
+        <button class="btn btn-secondary" (click)="downloadExcelTemplate()">⬇ Download Excel Template (.xlsx)</button>
         <div class="excel-columns-info">
           <span class="col-tag required">firstName *</span>
-          <span class="col-tag">lastName</span>
-          <span class="col-tag">dob <small>(YYYY-MM-DD)</small></span>
-          <span class="col-tag required">role *</span>
+          <span class="col-tag required">lastName *</span>
+          <span class="col-tag required">dob * <small>(YYYY-MM-DD)</small></span>
+          <span class="col-tag required dropdown-tag">role * ▾</span>
+          <ng-container *ngIf="tournament?.registrationFieldConfig as cfg">
+            <span class="col-tag required" *ngIf="cfg.requireMobileNumber">mobileNumber *</span>
+            <span class="col-tag required dropdown-tag" *ngIf="cfg.requireHandedness">batting style * ▾</span>
+            <span class="col-tag required dropdown-tag" *ngIf="cfg.requireTshirtSize">tshirtSize * ▾</span>
+            <span class="col-tag required dropdown-tag" *ngIf="cfg.requireTrouserSize">trouserSize * ▾</span>
+            <span class="col-tag required" *ngIf="cfg.requireJerseyNumber">jerseyNumber *</span>
+            <span class="col-tag required dropdown-tag" *ngIf="cfg.requireSleeveType">sleeveType * ▾</span>
+            <span class="col-tag required" *ngIf="cfg.requirePlayerLocation">playerLocation *</span>
+            <span class="col-tag required dropdown-tag" *ngIf="cfg.requireLastSeasonPlayed">lastSeasonPlayed * ▾</span>
+            <span class="col-tag required" *ngIf="cfg.requireLastSeasonTeam">lastSeasonTeam *</span>
+            <span class="col-tag required dropdown-tag" *ngIf="cfg.requireBowlingStyle">bowlingStyle * ▾</span>
+          </ng-container>
         </div>
-        <p class="excel-hint" style="margin-top:6px;">Valid roles: <strong>Batsman, Bowler, All-rounder, Wicket Keeper</strong></p>
+        <p class="excel-hint" style="margin-top:6px;">
+          <span class="dropdown-tag-legend">▾ dropdown</span> columns have built-in selection lists in the template.
+        </p>
       </div>
 
-      <!-- Step 2: Upload CSV -->
+      <!-- Step 2: Upload Excel -->
       <div class="excel-section">
-        <h3 class="excel-step-title">Step 2 — Upload Filled CSV</h3>
+        <h3 class="excel-step-title">Step 2 — Upload Filled Excel</h3>
         <div class="file-upload-wrapper">
-          <input type="file" id="csvFileInput" accept=".csv,text/csv" (change)="onCsvFileSelected($event)" name="csvFileInput" />
-          <label for="csvFileInput" class="file-upload-label">📂 Choose CSV File</label>
+          <input type="file" id="excelFileInput" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            (change)="onExcelFileSelected($event)" name="excelFileInput" />
+          <label for="excelFileInput" class="file-upload-label">📂 Choose Excel File (.xlsx)</label>
         </div>
         <p *ngIf="csvFileName" class="csv-file-name">{{ csvFileName }}</p>
       </div>
 
       <!-- Validation Errors -->
       <div class="excel-errors" *ngIf="excelBulkErrors.length > 0">
-        <h4 class="errors-title">⚠ Validation Errors — please fix the CSV and re-upload</h4>
+        <h4 class="errors-title">⚠ Validation Errors — please fix and re-upload</h4>
         <ul class="errors-list">
           <li *ngFor="let err of excelBulkErrors">{{ err.message }}</li>
         </ul>
@@ -463,8 +706,20 @@
                 <th>#</th>
                 <th>First Name</th>
                 <th>Last Name</th>
-                <th>Date of Birth</th>
+                <th>DOB</th>
                 <th>Role</th>
+                <ng-container *ngIf="tournament?.registrationFieldConfig as cfg">
+                  <th *ngIf="cfg.requireMobileNumber">Mobile</th>
+                  <th *ngIf="cfg.requireHandedness">Batting Style</th>
+                  <th *ngIf="cfg.requireTshirtSize">T-Shirt</th>
+                  <th *ngIf="cfg.requireTrouserSize">Trouser</th>
+                  <th *ngIf="cfg.requireJerseyNumber">Jersey #</th>
+                  <th *ngIf="cfg.requireSleeveType">Sleeve</th>
+                  <th *ngIf="cfg.requirePlayerLocation">Location</th>
+                  <th *ngIf="cfg.requireLastSeasonPlayed">Last Season</th>
+                  <th *ngIf="cfg.requireLastSeasonTeam">Last Team</th>
+                  <th *ngIf="cfg.requireBowlingStyle">Bowling Style</th>
+                </ng-container>
               </tr>
             </thead>
             <tbody>
@@ -474,6 +729,18 @@
                 <td>{{ row.lastName || '—' }}</td>
                 <td>{{ row.dob || '—' }}</td>
                 <td>{{ row.role }}</td>
+                <ng-container *ngIf="tournament?.registrationFieldConfig as cfg">
+                  <td *ngIf="cfg.requireMobileNumber">{{ row.mobileNumber || '—' }}</td>
+                  <td *ngIf="cfg.requireHandedness">{{ row.handedness || '—' }}</td>
+                  <td *ngIf="cfg.requireTshirtSize">{{ row.tshirtSize || '—' }}</td>
+                  <td *ngIf="cfg.requireTrouserSize">{{ row.trouserSize || '—' }}</td>
+                  <td *ngIf="cfg.requireJerseyNumber">{{ row.jerseyNumber ?? '—' }}</td>
+                  <td *ngIf="cfg.requireSleeveType">{{ row.sleeveType || '—' }}</td>
+                  <td *ngIf="cfg.requirePlayerLocation">{{ row.playerLocation || '—' }}</td>
+                  <td *ngIf="cfg.requireLastSeasonPlayed">{{ row.lastSeasonPlayed || '—' }}</td>
+                  <td *ngIf="cfg.requireLastSeasonTeam">{{ row.lastSeasonTeam || '—' }}</td>
+                  <td *ngIf="cfg.requireBowlingStyle">{{ row.bowlingStyle || '—' }}</td>
+                </ng-container>
               </tr>
             </tbody>
           </table>
@@ -497,6 +764,26 @@
           {{ isBulkUploading ? '⏳ Importing...' : '⬆ Import Players' }}
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- Bulk Upload Limit Modal -->
+  <div class="modal-overlay" *ngIf="showBulkLimitModal" (click)="showBulkLimitModal = false">
+    <div class="modal-content confirm-modal limit-modal" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="showBulkLimitModal = false">✕</button>
+      <div class="limit-icon">⚠️</div>
+      <h2 class="limit-title">Upload Limit Reached</h2>
+      <p class="limit-message">Bulk registration is limited to <strong>30 players</strong> at a time.</p>
+      <p class="limit-sub">Buy more teams to increase your upload capacity.</p>
+      <div class="limit-contact">
+        <a class="btn btn-whatsapp" [href]="'https://wa.me/' + whatsappNumber" target="_blank" rel="noopener">
+          <span>💬</span> WhatsApp Us
+        </a>
+        <a class="btn btn-email" [href]="'mailto:' + contactEmail">
+          <span>✉</span> Email Us
+        </a>
+      </div>
+      <button class="btn btn-secondary" style="margin-top:16px;" (click)="showBulkLimitModal = false">Close</button>
     </div>
   </div>
 

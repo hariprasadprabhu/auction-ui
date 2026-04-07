@@ -40,8 +40,16 @@
     <p class="not-found-hint">Contact your tournament organiser for a valid link.</p>
   </div>
 
+  <!-- Registration Closed -->
+  <div class="not-found" *ngIf="!isCheckingTournament && hasValidTournamentLink && !submitted && tournament?.playerRegistrationOpen === false">
+    <div class="not-found-icon">🚫</div>
+    <h2>Player registration is closed</h2>
+    <p>Registration for this tournament is currently not accepting new entries.</p>
+    <p class="not-found-hint">Contact your tournament organiser for more information.</p>
+  </div>
+
   <!-- Registration Form -->
-  <div class="form-wrapper" *ngIf="!isCheckingTournament && hasValidTournamentLink && !submitted">
+  <div class="form-wrapper" *ngIf="!isCheckingTournament && hasValidTournamentLink && !submitted && tournament?.playerRegistrationOpen !== false">
     <div class="form-card">
       <h2>Player Registration</h2>
       <p class="form-subtitle" *ngIf="!tournamentLookupFailed">Fill in your details below to register for this tournament</p>
@@ -81,9 +89,9 @@
           </div>
         </div>
 
-        <!-- Personal Details -->
+        <!-- Player Details -->
         <div class="form-section">
-          <h3 class="section-title">Personal Details</h3>
+          <h3 class="section-title">Player Details</h3>
 
           <div class="form-row">
             <div class="form-group">
@@ -95,46 +103,255 @@
                 name="firstName"
                 placeholder="e.g., John"
                 required
+                #regFirstName="ngModel"
+                [class.input-error]="regFirstName.invalid && regFirstName.touched"
               />
+              <span class="field-error-msg" *ngIf="regFirstName.invalid && regFirstName.touched">First Name is required.</span>
             </div>
             <div class="form-group">
-              <label for="lastName">Last Name</label>
+              <label for="lastName">Last Name *</label>
               <input
                 type="text"
                 id="lastName"
                 [(ngModel)]="form.lastName"
                 name="lastName"
-                placeholder="e.g., Doe (optional)"
+                placeholder="e.g., Doe"
+                required
+                #regLastName="ngModel"
+                [class.input-error]="regLastName.invalid && regLastName.touched"
               />
+              <span class="field-error-msg" *ngIf="regLastName.invalid && regLastName.touched">Last Name is required.</span>
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label for="dob">Date of Birth</label>
+              <label for="dob">Date of Birth *</label>
               <input
                 type="date"
                 id="dob"
                 [(ngModel)]="form.dob"
                 name="dob"
+                required
+                [max]="todayString"
+                #regDob="ngModel"
+                [class.input-error]="dobError || (regDob.invalid && regDob.touched)"
+                (change)="dobError = ''"
               />
+              <span class="field-error-msg" *ngIf="dobError">{{ dobError }}</span>
+              <span class="field-error-msg" *ngIf="!dobError && regDob.invalid && regDob.touched">Date of Birth is required.</span>
             </div>
             <div class="form-group">
               <label for="role">Role *</label>
-              <select id="role" [(ngModel)]="form.role" name="role" required>
+              <select id="role" [(ngModel)]="form.role" name="role" required
+                #regRole="ngModel"
+                [class.input-error]="regRole.invalid && regRole.touched">
                 <option value="" disabled>Select role</option>
                 <option value="Batsman">Batsman</option>
                 <option value="Bowler">Bowler</option>
                 <option value="All-rounder">All-rounder</option>
                 <option value="Wicket Keeper">Wicket Keeper</option>
               </select>
+              <span class="field-error-msg" *ngIf="regRole.invalid && regRole.touched">Role is required.</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group" *ngIf="isFieldMandatory('requireHandedness')">
+              <label for="handedness">Batting Style *</label>
+              <select id="handedness" [(ngModel)]="form.handedness" name="handedness" required
+                #regHandedness="ngModel"
+                [class.input-error]="regHandedness.invalid && regHandedness.touched">
+                <option value="">Select batting style</option>
+                <option value="RIGHT_HANDED">Right Handed</option>
+                <option value="LEFT_HANDED">Left Handed</option>
+              </select>
+              <span class="field-error-msg" *ngIf="regHandedness.invalid && regHandedness.touched">Batting Style is required.</span>
+            </div>
+            <div class="form-group" *ngIf="isFieldMandatory('requireSleeveType')">
+              <label for="sleeveType">Sleeve Type *</label>
+              <select id="sleeveType" [(ngModel)]="form.sleeveType" name="sleeveType" required
+                #regSleeveType="ngModel"
+                [class.input-error]="regSleeveType.invalid && regSleeveType.touched">
+                <option value="">Select sleeve type</option>
+                <option value="FULL_SLEEVES">Full Sleeves</option>
+                <option value="HALF_SLEEVES">Half Sleeves</option>
+              </select>
+              <span class="field-error-msg" *ngIf="regSleeveType.invalid && regSleeveType.touched">Sleeve Type is required.</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group" *ngIf="isFieldMandatory('requireTshirtSize')">
+              <label for="tshirtSize">T-Shirt Size *</label>
+              <select id="tshirtSize" [(ngModel)]="form.tshirtSize" name="tshirtSize" required
+                #regTshirt="ngModel"
+                [class.input-error]="regTshirt.invalid && regTshirt.touched">
+                <option value="">Select size</option>
+                <option value="XS">XS</option>
+                <option value="S">S</option>
+                <option value="M">M</option>
+                <option value="L">L</option>
+                <option value="XL">XL</option>
+                <option value="XXL">XXL</option>
+                <option value="XXXL">XXXL</option>
+              </select>
+              <span class="field-error-msg" *ngIf="regTshirt.invalid && regTshirt.touched">T-Shirt Size is required.</span>
+            </div>
+            <div class="form-group" *ngIf="isFieldMandatory('requireTrouserSize')">
+              <label for="trouserSize">Trouser Size *</label>
+              <input
+                type="text"
+                id="trouserSize"
+                [(ngModel)]="form.trouserSize"
+                name="trouserSize"
+                placeholder="e.g., 30, 32, 34"
+                required
+                #regTrouser="ngModel"
+                [class.input-error]="regTrouser.invalid && regTrouser.touched"
+              />
+              <span class="field-error-msg" *ngIf="regTrouser.invalid && regTrouser.touched">Trouser Size is required.</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group" *ngIf="isFieldMandatory('requireJerseyNumber')">
+              <label for="jerseyNumber">Preferred Jersey Number *</label>
+              <input
+                type="number"
+                id="jerseyNumber"
+                [(ngModel)]="form.jerseyNumber"
+                name="jerseyNumber"
+                placeholder="e.g., 7"
+                min="1"
+                max="999"
+                required
+                #regJersey="ngModel"
+                [class.input-error]="regJersey.invalid && regJersey.touched"
+              />
+              <span class="field-error-msg" *ngIf="regJersey.invalid && regJersey.touched">Jersey Number is required.</span>
+            </div>
+            <div class="form-group" *ngIf="isFieldMandatory('requirePlayerLocation')">
+              <label for="playerLocation">Player Location *</label>
+              <input
+                type="text"
+                id="playerLocation"
+                [(ngModel)]="form.playerLocation"
+                name="playerLocation"
+                placeholder="e.g., Udupi, Karnataka"
+                required
+                #regLocation="ngModel"
+                [class.input-error]="regLocation.invalid && regLocation.touched"
+              />
+              <span class="field-error-msg" *ngIf="regLocation.invalid && regLocation.touched">Player Location is required.</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group" *ngIf="isFieldMandatory('requireMobileNumber')">
+              <label for="mobileNumber">Mobile Number *</label>
+              <input
+                type="tel"
+                id="mobileNumber"
+                [(ngModel)]="form.mobileNumber"
+                name="mobileNumber"
+                placeholder="e.g., 9876543210"
+                inputmode="numeric"
+                maxlength="10"
+                minlength="10"
+                pattern="[0-9]{10}"
+                required
+                #regMobile="ngModel"
+                [class.input-error]="regMobile.invalid && regMobile.touched"
+              />
+              <span class="field-error-msg" *ngIf="regMobile.invalid && regMobile.touched">Must be exactly 10 digits.</span>
+            </div>
+            <div class="form-group" *ngIf="isFieldMandatory('requireLastSeasonPlayed')">
+              <label for="lastSeasonPlayed">Played Last Season? *</label>
+              <select id="lastSeasonPlayed" [(ngModel)]="form.lastSeasonPlayed" name="lastSeasonPlayed" required
+                #regLastSeason="ngModel"
+                [class.input-error]="regLastSeason.invalid && regLastSeason.touched">
+                <option value="">Select</option>
+                <option value="YES">Yes</option>
+                <option value="NO">No</option>
+              </select>
+              <span class="field-error-msg" *ngIf="regLastSeason.invalid && regLastSeason.touched">This field is required.</span>
+            </div>
+          </div>
+
+          <div class="form-row" *ngIf="isFieldMandatory('requireBowlingStyle')">
+            <div class="form-group">
+              <label for="bowlingStyle">Bowling Style *</label>
+              <select id="bowlingStyle" [(ngModel)]="form.bowlingStyle" name="bowlingStyle" required
+                #regBowling="ngModel"
+                [class.input-error]="regBowling.invalid && regBowling.touched">
+                <option value="">Select bowling style</option>
+                <option value="Right hand Fast Bowler">Right hand Fast Bowler</option>
+                <option value="Left hand Fast Bowler">Left hand Fast Bowler</option>
+                <option value="Right hand Fast-Medium">Right hand Fast-Medium</option>
+                <option value="Left hand Fast-Medium">Left hand Fast-Medium</option>
+                <option value="Right hand Medium-Fast">Right hand Medium-Fast</option>
+                <option value="Left hand Medium-Fast">Left hand Medium-Fast</option>
+                <option value="Right hand Medium Pacer">Right hand Medium Pacer</option>
+                <option value="Left hand Medium Pacer">Left hand Medium Pacer</option>
+                <option value="Right hand Off-Spinner">Right hand Off-Spinner</option>
+                <option value="Left hand Off-Spinner">Left hand Off-Spinner</option>
+                <option value="Right hand Leg-Spinner">Right hand Leg-Spinner</option>
+                <option value="Left hand Leg-Spinner">Left hand Leg-Spinner</option>
+              </select>
+              <span class="field-error-msg" *ngIf="regBowling.invalid && regBowling.touched">Bowling Style is required.</span>
+            </div>
+          </div>
+
+          <div class="form-row" *ngIf="form.lastSeasonPlayed === 'YES' && isFieldMandatory('requireLastSeasonTeam')">
+            <div class="form-group">
+              <label for="lastSeasonTeam">Last Season Team *</label>
+              <input
+                type="text"
+                id="lastSeasonTeam"
+                [(ngModel)]="form.lastSeasonTeam"
+                name="lastSeasonTeam"
+                placeholder="e.g., Royal Challengers"
+                required
+                #regLastTeam="ngModel"
+                [class.input-error]="regLastTeam.invalid && regLastTeam.touched"
+              />
+              <span class="field-error-msg" *ngIf="regLastTeam.invalid && regLastTeam.touched">Last Season Team is required.</span>
             </div>
           </div>
         </div>
 
         <!-- Payment Proof -->
-        <div class="form-section" *ngIf="tournament?.paymentProofRequired">
+        <div class="form-section" *ngIf="isFieldMandatory('requirePaymentProof')">
           <h3 class="section-title">Payment Proof *</h3>
+
+          <!-- Payment instruction banner (shown when collection number is configured) -->
+          <div class="payment-info-banner" *ngIf="regConfig?.paymentCollectionNumber">
+            <div class="payment-info-icon">💳</div>
+            <div class="payment-info-body">
+              <p class="payment-info-title">Make payment before uploading proof</p>
+              <div class="payment-info-row" *ngIf="regConfig?.paymentAmount">
+                <span class="payment-info-label">Amount:</span>
+                <strong class="payment-info-value">₹{{ regConfig?.paymentAmount }}</strong>
+              </div>
+              <div class="payment-info-row">
+                <span class="payment-info-label">Pay to:</span>
+                <strong class="payment-info-value">{{ regConfig?.paymentCollectionNumber }}</strong>
+              </div>
+              <div class="payment-info-row" *ngIf="regConfig?.acceptedPaymentMethods">
+                <span class="payment-info-label">Via:</span>
+                <span class="payment-method-badge">
+                  <ng-container [ngSwitch]="regConfig?.acceptedPaymentMethods">
+                    <ng-container *ngSwitchCase="'GPAY'">Google Pay (GPay)</ng-container>
+                    <ng-container *ngSwitchCase="'PHONEPAY'">PhonePe</ng-container>
+                    <ng-container *ngSwitchCase="'BOTH'">Google Pay / PhonePe</ng-container>
+                    <ng-container *ngSwitchDefault>{{ regConfig?.acceptedPaymentMethods }}</ng-container>
+                  </ng-container>
+                </span>
+              </div>
+            </div>
+          </div>
+
           <p class="section-hint">Upload a screenshot of your payment confirmation</p>
           <div class="file-upload-wrapper">
             <input type="file" id="paymentProof" accept="image/*" (change)="onPaymentProofSelected($event)" name="paymentProof" [disabled]="isUploadingPaymentProof" [required]="tournament?.paymentProofRequired" />
@@ -149,7 +366,7 @@
 
         <!-- Submit -->
         <div class="form-actions">
-          <button type="submit" class="btn-submit" [disabled]="!form.firstName || !form.role || !photoUrl || (tournament?.paymentProofRequired && !paymentProofUrl) || isSubmitting || isCooldownActive || isUploadingPhoto || isUploadingPaymentProof" [attr.data-cooldown]="isCooldownActive">
+          <button type="submit" class="btn-submit" [disabled]="registerForm.invalid || !photoUrl || (isFieldMandatory('requirePaymentProof') && !paymentProofUrl) || isSubmitting || isCooldownActive || isUploadingPhoto || isUploadingPaymentProof" [attr.data-cooldown]="isCooldownActive">
             {{ isSubmitting ? 'Registering...' : (isCooldownActive ? `Wait ${cooldownRemaining}s` : 'Register') }}
           </button>
           <p class="attempts-info" *ngIf="remainingAttempts > 0 && remainingAttempts < 3">{{ remainingAttempts }} registration attempt{{ remainingAttempts !== 1 ? 's' : '' }} remaining for this tournament</p>

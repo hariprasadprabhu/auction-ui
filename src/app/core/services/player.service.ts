@@ -179,6 +179,16 @@ export class PlayerService {
     if (request.paymentProof && typeof request.paymentProof === 'string') {
       obj.paymentProof = request.paymentProof;
     }
+    if (request.mobileNumber !== undefined) obj.mobileNumber = request.mobileNumber;
+    if (request.handedness !== undefined) obj.handedness = request.handedness;
+    if (request.tshirtSize !== undefined) obj.tshirtSize = request.tshirtSize;
+    if (request.trouserSize !== undefined) obj.trouserSize = request.trouserSize;
+    if (request.jerseyNumber !== undefined) obj.jerseyNumber = request.jerseyNumber;
+    if (request.sleeveType !== undefined) obj.sleeveType = request.sleeveType;
+    if (request.playerLocation !== undefined) obj.playerLocation = request.playerLocation;
+    if (request.lastSeasonPlayed !== undefined) obj.lastSeasonPlayed = request.lastSeasonPlayed;
+    if (request.lastSeasonTeam !== undefined) obj.lastSeasonTeam = request.lastSeasonTeam;
+    if (request.bowlingStyle !== undefined) obj.bowlingStyle = request.bowlingStyle;
     return obj;
   }
 

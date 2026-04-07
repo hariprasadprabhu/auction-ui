@@ -58,9 +58,10 @@ export class Auction implements OnInit {
   showUnsoldOverlay = false;
   overlayInteractive = false;
   showConfigModal = false;
+  hoveredTeamName: string | null = null;
+  hoveredTeamLeft = 0;
   auctionComplete = false;
   noUnsoldAvailable = false;
-  hoveredTeamName: string | null = null;
   isValidatingBid = false;
   auctionStarted = false;
 
@@ -380,11 +381,6 @@ export class Auction implements OnInit {
         this.overlayInteractive = false;
         this.auctionEventService.notifyAuctionUpdate(this.tournamentId);
         
-        // Auto-advance after 2 seconds
-        setTimeout(() => {
-          this.nextPlayer();
-        }, 2000);
-        
         this.cdr.markForCheck();
       },
       error: (err: HttpErrorResponse) => {
@@ -619,6 +615,15 @@ export class Auction implements OnInit {
     return teamName.split(' ').map(w => w[0]).join('').toUpperCase();
   }
 
+  onTeamHover(event: MouseEvent, name: string): void {
+    const btn = event.currentTarget as HTMLElement;
+    const footer = btn.closest('.auction-footer') as HTMLElement;
+    const btnRect = btn.getBoundingClientRect();
+    const footerRect = footer.getBoundingClientRect();
+    this.hoveredTeamLeft = btnRect.left - footerRect.left + btnRect.width / 2;
+    this.hoveredTeamName = name;
+  }
+
   getPlayerAge(): string | number {
     return this.currentPlayer?.age ?? 'N/A';
   }
@@ -655,38 +660,58 @@ export class Auction implements OnInit {
     this.confirmDialog = {
       message: 'Mark all UNSOLD players as available for auction again?',
       action: () => {
+        // Show loading overlay immediately after confirmation
+        this.processingMessage = 'Re-queuing unsold players...';
+        this.processingOverlay = true;
+        this.showConfigModal = false;
+        this.cdr.markForCheck();
+
         this.auctionPlayerService.requeueUnsold(this.tournamentId).subscribe({
           next: () => {
             // Fetch fresh player data from DB to sync status updates
             this.auctionPlayerService.getByTournament(this.tournamentId).subscribe({
               next: (allPlayers) => {
-                // Update the players array with fresh data (preserving all players)
-                this.players = allPlayers;
-                
-                this.showConfigModal = false;
+                this.processingOverlay = false;
+
+                // Separate sold/auctioned players from newly available ones
+                const nonAvailable = allPlayers.filter(p => p.auctionStatus !== 'AVAILABLE');
+                const available = allPlayers.filter(p => p.auctionStatus === 'AVAILABLE');
+
+                // Shuffle only the available players for random ordering
+                this.shuffleArray(available);
+
+                // Rebuild the players array: done players first, then shuffled available
+                this.players = [...nonAvailable, ...available];
+
                 this.noUnsoldAvailable = false;
                 this.auctionComplete = false;
-                
-                // Find the first AVAILABLE player to auction immediately
+
+                // Point to the first AVAILABLE player (now randomly placed)
                 const firstAvailableIndex = this.players.findIndex(p => p.auctionStatus === 'AVAILABLE');
-                
+
                 if (firstAvailableIndex === -1) {
-                  // No available players left
                   this.noUnsoldAvailable = true;
                 } else {
-                  // Show the first available player immediately
                   this.currentIndex = firstAvailableIndex;
                   this.initBid();
                   this.showUnsoldOverlay = false;
                   this.overlayInteractive = false;
                 }
-                
+
                 this.cdr.markForCheck();
               },
-              error: () => alert('Failed to reload player data after requeuing.'),
+              error: () => {
+                this.processingOverlay = false;
+                this.cdr.markForCheck();
+                alert('Failed to reload player data after requeuing.');
+              },
             });
           },
-          error: () => alert('Failed to requeue unsold players.'),
+          error: () => {
+            this.processingOverlay = false;
+            this.cdr.markForCheck();
+            alert('Failed to requeue unsold players.');
+          },
         });
       },
     };

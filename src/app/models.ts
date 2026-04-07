@@ -18,6 +18,7 @@ export interface LoginResponse {
   name: string;
   email: string;
   role: string;
+  emailVerified?: boolean;
 }
 
 export interface RegisterRequest {
@@ -63,6 +64,31 @@ export interface Tournament {
   logoUrl?: string;
   teamesAllowed?: number;
   paymentProofRequired?: boolean;
+  paymentCollectionNumber?: string;
+  acceptedPaymentMethods?: string;
+  paymentAmount?: number;
+  playerRegistrationOpen?: boolean;
+  registrationFieldConfig?: RegistrationFieldConfig;
+}
+
+export interface RegistrationFieldConfig {
+  requirePhoto: boolean;
+  requireLastName: boolean;
+  requireDob: boolean;
+  requirePaymentProof: boolean;
+  requireMobileNumber: boolean;
+  requireHandedness: boolean;
+  requireTshirtSize: boolean;
+  requireTrouserSize: boolean;
+  requireJerseyNumber: boolean;
+  requireSleeveType: boolean;
+  requirePlayerLocation: boolean;
+  requireLastSeasonPlayed: boolean;
+  requireLastSeasonTeam: boolean;
+  requireBowlingStyle: boolean;
+  paymentCollectionNumber?: string;
+  acceptedPaymentMethods?: string;
+  paymentAmount?: number;
 }
 
 export interface CreateTournamentRequest {
@@ -78,6 +104,9 @@ export interface CreateTournamentRequest {
   status?: TournamentStatus;
   logo?: File | string;
   paymentProofRequired?: boolean;
+  paymentCollectionNumber?: string;
+  acceptedPaymentMethods?: string;
+  paymentAmount?: number;
 }
 
 export type UpdateTournamentRequest = Partial<CreateTournamentRequest>;
@@ -134,6 +163,15 @@ export interface Player {
   tournamentId: number;
   photoUrl?: string;
   paymentProofUrl?: string;
+  handedness?: string;
+  tshirtSize?: string;
+  trouserSize?: string;
+  jerseyNumber?: number;
+  sleeveType?: string;
+  playerLocation?: string;
+  mobileNumber?: string;
+  lastSeasonPlayed?: string;
+  lastSeasonTeam?: string;
 }
 
 export interface PlayerStats {
@@ -150,6 +188,16 @@ export interface PlayerRegistrationRequest {
   role: string;
   photo?: File | string | undefined;
   paymentProof?: File | string | undefined;
+  handedness?: string;
+  tshirtSize?: string;
+  trouserSize?: string;
+  jerseyNumber?: number;
+  sleeveType?: string;
+  playerLocation?: string;
+  mobileNumber?: string;
+  lastSeasonPlayed?: string;
+  lastSeasonTeam?: string;
+  bowlingStyle?: string;
 }
 
 export interface PlayerBulkRegisterRequest {
@@ -158,6 +206,17 @@ export interface PlayerBulkRegisterRequest {
   dob?: string;
   role: string;
   photo?: string;
+  paymentProof?: string;
+  handedness?: string;
+  tshirtSize?: string;
+  trouserSize?: string;
+  jerseyNumber?: number;
+  sleeveType?: string;
+  playerLocation?: string;
+  mobileNumber?: string;
+  lastSeasonPlayed?: string;
+  lastSeasonTeam?: string;
+  bowlingStyle?: string;
 }
 
 export interface BulkUploadRowError {
@@ -272,6 +331,7 @@ export interface OwnerViewTeamStats {
   maxBidPerPlayer: number;
   availableForBidding: number;
   reservedFund: number;
+  remainingSlots: number;
   playerDetails: {
     auctionPlayerId: number;
     playerNumber: string;

@@ -24,7 +24,7 @@
           <button class="profile-dropdown-item" (click)="openProfileModal()">
             <span class="item-icon">👤</span> Profile
           </button>
-          <button class="profile-dropdown-item" (click)="openChangePasswordModal()">
+          <button class="profile-dropdown-item" (click)="openResetPasswordModal()">
             <span class="item-icon">🔑</span> Reset Password
           </button>
           <div class="profile-dropdown-divider"></div>
@@ -86,6 +86,35 @@
               </span>
             </div>
           </div>
+
+          <!-- Player Registration Toggle -->
+          <div class="registration-toggle-row">
+            <span class="registration-toggle-label">Player Registration</span>
+            <button
+              class="registration-toggle-btn"
+              [class.toggle-on]="tournament.playerRegistrationOpen"
+              [class.toggle-off]="!tournament.playerRegistrationOpen"
+              [class.toggle-loading]="togglingRegistrationIds.has(tournament.id)"
+              [disabled]="togglingRegistrationIds.has(tournament.id)"
+              (click)="togglePlayerRegistration(tournament)"
+              [title]="tournament.playerRegistrationOpen ? 'Click to close registration' : 'Click to open registration'"
+            >
+              <ng-container *ngIf="togglingRegistrationIds.has(tournament.id); else toggleReady">
+                <span class="toggle-spinner"></span>
+                <span class="toggle-state-label" style="color:#999">Saving…</span>
+              </ng-container>
+              <ng-template #toggleReady>
+                <span class="toggle-track">
+                  <span class="toggle-thumb"></span>
+                </span>
+                <span class="toggle-state-label">{{ tournament.playerRegistrationOpen ? 'Open' : 'Closed' }}</span>
+              </ng-template>
+            </button>
+          </div>
+
+          <p class="reg-config-hint">
+            💡 Click the <strong>⚙️ configure</strong> icon below to set which registration fields are required or optional for Players.
+          </p>
         </div>
 
         <div class="card-actions">
@@ -97,17 +126,21 @@
             <span class="icon">👤</span>
             <span class="tooltip">Players</span>
           </button>
-          <button class="action-btn" (click)="openRegisterLink(tournament.id)">
+          <button class="action-btn" (click)="openRegConfigModal(tournament)">
+            <span class="icon">⚙️</span>
+            <span class="tooltip">Configure Registration</span>
+          </button>
+          <button class="action-btn" (click)="openRegLinkModal(tournament.id)">
             <span class="icon">🔗</span>
-            <span class="tooltip">Gen Link</span>
+            <span class="tooltip">Registration Link</span>
           </button>
           <button class="action-btn" (click)="startAuction(tournament.id)">
             <span class="icon">▶️</span>
-            <span class="tooltip">Start</span>
+            <span class="tooltip">Start Auction</span>
           </button>
           <button class="action-btn" (click)="viewConditionalIncrements(tournament.id)">
             <span class="icon">📈</span>
-            <span class="tooltip">Increments</span>
+            <span class="tooltip">Increment Rules</span>
           </button>
           <button class="action-btn" (click)="viewOwnerView(tournament.id)">
             <span class="icon">👑</span>
@@ -117,7 +150,7 @@
             <span class="icon">🎯</span>
             <span class="tooltip">Sponsors</span>
           </button>
-          <button class="action-btn">
+          <button class="action-btn" (click)="viewResults(tournament.id)">
             <span class="icon">📊</span>
             <span class="tooltip">Results</span>
           </button>
@@ -189,7 +222,6 @@
             <label for="tDate">Auction Date *</label>
             <input type="date" id="tDate" #tDate="ngModel" [(ngModel)]="newTournament.date" name="tDate"
                    [min]="getTodayString()" required />
-            <span class="field-hint">⚠️ Choose carefully — auction date can be changed only twice.</span>
             <span class="error-msg" *ngIf="tDate.invalid && (tDate.dirty || tDate.touched || createForm.submitted)">Auction date is required and must be today or a future date.</span>
           </div>
         </div>
@@ -259,6 +291,38 @@
           </div>
         </div>
 
+        <!-- Payment Collection Details (shown when payment proof is required) -->
+        <div class="form-row" *ngIf="newTournament.paymentProofRequired">
+          <div class="form-group">
+            <label for="tPaymentNumber">Payment Collection Number *</label>
+            <input type="text" id="tPaymentNumber" [(ngModel)]="newTournament.paymentCollectionNumber" name="tPaymentNumber"
+                   placeholder="e.g., 9876543210" maxlength="20" [required]="newTournament.paymentProofRequired"
+                   #tPaymentNumber="ngModel" [class.input-error]="tPaymentNumber.invalid && tPaymentNumber.touched" />
+            <span class="error-msg" *ngIf="tPaymentNumber.invalid && tPaymentNumber.touched">Payment collection number is required.</span>
+            <small class="field-hint">Players will send payment to this number</small>
+          </div>
+          <div class="form-group">
+            <label for="tPaymentMethod">Accepted Payment Method *</label>
+            <select id="tPaymentMethod" [(ngModel)]="newTournament.acceptedPaymentMethods" name="tPaymentMethod"
+                    [required]="newTournament.paymentProofRequired"
+                    #tPaymentMethod="ngModel" [class.input-error]="tPaymentMethod.invalid && tPaymentMethod.touched">
+              <option value="">Select method</option>
+              <option value="GPAY">Google Pay (GPay)</option>
+              <option value="PHONEPAY">PhonePe</option>
+              <option value="BOTH">Both GPay &amp; PhonePe</option>
+            </select>
+            <span class="error-msg" *ngIf="tPaymentMethod.invalid && tPaymentMethod.touched">Payment method is required.</span>
+          </div>
+        </div>
+        <div class="form-row" *ngIf="newTournament.paymentProofRequired">
+          <div class="form-group">
+            <label for="tPaymentAmount">Payment Amount (₹)</label>
+            <input type="number" id="tPaymentAmount" [(ngModel)]="newTournament.paymentAmount" name="tPaymentAmount"
+                   placeholder="e.g., 500" min="0" />
+            <small class="field-hint">Amount players need to pay (shown on registration form)</small>
+          </div>
+        </div>
+
         <div class="form-actions">
           <button type="button" class="btn btn-secondary" (click)="closeCreateModal()" [disabled]="isCreatingTournament">Cancel</button>
           <button type="submit" class="btn btn-primary" [disabled]="isCreatingTournament">{{ isCreatingTournament ? '🔄 Creating...' : 'Create Tournament' }}</button>
@@ -317,7 +381,7 @@
           <div class="form-group">
             <label for="eDate">Auction Date *</label>
             <input type="date" id="eDate" #eDate="ngModel" [(ngModel)]="editTournament.date" name="eDate" required />
-            <span class="field-hint">⚠️ Choose carefully — auction date can be changed only twice.</span>
+            <span class="field-hint">⚠️ Choose carefully — auction date can be changed only once.</span>
             <span class="error-msg" *ngIf="eDate.invalid && (eDate.dirty || eDate.touched || editForm.submitted)">Auction date is required.</span>
           </div>
         </div>
@@ -384,6 +448,38 @@
               <option [value]="false">No - Payment proof is optional</option>
               <option [value]="true">Yes - Payment proof is required</option>
             </select>
+          </div>
+        </div>
+
+        <!-- Payment Collection Details (shown when payment proof is required) -->
+        <div class="form-row" *ngIf="editTournament.paymentProofRequired">
+          <div class="form-group">
+            <label for="ePaymentNumber">Payment Collection Number *</label>
+            <input type="text" id="ePaymentNumber" [(ngModel)]="editTournament.paymentCollectionNumber" name="ePaymentNumber"
+                   placeholder="e.g., 9876543210" maxlength="20" [required]="editTournament.paymentProofRequired"
+                   #ePaymentNumber="ngModel" [class.input-error]="ePaymentNumber.invalid && ePaymentNumber.touched" />
+            <span class="error-msg" *ngIf="ePaymentNumber.invalid && ePaymentNumber.touched">Payment collection number is required.</span>
+            <small class="field-hint">Players will send payment to this number</small>
+          </div>
+          <div class="form-group">
+            <label for="ePaymentMethod">Accepted Payment Method *</label>
+            <select id="ePaymentMethod" [(ngModel)]="editTournament.acceptedPaymentMethods" name="ePaymentMethod"
+                    [required]="editTournament.paymentProofRequired"
+                    #ePaymentMethod="ngModel" [class.input-error]="ePaymentMethod.invalid && ePaymentMethod.touched">
+              <option value="">Select method</option>
+              <option value="GPAY">Google Pay (GPay)</option>
+              <option value="PHONEPAY">PhonePe</option>
+              <option value="BOTH">Both GPay &amp; PhonePe</option>
+            </select>
+            <span class="error-msg" *ngIf="ePaymentMethod.invalid && ePaymentMethod.touched">Payment method is required.</span>
+          </div>
+        </div>
+        <div class="form-row" *ngIf="editTournament.paymentProofRequired">
+          <div class="form-group">
+            <label for="ePaymentAmount">Payment Amount (₹)</label>
+            <input type="number" id="ePaymentAmount" [(ngModel)]="editTournament.paymentAmount" name="ePaymentAmount"
+                   placeholder="e.g., 500" min="0" />
+            <small class="field-hint">Amount players need to pay (shown on registration form)</small>
           </div>
         </div>
 
@@ -559,6 +655,18 @@
       <div class="reset-message" *ngIf="isDeletingTournament">
         <p>{{ deleteMessage }}</p>
       </div>
+    </div>
+  </div>
+
+  <!-- Reset Notification Modal -->
+  <div class="modal-overlay" *ngIf="showResetNotificationModal" (click)="closeResetNotificationModal()">
+    <div class="modal-content delete-success-modal" (click)="$event.stopPropagation()">
+      <div class="success-icon" [style.color]="resetNotificationIsSuccess ? '#4caf50' : '#e53935'">
+        {{ resetNotificationIsSuccess ? '✓' : '✗' }}
+      </div>
+      <h2 class="success-title">{{ resetNotificationTitle }}</h2>
+      <p class="success-message">{{ resetNotificationMessage }}</p>
+      <button class="btn" [class.btn-success]="resetNotificationIsSuccess" [class.btn-danger]="!resetNotificationIsSuccess" (click)="closeResetNotificationModal()">Done</button>
     </div>
   </div>
 
@@ -748,7 +856,16 @@
         </div>
         <div class="profile-field">
           <span class="profile-field-label">Email Address</span>
-          <span class="profile-field-value">{{ profileData.email }}</span>
+          <span class="profile-field-value profile-email-row">
+            {{ profileData.email }}
+            <span *ngIf="currentUser?.emailVerified" class="email-verified-badge">✓ Verified</span>
+            <ng-container *ngIf="!currentUser?.emailVerified">
+              <span class="email-unverified-badge">Unverified</span>
+              <button class="btn-inline-verify" (click)="closeProfileModal(); showEmailVerificationModal = true">
+                Verify Email
+              </button>
+            </ng-container>
+          </span>
         </div>
         <div class="profile-field">
           <span class="profile-field-label">Mobile Number</span>
@@ -768,39 +885,217 @@
     </div>
   </div>
 
-  <!-- Change Password Modal -->
-  <div class="modal-overlay" *ngIf="showChangePasswordModal" (click)="closeChangePasswordModal()">
+  <!-- Reset Password Modal -->
+  <div class="modal-overlay" *ngIf="showResetPasswordModal" (click)="closeResetPasswordModal()">
     <div class="modal-content change-password-modal-content" (click)="$event.stopPropagation()">
-      <button class="modal-close" (click)="closeChangePasswordModal()">✕</button>
-      <h2>🔑 Reset Password</h2>
-
-      <div class="change-password-success" *ngIf="changePasswordSuccess">
-        <div class="success-icon">✓</div>
-        <p>Password changed successfully!</p>
-        <button class="btn btn-primary" (click)="closeChangePasswordModal()">Close</button>
+      <button class="modal-close" (click)="closeResetPasswordModal()">✕</button>
+      <div class="modal-logo-header">
+        <img src="assets/images/logo_final.png" alt="AuctionDeck" class="modal-logo-img" />
       </div>
+      <h2>Reset Password</h2>
 
-      <div *ngIf="!changePasswordSuccess">
-        <div class="form-group full-width">
-          <label>Current Password</label>
-          <input type="password" [(ngModel)]="changePasswordForm.currentPassword" placeholder="Enter current password" />
+      <!-- Email not verified -->
+      <ng-container *ngIf="resetPasswordStep === 'unverified'">
+        <div class="reset-pw-unverified">
+          <div class="unverified-icon">⚠️</div>
+          <p class="reset-pw-unverified-msg">
+            Your email address is <strong>not verified</strong>. You must verify your email before you can reset your password.
+          </p>
+          <div class="form-actions">
+            <button class="btn btn-secondary" (click)="closeResetPasswordModal()">Cancel</button>
+            <button class="btn btn-primary" (click)="openVerifyEmailFromReset()">Verify Email</button>
+          </div>
         </div>
+      </ng-container>
+
+      <!-- Step 1: Enter new password -->
+      <ng-container *ngIf="resetPasswordStep === 'form'">
+        <p class="reset-pw-hint">Enter your new password. We'll send a one-time code to your email to confirm the change.</p>
         <div class="form-group full-width">
           <label>New Password</label>
-          <input type="password" [(ngModel)]="changePasswordForm.newPassword" placeholder="At least 8 characters" />
+          <input type="password" [(ngModel)]="resetPasswordForm.newPassword" placeholder="At least 8 characters" autocomplete="new-password" />
         </div>
         <div class="form-group full-width">
           <label>Confirm New Password</label>
-          <input type="password" [(ngModel)]="changePasswordForm.confirmPassword" placeholder="Repeat new password" />
+          <input type="password" [(ngModel)]="resetPasswordForm.confirmPassword" placeholder="Repeat new password" autocomplete="new-password" />
         </div>
-        <p class="error-msg" *ngIf="changePasswordError">{{ changePasswordError }}</p>
+        <p class="error-msg" *ngIf="resetPasswordError">{{ resetPasswordError }}</p>
         <div class="form-actions">
-          <button class="btn btn-secondary" (click)="closeChangePasswordModal()" [disabled]="isChangingPassword">Cancel</button>
-          <button class="btn btn-primary" (click)="submitChangePassword()" [disabled]="isChangingPassword">
-            {{ isChangingPassword ? '🔄 Saving...' : 'Change Password' }}
+          <button class="btn btn-secondary" (click)="closeResetPasswordModal()" [disabled]="isResettingPassword">Cancel</button>
+          <button class="btn btn-primary" (click)="sendResetPasswordOtp()" [disabled]="isResettingPassword">
+            <span *ngIf="!isResettingPassword">Send OTP</span>
+            <span *ngIf="isResettingPassword" class="ev-spinner"></span>
+          </button>
+        </div>
+      </ng-container>
+
+      <!-- Step 2: Enter OTP -->
+      <ng-container *ngIf="resetPasswordStep === 'otp'">
+        <p class="reset-pw-hint">A 6-digit code was sent to <strong>{{ currentUser?.email }}</strong>. Enter it below to confirm your password reset.</p>
+        <div class="form-group full-width">
+          <label>One-Time Password (OTP)</label>
+          <input
+            type="text"
+            inputmode="numeric"
+            maxlength="6"
+            [(ngModel)]="resetPasswordOtp"
+            placeholder="6-digit code"
+            autocomplete="one-time-code"
+            class="otp-single-input"
+          />
+        </div>
+        <p class="error-msg" *ngIf="resetPasswordError">{{ resetPasswordError }}</p>
+        <div class="form-actions">
+          <button class="btn btn-secondary" (click)="closeResetPasswordModal()">Cancel</button>
+          <button class="btn btn-primary" (click)="submitResetPassword()" [disabled]="resetPasswordOtp.length < 6">
+            Reset Password
+          </button>
+        </div>
+        <div class="resend-row">
+          <button class="btn-ev-resend" (click)="resendResetPasswordOtp()" [disabled]="!canResendResetOtp || isResettingPassword">
+            <ng-container *ngIf="canResendResetOtp">Resend OTP</ng-container>
+            <ng-container *ngIf="!canResendResetOtp">Resend in {{ resetPasswordResendTimerLabel }}</ng-container>
+          </button>
+        </div>
+      </ng-container>
+
+      <!-- Loading -->
+      <ng-container *ngIf="resetPasswordStep === 'loading'">
+        <div class="reset-pw-loading">
+          <div class="spinner-circle"></div>
+          <p>Resetting your password…</p>
+        </div>
+      </ng-container>
+
+      <!-- Success -->
+      <ng-container *ngIf="resetPasswordStep === 'success'">
+        <div class="change-password-success">
+          <img src="assets/images/logo_final.png" alt="AuctionDeck" class="success-logo-img" />
+          <p>Password reset successfully!</p>
+          <button class="btn btn-primary" (click)="closeResetPasswordModal()">Close</button>
+        </div>
+      </ng-container>
+
+    </div>
+  </div>
+
+  <!-- Registration Link Modal -->
+  <div class="modal-overlay reg-link-overlay" *ngIf="showRegLinkModal" (click)="closeRegLinkModal()">
+    <div class="modal-content reg-link-modal" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="closeRegLinkModal()">✕</button>
+      <h2>🔗 Registration Link</h2>
+
+      <div class="reg-link-url-box">
+        <span class="reg-link-url-text">{{ regLinkUrl }}</span>
+      </div>
+
+      <!-- Primary actions — always visible -->
+      <div class="reg-link-actions">
+        <button class="btn btn-secondary reg-link-btn" (click)="openRegPage()">
+          🌐 Open Registration Page
+        </button>
+        <button class="btn reg-link-btn" [class.btn-primary]="!regLinkCopied" [class.btn-copied]="regLinkCopied" (click)="copyRegLink()">
+          {{ regLinkCopied ? '✅ Copied!' : '📋 Copy Link' }}
+        </button>
+      </div>
+
+      <!-- Share options — shown immediately after copy -->
+      <div class="reg-link-share" [class.reg-link-share-visible]="regLinkCopied">
+        <p class="reg-link-share-label">Share via</p>
+        <div class="reg-link-share-btns">
+          <a class="share-btn share-wa" [href]="regLinkWhatsApp" target="_blank" rel="noopener">
+            💬 WhatsApp
+          </a>
+          <a class="share-btn share-email" [href]="regLinkEmail">
+            ✉️ Email
+          </a>
+          <button class="share-btn share-native" *ngIf="canNativeShare" (click)="nativeShare()">
+            📤 More…
           </button>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Configure Player Registration Modal -->
+  <div class="modal-overlay" *ngIf="showRegConfigModal" (click)="closeRegConfigModal()">
+    <div class="modal-content reg-config-modal" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="closeRegConfigModal()">✕</button>
+      <h2>Configure Player Registration</h2>
+      <p class="reg-config-subtitle">{{ regConfigTournamentName }}</p>
+
+      <!-- Loading state -->
+      <div class="reg-config-loading" *ngIf="isLoadingRegConfig">
+        <div class="spinner"></div>
+        <p>Loading configuration...</p>
+      </div>
+
+      <!-- Save success state -->
+      <div class="reg-config-success" *ngIf="regConfigSaved">
+        <div class="success-icon">✅</div>
+        <p>Configuration saved successfully!</p>
+      </div>
+
+      <!-- Fields -->
+      <ng-container *ngIf="!isLoadingRegConfig && !regConfigSaved">
+        <div class="reg-config-note">
+          <small>Note: <strong>You can set here, what each player should enter during the registration process, If you are interested in any of the fileds then tick the box and registration form will make them mandatory to fill.</strong></small>
+        </div>
+
+        <div class="reg-config-fields">
+          <label class="field-config-row" [class.always-on]="field.alwaysOn" *ngFor="let field of regConfigFieldList">
+            <input type="checkbox" [(ngModel)]="regConfigFields[field.key]" [name]="'regfield-' + field.key" [disabled]="!!field.alwaysOn" [checked]="!!field.alwaysOn || regConfigFields[field.key]" />
+            <span class="field-label">{{ field.label }}</span>
+            <span class="always-on-badge" *ngIf="field.alwaysOn">Always required</span>
+          </label>
+        </div>
+
+        <!-- Payment Collection Details (shown when Payment Proof is enabled) -->
+        <div class="reg-config-payment-details" *ngIf="regConfigFields.requirePaymentProof">
+          <div class="payment-details-header">Payment Details for Players</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="rcPaymentNumber">Payment Collection Number *</label>
+              <input type="text" id="rcPaymentNumber" [(ngModel)]="regConfigFields.paymentCollectionNumber" name="rcPaymentNumber"
+                     placeholder="e.g., 9876543210" maxlength="20" />
+              <small class="field-hint">Players will see this number to send payment to</small>
+            </div>
+            <div class="form-group">
+              <label for="rcPaymentMethod">Accepted Payment Method</label>
+              <select id="rcPaymentMethod" [(ngModel)]="regConfigFields.acceptedPaymentMethods" name="rcPaymentMethod">
+                <option value="">Select method</option>
+                <option value="GPAY">Google Pay (GPay)</option>
+                <option value="PHONEPAY">PhonePe</option>
+                <option value="BOTH">Both GPay &amp; PhonePe</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="rcPaymentAmount">Payment Amount (₹)</label>
+              <input type="number" id="rcPaymentAmount" [(ngModel)]="regConfigFields.paymentAmount" name="rcPaymentAmount"
+                     placeholder="e.g., 500" min="0" />
+              <small class="field-hint">Amount players need to pay</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn-secondary" (click)="closeRegConfigModal()" [disabled]="isSavingRegConfig">Cancel</button>
+          <button class="btn btn-primary" (click)="saveRegConfig()" [disabled]="isSavingRegConfig">
+            {{ isSavingRegConfig ? '🔄 Saving...' : 'Save Configuration' }}
+          </button>
+        </div>
+      </ng-container>
+    </div>
+  </div>
 </div>
+
+<!-- Email verification popup -->
+<app-email-verification
+  *ngIf="showEmailVerificationModal"
+  [email]="currentUser?.email || ''"
+  (closed)="onEmailVerificationClosed()"
+  (verified)="onEmailVerified()"
+  (emailChanged)="onEmailChanged($event)"
+></app-email-verification>

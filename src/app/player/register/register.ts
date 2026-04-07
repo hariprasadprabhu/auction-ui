@@ -8,7 +8,7 @@ import { TournamentService } from '../../core/services/tournament.service';
 import { PlayerService } from '../../core/services/player.service';
 import { RateLimiterService } from '../../core/services/rate-limiter.service';
 import { CloudinaryImageService } from '../../core/services/cloudinary-image.service';
-import { Tournament } from '../../models';
+import { Tournament, RegistrationFieldConfig } from '../../models';
 
 @Component({
   selector: 'app-register',
@@ -19,14 +19,18 @@ import { Tournament } from '../../models';
 })
 export class Register implements OnInit, OnDestroy {
   tournament: Tournament | undefined;
+  regConfig: RegistrationFieldConfig | null = null;
   submitted = false;
   isSubmitting = false;
   isUploadingPhoto = false;
   isUploadingPaymentProof = false;
   serverError = '';
+  dobError = '';
   isCheckingTournament = true;
   hasValidTournamentLink = false;
   tournamentLookupFailed = false;
+
+  readonly todayString = new Date().toISOString().split('T')[0];
 
   // Rate limiting properties
   rateLimitError = '';
@@ -40,7 +44,17 @@ export class Register implements OnInit, OnDestroy {
     firstName: '',
     lastName: '',
     dob: '',
-    role: ''
+    role: '',
+    handedness: '',
+    tshirtSize: '',
+    trouserSize: '',
+    jerseyNumber: '',
+    sleeveType: '',
+    playerLocation: '',
+    mobileNumber: '',
+    lastSeasonPlayed: '',
+    lastSeasonTeam: '',
+    bowlingStyle: '',
   };
 
   photoUrl: string | undefined = undefined;
@@ -88,6 +102,13 @@ export class Register implements OnInit, OnDestroy {
         console.error('Tournament fetch error:', err);
         this.tournamentLookupFailed = true;
         this.isCheckingTournament = false;
+        this.cdr.detectChanges();
+      },
+    });
+
+    this.tournamentService.getRegistrationConfig(this.tournamentId).subscribe({
+      next: (config) => {
+        this.regConfig = config;
         this.cdr.detectChanges();
       },
     });
@@ -200,13 +221,32 @@ export class Register implements OnInit, OnDestroy {
     }
   }
 
+  isFieldMandatory(key: keyof RegistrationFieldConfig): boolean {
+    if (!this.regConfig) return true;
+    return this.regConfig[key] === true;
+  }
+
+  isPaymentProofRequired(): boolean {
+    return this.isFieldMandatory('requirePaymentProof');
+  }
+
   submitForm() {
     // Check basic validation
     if (!this.form.firstName || !this.form.role || !this.photoUrl || !this.tournamentId || this.isSubmitting) {
       return;
     }
+    // Validate DOB is in the past
+    if (!this.form.dob) {
+      this.dobError = 'Date of Birth is required.';
+      return;
+    }
+    if (new Date(this.form.dob) >= new Date(this.todayString)) {
+      this.dobError = 'Date of Birth must be in the past.';
+      return;
+    }
+    this.dobError = '';
     // Only require paymentProofUrl if payment proof is required
-    if (this.tournament?.paymentProofRequired && !this.paymentProofUrl) {
+    if (this.isFieldMandatory('requirePaymentProof') && !this.paymentProofUrl) {
       return;
     }
 
@@ -244,6 +284,16 @@ export class Register implements OnInit, OnDestroy {
       role: this.form.role,
       photo: this.photoUrl || this.DEFAULT_PLAYER_PHOTO,
       paymentProof: this.paymentProofUrl || undefined,
+      handedness: this.form.handedness || undefined,
+      tshirtSize: this.form.tshirtSize || undefined,
+      trouserSize: this.form.trouserSize || undefined,
+      jerseyNumber: this.form.jerseyNumber ? Number(this.form.jerseyNumber) : undefined,
+      sleeveType: this.form.sleeveType || undefined,
+      playerLocation: this.form.playerLocation || undefined,
+      mobileNumber: this.form.mobileNumber || undefined,
+      lastSeasonPlayed: this.form.lastSeasonPlayed || undefined,
+      lastSeasonTeam: this.form.lastSeasonTeam || undefined,
+      bowlingStyle: this.form.bowlingStyle || undefined,
     }).subscribe({
       next: () => {
         // Record successful attempt
@@ -264,7 +314,7 @@ export class Register implements OnInit, OnDestroy {
   registerAnother() {
     this.submitted = false;
     this.serverError = '';
-    this.form = { firstName: '', lastName: '', dob: '', role: '' };
+    this.form = { firstName: '', lastName: '', dob: '', role: '', handedness: '', tshirtSize: '', trouserSize: '', jerseyNumber: '', sleeveType: '', playerLocation: '', mobileNumber: '', lastSeasonPlayed: '', lastSeasonTeam: '', bowlingStyle: '' };
     this.photoUrl = undefined;
     this.paymentProofUrl = undefined;
     this.photoPreview = null;

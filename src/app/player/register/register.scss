@@ -191,12 +191,79 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-size: 0.85rem;
+
+  .optional-label {
+    font-weight: 400;
+    text-transform: none;
+    color: #999;
+    font-size: 0.8rem;
+    letter-spacing: 0;
+  }
 }
 
 .section-hint {
   font-size: 0.82rem;
   color: #999;
   margin-bottom: 12px;
+}
+
+/* Payment Info Banner */
+.payment-info-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: linear-gradient(135deg, #fff8e1 0%, #fff3e0 100%);
+  border: 1px solid #ffcc02;
+  border-left: 4px solid #ff9800;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+
+  .payment-info-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .payment-info-body {
+    flex: 1;
+
+    .payment-info-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #e65100;
+      margin-bottom: 8px;
+    }
+
+    .payment-info-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+      font-size: 0.9rem;
+
+      .payment-info-label {
+        color: #795548;
+        font-size: 0.82rem;
+        min-width: 50px;
+      }
+
+      .payment-info-value {
+        color: #1a1a1a;
+        font-size: 1rem;
+        letter-spacing: 0.5px;
+      }
+
+      .payment-method-badge {
+        background: #ff9800;
+        color: white;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 2px 10px;
+        border-radius: 12px;
+      }
+    }
+  }
 }
 
 /* Photo Upload */
@@ -356,11 +423,23 @@
     &::placeholder {
       color: #bbb;
     }
+
+    &.input-error {
+      border-color: #e53e3e;
+      box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.15);
+    }
   }
 
   select {
     cursor: pointer;
   }
+}
+
+.field-error-msg {
+  font-size: 0.8rem;
+  color: #e53e3e;
+  font-weight: 600;
+  margin-top: 2px;
 }
 
 /* Error Messages */

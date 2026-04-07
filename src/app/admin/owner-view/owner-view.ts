@@ -166,6 +166,7 @@ export class OwnerView implements OnInit, OnDestroy {
               stat.maxBidPerPlayer = purse.maxBidPerPlayer;
               stat.availableForBidding = purse.availableForBidding;
               stat.reservedFund = purse.reservedFund;
+              stat.remainingSlots = purse.remainingSlots;
             }
 
             // Always ensure playerDetails is populated from auctionPlayers
@@ -268,7 +269,12 @@ export class OwnerView implements OnInit, OnDestroy {
   }
 
   getRemainingSlots(stats: OwnerViewTeamStats): number {
-    return Math.max(0, (this.tournament?.playersPerTeam ?? 0) - stats.playersCount);
+    return Math.max(0, (stats?.availableForBidding ?? 0) - stats.playersCount);
+  }
+
+  getReservedSlots(stats: OwnerViewTeamStats): number {
+    const remaining = stats?.remainingSlots ?? 0;
+    return remaining <= 1 ? 0 : remaining - 1;
   }
 
   formatAmount(amount: number | null | undefined): string {

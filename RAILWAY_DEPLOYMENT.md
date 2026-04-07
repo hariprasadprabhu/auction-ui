@@ -48,7 +48,7 @@ PORT=3000
 
 The backend API URL is centralized in:
 - **Development**: `src/environments/environment.ts` → `http://localhost:8080`
-- **Production**: `src/environments/environment.prod.ts` → `https://auctiondeck-api-production.up.railway.app/api`
+- **Production**: `src/environments/environment.prod.ts` → `https://api.bidplayers.in/api`
 
 All services use `environment.apiUrl`, so no other changes needed!
 
@@ -91,7 +91,7 @@ npm start
 **API calls fail?**
 - Check CORS settings on your backend
 - Verify `environment.prod.ts` has correct API URL
-- Test API directly: `curl https://auctiondeck-api-production.up.railway.app/api/...`
+- Test API directly: `curl https://api.bidplayers.in/api/...`
 
 **Port issues?**
 - Railway automatically assigns a port via `PORT` environment variable
@@ -115,4 +115,4 @@ For future updates:
 
 **API URL Reference:**
 - Frontend: Any Railway-provided domain (e.g., `auction-ui-production.up.railway.app`)
-- Backend: https://auctiondeck-api-production.up.railway.app/api/
+- Backend: https://api.bidplayers.in/api/

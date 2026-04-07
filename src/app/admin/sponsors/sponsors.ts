@@ -32,7 +32,15 @@ export class Sponsors implements OnInit {
   imagePreview: string | null = null;
   isSaving = false;
   isUploadingImage = false;
+  isLoading = true;
   errorMessage: string | null = null;
+
+  // Delete confirm / success / error modal state
+  showConfirmModal = false;
+  pendingDeleteId: number | null = null;
+  showDeleteErrorModal = false;
+  deleteErrorMessage = '';
+  isDeleting = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -49,17 +57,21 @@ export class Sponsors implements OnInit {
     this.loadSponsors();
   }
 
-  private loadSponsors() {
+  private loadSponsors(onComplete?: () => void) {
     if (!this.tournamentId) return;
     
     this.sponsorsService.getByTournament(this.tournamentId).subscribe({
       next: (sponsors) => {
         this.sponsors = sponsors;
+        this.isLoading = false;
+        onComplete?.();
         this.cdr.markForCheck();
       },
       error: (err) => {
         console.error('Failed to load sponsors:', err);
         this.errorMessage = 'Failed to load sponsors. Please try again.';
+        this.isLoading = false;
+        onComplete?.();
         this.cdr.markForCheck();
       },
     });
@@ -146,6 +158,7 @@ export class Sponsors implements OnInit {
     }
 
     this.isSaving = true;
+    this.showForm = false;
     this.errorMessage = null;
     this.cdr.markForCheck();
 
@@ -161,10 +174,12 @@ export class Sponsors implements OnInit {
 
     request$.subscribe({
       next: () => {
-        this.isSaving = false;
-        this.closeForm();
-        this.loadSponsors();
-        this.cdr.markForCheck();
+        this.resetForm();
+        this.editingId = null;
+        this.loadSponsors(() => {
+          this.isSaving = false;
+          this.cdr.markForCheck();
+        });
       },
       error: (err: { status?: number }) => {
         console.error('Failed to save sponsor:', err);
@@ -172,30 +187,56 @@ export class Sponsors implements OnInit {
           ? 'You are not authorized to modify sponsors for this tournament.'
           : 'Failed to save sponsor. Please try again.';
         this.isSaving = false;
+        this.showForm = true;
         this.cdr.markForCheck();
       },
     });
   }
 
   deleteSponsor(id: number) {
-    if (!this.tournamentId) return;
-    if (!confirm('Are you sure you want to delete this sponsor?')) return;
+    this.openDeleteConfirm(id);
+  }
 
-    this.isSaving = true;
+  openDeleteConfirm(id: number) {
+    this.pendingDeleteId = id;
+    this.showConfirmModal = true;
+    this.cdr.markForCheck();
+  }
+
+  closeConfirmModal() {
+    this.showConfirmModal = false;
+    this.pendingDeleteId = null;
+    this.cdr.markForCheck();
+  }
+
+  closeDeleteErrorModal() {
+    this.showDeleteErrorModal = false;
+    this.deleteErrorMessage = '';
+    this.cdr.markForCheck();
+  }
+
+  confirmDelete() {
+    if (!this.tournamentId || this.pendingDeleteId === null) return;
+    const id = this.pendingDeleteId;
+    this.showConfirmModal = false;
+    this.pendingDeleteId = null;
+    this.isDeleting = true;
     this.cdr.markForCheck();
 
     this.sponsorsService.delete(this.tournamentId, id).subscribe({
       next: () => {
-        this.sponsors = this.sponsors.filter((s) => s.id !== id);
-        this.isSaving = false;
-        this.cdr.markForCheck();
+        this.loadSponsors(() => {
+          this.isDeleting = false;
+          this.cdr.markForCheck();
+        });
       },
       error: (err: { status?: number }) => {
         console.error('Failed to delete sponsor:', err);
-        this.errorMessage = err.status === 403
+        this.deleteErrorMessage = err.status === 403
           ? 'You are not authorized to delete sponsors for this tournament.'
           : 'Failed to delete sponsor. Please try again.';
-        this.isSaving = false;
+        this.isDeleting = false;
+        this.showDeleteErrorModal = true;
         this.cdr.markForCheck();
       },
     });
