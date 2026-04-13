@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  apiUrl: 'https://uat-api.bidplayers.in/api',
+  apiUrl: 'https://auctiondeck-api-uat.up.railway.app/api',
 };

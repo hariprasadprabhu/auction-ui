@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "node server.js",
-    "build": "ng build --configuration production",
+    "build": "if [ \"$RAILWAY_ENVIRONMENT\" = \"uat\" ]; then ng build --configuration uat; else ng build --configuration production; fi",
     "build:uat": "ng build --configuration uat",
     "build:prod": "ng build --configuration production",
     "watch": "ng build --watch --configuration development",
