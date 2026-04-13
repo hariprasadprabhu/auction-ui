@@ -99,6 +99,9 @@ export class Dashboard implements OnInit, OnDestroy {
     { key: 'requireBowlingStyle', label: 'Bowling Style' },
   ];
 
+  // ── Auction Date Error ────────────────────────────────────────────────
+  auctionDateErrorMsg = '';
+
   // ── Email Verification ─────────────────────────────────────────────────
   showEmailVerificationModal = false;
 
@@ -157,6 +160,10 @@ export class Dashboard implements OnInit, OnDestroy {
     if (!this.currentUser?.emailVerified && !sessionStorage.getItem(this.VERIFY_PROMPTED_KEY)) {
       sessionStorage.setItem(this.VERIFY_PROMPTED_KEY, '1');
       this.showEmailVerificationModal = true;
+    }
+    const navState = history.state as { errorMessage?: string };
+    if (navState?.errorMessage) {
+      this.auctionDateErrorMsg = navState.errorMessage;
     }
     this.loadTournaments();
   }

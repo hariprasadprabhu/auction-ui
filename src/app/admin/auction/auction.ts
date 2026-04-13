@@ -114,6 +114,20 @@ export class Auction implements OnInit {
       this.tournamentService.getById(id).subscribe((t) => {
         this.tournament = t;
         this.loadingTournament = false;
+
+        // Validate auction date is not more than 2 days in the past
+        const cutoff = new Date();
+        cutoff.setHours(0, 0, 0, 0);
+        cutoff.setDate(cutoff.getDate() - 2);
+        const auctionDate = new Date(t.date);
+        auctionDate.setHours(0, 0, 0, 0);
+        if (auctionDate < cutoff) {
+          this.router.navigate(['/admin/dashboard'], {
+            state: { errorMessage: 'Auction date is in the past. You cannot run this auction.' },
+          });
+          return;
+        }
+
         this.completeRequest();
         this.cdr.markForCheck();
       });

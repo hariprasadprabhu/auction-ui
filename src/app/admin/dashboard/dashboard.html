@@ -36,6 +36,13 @@
     </div>
   </div>
 
+  <!-- Auction Date Error Banner -->
+  <div class="auction-date-error-banner" *ngIf="auctionDateErrorMsg">
+    <span class="error-icon">⚠️</span>
+    {{ auctionDateErrorMsg }}
+    <button class="close-banner-btn" (click)="auctionDateErrorMsg = ''">✕</button>
+  </div>
+
   <div class="tournaments-container">
     <!-- Loading State -->
     <div class="loading-state" *ngIf="isLoading">
