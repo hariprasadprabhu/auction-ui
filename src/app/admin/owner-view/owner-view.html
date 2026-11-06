@@ -69,14 +69,28 @@
     <!-- ── Players Tab ── -->
     <section class="tab-panel players-section" *ngIf="mainTab === 'players'">
       <div class="filter-tabs">
-        <button class="tab-btn"              [class.active]="playerFilter === 'all'"       (click)="playerFilter = 'all'">All</button>
-        <button class="tab-btn tab-available" [class.active]="playerFilter === 'available'" (click)="playerFilter = 'available'">Available for Auction</button>
-        <button class="tab-btn tab-sold"      [class.active]="playerFilter === 'sold'"      (click)="playerFilter = 'sold'">Sold</button>
-        <button class="tab-btn tab-unsold"    [class.active]="playerFilter === 'unsold'"    (click)="playerFilter = 'unsold'">Unsold</button>
+        <button class="tab-btn"              [class.active]="playerFilter === 'all'"       (click)="setPlayerFilter('all')">All</button>
+        <button class="tab-btn tab-available" [class.active]="playerFilter === 'available'" (click)="setPlayerFilter('available')">Available for Auction</button>
+        <button class="tab-btn tab-sold"      [class.active]="playerFilter === 'sold'"      (click)="setPlayerFilter('sold')">Sold</button>
+        <button class="tab-btn tab-unsold"    [class.active]="playerFilter === 'unsold'"    (click)="setPlayerFilter('unsold')">Unsold</button>
+      </div>
+
+      <div class="player-toolbar">
+        <div class="player-search-wrap">
+          <span class="search-icon">⌕</span>
+          <input
+            type="text"
+            class="player-search"
+            placeholder="Search player by name"
+            [value]="playerSearchTerm"
+            (input)="onPlayerSearch($event)"
+          />
+          <button *ngIf="playerSearchTerm" type="button" class="clear-search" (click)="clearPlayerSearch()">Clear</button>
+        </div>
       </div>
 
       <div class="players-grid">
-        <div class="player-card" *ngFor="let player of filteredPlayers" [ngClass]="'card-' + (player.auctionStatus | lowercase)">
+        <div class="player-card" *ngFor="let player of paginatedPlayers" [ngClass]="'card-' + (player.auctionStatus | lowercase)">
           <img [src]="player.photoUrl | normalizePhotoUrl" [alt]="player.firstName" class="player-photo" />
           <div class="player-card-body">
             <p class="player-name">{{ player.firstName }} {{ player.lastName }}</p>
@@ -101,6 +115,16 @@
         <div class="empty-state" *ngIf="filteredPlayers.length === 0">
           No players in this category.
         </div>
+      </div>
+
+      <div class="player-pagination" *ngIf="filteredPlayers.length > playerPageSize">
+        <button class="pagination-btn" (click)="changePlayerPage(playerCurrentPage - 1)" [disabled]="playerCurrentPage === 1">
+          ← Previous
+        </button>
+        <span class="pagination-status">Page {{ playerCurrentPage }} of {{ playerPageCount }}</span>
+        <button class="pagination-btn" (click)="changePlayerPage(playerCurrentPage + 1)" [disabled]="playerCurrentPage >= playerPageCount">
+          Next →
+        </button>
       </div>
     </section>
 

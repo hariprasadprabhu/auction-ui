@@ -33,6 +33,9 @@ export class OwnerView implements OnInit, OnDestroy {
 
   mainTab: 'players' | 'owners' = 'players';
   playerFilter: 'all' | 'sold' | 'unsold' | 'available' = 'all';
+  playerPageSize = 18;
+  playerCurrentPage = 1;
+  playerSearchTerm = '';
 
   selectedTeam: OwnerViewTeamStats | null = null;
   showTeamDetail = false;
@@ -41,7 +44,6 @@ export class OwnerView implements OnInit, OnDestroy {
 
   private tournamentId = 0;
   private eventSub: Subscription | null = null;
-  private refreshInterval: any = null;
   private teamPurseByTeamId = new Map<number, TeamPurse>();
 
   // Expose tournament from data
@@ -66,24 +68,17 @@ export class OwnerView implements OnInit, OnDestroy {
     if (id) {
       this.tournamentId = id;
       this.loadData(id);
+      this.auctionEventService.subscribeToTournament(id);
 
       this.eventSub = this.auctionEventService.auctionUpdated$
-        .pipe(filter(tid => tid === id))
+        .pipe(filter((tid) => tid === id))
         .subscribe(() => this.loadData(id));
-
-      // Refresh player statuses and purse values every 2 seconds (smooth updates without flickering)
-      this.refreshInterval = setInterval(() => {
-        this.loadTeamPurses(id);
-        this.refreshPlayerStatuses(id);
-      }, 2000);
     }
   }
 
   ngOnDestroy() {
     this.eventSub?.unsubscribe();
-    if (this.refreshInterval) {
-      clearInterval(this.refreshInterval);
-    }
+    this.auctionEventService.unsubscribeFromTournament(this.tournamentId);
   }
 
   private loadData(id: number) {
@@ -205,13 +200,88 @@ export class OwnerView implements OnInit, OnDestroy {
     });
   }
 
-  get filteredPlayers(): AuctionPlayer[] {
-    switch (this.playerFilter) {
-      case 'sold':      return this.auctionPlayers.filter(p => p.auctionStatus === 'SOLD');
-      case 'unsold':    return this.auctionPlayers.filter(p => p.auctionStatus === 'UNSOLD');
-      case 'available': return this.auctionPlayers.filter(p => p.auctionStatus === 'AVAILABLE');
-      default:          return this.auctionPlayers;
+  setPlayerFilter(filter: 'all' | 'sold' | 'unsold' | 'available') {
+    this.playerFilter = filter;
+    this.playerCurrentPage = 1;
+  }
+
+  onPlayerSearch(event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.playerSearchTerm = input.value.trim();
+    this.playerCurrentPage = 1;
+  }
+
+  clearPlayerSearch() {
+    this.playerSearchTerm = '';
+    this.playerCurrentPage = 1;
+  }
+
+  changePlayerPage(page: number) {
+    const totalPages = this.playerPageCount;
+    if (page < 1) {
+      this.playerCurrentPage = 1;
+      return;
     }
+    if (page > totalPages) {
+      this.playerCurrentPage = totalPages;
+      return;
+    }
+    this.playerCurrentPage = page;
+  }
+
+  get filteredPlayers(): AuctionPlayer[] {
+    const statusOrder: Record<string, number> = {
+      AVAILABLE: 0,
+      UNSOLD: 1,
+      SOLD: 2,
+    };
+
+    const filtered = this.auctionPlayers.filter((player) => {
+      const matchesStatus = (() => {
+        switch (this.playerFilter) {
+          case 'sold':
+            return player.auctionStatus === 'SOLD';
+          case 'unsold':
+            return player.auctionStatus === 'UNSOLD';
+          case 'available':
+            return player.auctionStatus === 'AVAILABLE';
+          default:
+            return true;
+        }
+      })();
+
+      if (!matchesStatus) {
+        return false;
+      }
+
+      if (!this.playerSearchTerm) {
+        return true;
+      }
+
+      const searchValue = this.playerSearchTerm.toLowerCase();
+      const playerName = `${player.firstName ?? ''} ${player.lastName ?? ''}`.trim().toLowerCase();
+      return playerName.includes(searchValue);
+    });
+
+    return filtered.sort((a, b) => {
+      const statusDiff = (statusOrder[a.auctionStatus] ?? 99) - (statusOrder[b.auctionStatus] ?? 99);
+      if (statusDiff !== 0) {
+        return statusDiff;
+      }
+
+      const aName = `${a.firstName ?? ''} ${a.lastName ?? ''}`.trim().toLowerCase();
+      const bName = `${b.firstName ?? ''} ${b.lastName ?? ''}`.trim().toLowerCase();
+      return aName.localeCompare(bName);
+    });
+  }
+
+  get paginatedPlayers(): AuctionPlayer[] {
+    const startIndex = (this.playerCurrentPage - 1) * this.playerPageSize;
+    return this.filteredPlayers.slice(startIndex, startIndex + this.playerPageSize);
+  }
+
+  get playerPageCount(): number {
+    return Math.max(1, Math.ceil(this.filteredPlayers.length / this.playerPageSize));
   }
 
   get soldCount()      { return this.auctionPlayers.filter(p => p.auctionStatus === 'SOLD').length; }

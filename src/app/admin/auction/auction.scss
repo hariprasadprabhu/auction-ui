@@ -431,13 +431,38 @@
   border: 4px solid #f7c948;
   box-shadow: 0 0 35px rgba(247,201,72,0.55), 0 0 75px rgba(247,201,72,0.2);
   overflow: hidden;
+  position: relative;
+  cursor: pointer;
 }
 
 .player-big-photo {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: opacity 0.35s ease, filter 0.35s ease;
+}
+
+.player-big-photo-preview {
+  opacity: 1;
+  filter: blur(8px) saturate(0.8);
+}
+
+.player-big-photo-full {
+  opacity: 0;
+  filter: blur(12px) saturate(1.2);
+}
+
+.player-big-photo-hidden {
+  opacity: 0;
+  filter: blur(12px);
+}
+
+.player-big-photo-visible {
+  opacity: 1;
+  filter: blur(0) saturate(1.2);
 }
 
 .role-badge {
@@ -983,6 +1008,51 @@
 
   .config-action-icon { font-size: 1.3rem; flex-shrink: 0; }
   .config-action-label { font-size: 0.88rem; font-weight: 600; line-height: 1.3; }
+}
+
+.player-image-modal-overlay {
+  position: fixed !important;
+  inset: 0;
+  z-index: 12000 !important;
+  background: rgba(0, 0, 0, 0.78);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.player-image-modal-content {
+  position: relative;
+  width: min(90vw, 900px);
+  max-height: 86vh;
+  border-radius: 20px;
+  background: rgba(10, 16, 28, 0.9);
+  border: 1px solid rgba(247,201,72,0.2);
+  box-shadow: 0 28px 80px rgba(0,0,0,0.5);
+  padding: 18px;
+}
+
+.player-image-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.12);
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.player-image-modal-photo {
+  display: block;
+  width: 100%;
+  max-height: 82vh;
+  object-fit: contain;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.04);
 }
 
 // Search Panel Styles
