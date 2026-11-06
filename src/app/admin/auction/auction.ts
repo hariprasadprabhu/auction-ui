@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  HostListener,
   OnInit,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -688,6 +689,78 @@ export class Auction implements OnInit {
 
   getAbbr(teamName: string): string {
     return teamName.split(' ').map(w => w[0]).join('').toUpperCase();
+  }
+
+  private readonly teamShortcutSequence = [
+    '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
+    'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p',
+    'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'z',
+    'x', 'c', 'v', 'b', 'n', 'm'
+  ];
+
+  getTeamHotkeyValue(team: Team): string {
+    const index = this.teams.findIndex((item) => item.id === team.id);
+    if (index < 0) return '';
+    return this.teamShortcutSequence[index] ?? '';
+  }
+
+  getTeamHotkeyLabel(team: Team): string {
+    return this.getTeamHotkeyValue(team).toUpperCase();
+  }
+
+  handleTeamShortcut(key: string): void {
+    const normalizedKey = key.toLowerCase();
+    const teamIndex = this.teamShortcutSequence.indexOf(normalizedKey);
+    if (teamIndex === -1) {
+      return;
+    }
+
+    const activeElement = document.activeElement as HTMLElement | null;
+    if (
+      activeElement &&
+      (
+        activeElement.tagName === 'INPUT' ||
+        activeElement.tagName === 'TEXTAREA' ||
+        activeElement.tagName === 'SELECT' ||
+        activeElement.isContentEditable
+      )
+    ) {
+      return;
+    }
+
+    const team = this.teams[teamIndex];
+    if (!team) {
+      return;
+    }
+
+    const isDisabled =
+      !this.auctionStarted ||
+      this.showSoldOverlay ||
+      this.showUnsoldOverlay ||
+      this.isTeamOutOfBudget(team) ||
+      !this.canTeamPlaceNextBid(team) ||
+      this.isValidatingBid;
+
+    if (isDisabled) {
+      return;
+    }
+
+    this.placeBidForTeam(team);
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  onWindowKeydown(event: KeyboardEvent): void {
+    if (event.ctrlKey || event.metaKey || event.altKey) {
+      return;
+    }
+
+    const key = event.key.toLowerCase();
+    if (!this.teamShortcutSequence.includes(key)) {
+      return;
+    }
+
+    event.preventDefault();
+    this.handleTeamShortcut(event.key);
   }
 
   onTeamHover(event: MouseEvent, name: string): void {

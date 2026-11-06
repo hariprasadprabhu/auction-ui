@@ -265,6 +265,7 @@
       >
         <img [src]="team.logoUrl | normalizePhotoUrlCached | async" [alt]="team.name" class="team-btn-logo" />
         <span class="team-btn-abbr">{{ getAbbr(team.name) }}</span>
+        <span class="team-btn-number">{{ getTeamHotkeyLabel(team) }}</span>
       </button>
     </div>
 
