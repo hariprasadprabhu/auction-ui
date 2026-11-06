@@ -10,6 +10,7 @@ import { CloudinaryImageService } from '../../core/services/cloudinary-image.ser
 import { Tournament, Player, PlayerBulkRegisterRequest, BulkUploadRowError } from '../../models';
 import { AuthImageCachedPipe } from '../../core/pipes/auth-image-cached.pipe';
 import { NormalizePhotoUrlCachedPipe } from '../../core/pipes/normalize-photo-url-cached.pipe';
+import { CROP_VIEWPORT_SIZE, clampCropValue, getCropMovementBounds } from '../../player/register/crop-bounds';
 
 @Component({
   selector: 'app-players',
@@ -213,6 +214,21 @@ export class Players implements OnInit {
     bowlingStyle: '',
   };
   playerPhotoPreview: string | null = null;
+  isCropModalOpen = false;
+  cropImageSource: string | null = null;
+  cropImageName = '';
+  cropZoom = 1;
+  cropX = 0;
+  cropY = 0;
+  isCropDragging = false;
+  cropImageDimensions = { width: 0, height: 0 };
+  cropTarget: 'add' | 'edit' = 'add';
+  private cropDragStartX = 0;
+  private cropDragStartY = 0;
+  private cropDragOriginX = 0;
+  private cropDragOriginY = 0;
+  private cropDragElement: HTMLElement | null = null;
+  private pendingCropFile: File | null = null;
 
   // Edit Player Form
   showEditPlayerModal = false;
@@ -477,34 +493,220 @@ export class Players implements OnInit {
   }
 
   onPlayerPhotoSelected(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      this.isUploadingPlayerPhoto = true;
+    this.openPhotoCrop(event, 'add');
+  }
+
+  onEditPhotoSelected(event: any) {
+    this.openPhotoCrop(event, 'edit');
+  }
+
+  private openPhotoCrop(event: Event, target: 'add' | 'edit') {
+    const input = event.target as HTMLInputElement | null;
+    const file = input?.files?.[0];
+    if (!input || !file) return;
+    input.value = '';
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result !== 'string') {
+        alert('Unable to read the selected photo. Please try again.');
+        return;
+      }
+
+      this.pendingCropFile = file;
+      this.cropTarget = target;
+      this.cropImageSource = reader.result;
+      this.cropImageName = file.name;
+      this.cropZoom = 1;
+      this.cropX = 0;
+      this.cropY = 0;
+      this.cropImageDimensions = { width: 0, height: 0 };
+      this.loadCropImageDimensions(reader.result);
+      this.isCropModalOpen = true;
       this.cdr.detectChanges();
-      
-      // Show preview immediately
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.playerPhotoPreview = e.target.result;
-        this.cdr.detectChanges();
-      };
-      reader.readAsDataURL(file);
-      
-      this.cloudinaryService.uploadImage(file).subscribe({
-        next: (response) => {
-          this.newPlayer.photoUrl = response.secure_url;
-          this.playerPhotoPreview = this.cloudinaryService.getTransformedUrl(response.secure_url);
-          this.isUploadingPlayerPhoto = false;
-          this.cdr.detectChanges();
-        },
-        error: (err) => {
-          console.error('Photo upload failed:', err);
-          alert('Failed to upload photo. Please try again.');
-          this.isUploadingPlayerPhoto = false;
-          this.cdr.detectChanges();
-        },
-      });
+    };
+    reader.onerror = () => alert('Unable to read the selected photo. Please try again.');
+    reader.readAsDataURL(file);
+  }
+
+  private loadCropImageDimensions(source: string) {
+    const img = new Image();
+    img.onload = () => {
+      this.cropImageDimensions = { width: img.width, height: img.height };
+      this.clampCropPosition();
+      this.cdr.detectChanges();
+    };
+    img.onerror = () => {
+      alert('Unable to load the selected photo. Please choose another image.');
+      this.cancelCropModal();
+    };
+    img.src = source;
+  }
+
+  private getCropMovementBounds() {
+    return getCropMovementBounds(this.cropImageDimensions.width, this.cropImageDimensions.height, this.cropZoom);
+  }
+
+  private clampCropPosition() {
+    const { minX, maxX, minY, maxY } = this.getCropMovementBounds();
+    this.cropX = clampCropValue(this.cropX, minX, maxX);
+    this.cropY = clampCropValue(this.cropY, minY, maxY);
+  }
+
+  onCropZoomChange(value: number) {
+    this.cropZoom = Number(value) || 1;
+    this.clampCropPosition();
+    this.cdr.detectChanges();
+  }
+
+  startCropDrag(event: PointerEvent) {
+    event.preventDefault();
+    this.isCropDragging = true;
+    this.cropDragStartX = event.clientX;
+    this.cropDragStartY = event.clientY;
+    this.cropDragOriginX = this.cropX;
+    this.cropDragOriginY = this.cropY;
+    this.cropDragElement = event.currentTarget as HTMLElement;
+    this.cropDragElement.setPointerCapture(event.pointerId);
+  }
+
+  moveCropDrag(event: PointerEvent) {
+    if (!this.isCropDragging) return;
+    this.cropX = this.cropDragOriginX + event.clientX - this.cropDragStartX;
+    this.cropY = this.cropDragOriginY + event.clientY - this.cropDragStartY;
+    this.clampCropPosition();
+    this.cdr.detectChanges();
+  }
+
+  stopCropDrag(event?: PointerEvent) {
+    this.isCropDragging = false;
+    if (this.cropDragElement && event?.currentTarget === this.cropDragElement) {
+      this.cropDragElement.releasePointerCapture(event.pointerId);
     }
+    this.cropDragElement = null;
+  }
+
+  cancelCropModal() {
+    this.isCropModalOpen = false;
+    this.isCropDragging = false;
+    this.cropDragElement = null;
+    this.cropImageSource = null;
+    this.cropImageName = '';
+    this.pendingCropFile = null;
+    this.cropZoom = 1;
+    this.cropX = 0;
+    this.cropY = 0;
+    this.cropImageDimensions = { width: 0, height: 0 };
+  }
+
+  confirmCroppedPhoto() {
+    if (!this.pendingCropFile || !this.cropImageSource) return;
+
+    if (this.cropTarget === 'add') {
+      this.isUploadingPlayerPhoto = true;
+    } else {
+      this.isUploadingEditPhoto = true;
+    }
+    this.cdr.detectChanges();
+
+    this.generateCroppedRoundImage(this.cropImageSource, this.cropZoom, this.cropX, this.cropY, this.cropImageName)
+      .then((croppedFile) => {
+        this.cloudinaryService.uploadImage(croppedFile).subscribe({
+          next: (response) => {
+            const preview = this.cloudinaryService.getTransformedUrl(response.secure_url, 320, 320, 70);
+            if (this.cropTarget === 'add') {
+              this.newPlayer.photoUrl = response.secure_url;
+              this.playerPhotoPreview = preview;
+              this.isUploadingPlayerPhoto = false;
+            } else {
+              this.editPlayerForm.photoUrl = response.secure_url;
+              this.editPhotoPreview = preview;
+              this.isUploadingEditPhoto = false;
+            }
+            this.cancelCropModal();
+            this.cdr.detectChanges();
+          },
+          error: (err) => {
+            console.error('Photo upload failed:', err);
+            alert('Failed to upload photo. Please try again.');
+            this.setCropUploadState(false);
+            this.cancelCropModal();
+            this.cdr.detectChanges();
+          },
+        });
+      })
+      .catch((err) => {
+        console.error('Photo crop failed:', err);
+        alert('Failed to crop photo. Please try again.');
+        this.setCropUploadState(false);
+        this.cancelCropModal();
+        this.cdr.detectChanges();
+      });
+  }
+
+  private setCropUploadState(isUploading: boolean) {
+    if (this.cropTarget === 'add') {
+      this.isUploadingPlayerPhoto = isUploading;
+    } else {
+      this.isUploadingEditPhoto = isUploading;
+    }
+  }
+
+  private generateCroppedRoundImage(
+    source: string,
+    zoom: number,
+    offsetX: number,
+    offsetY: number,
+    fileName: string
+  ): Promise<File> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const outputSize = 1024;
+        const fitScale = Math.min(CROP_VIEWPORT_SIZE / img.width, CROP_VIEWPORT_SIZE / img.height) * zoom;
+        const renderedWidth = img.width * fitScale;
+        const renderedHeight = img.height * fitScale;
+        const drawX = (CROP_VIEWPORT_SIZE - renderedWidth) / 2 + offsetX;
+        const drawY = (CROP_VIEWPORT_SIZE - renderedHeight) / 2 + offsetY;
+        const cropCanvas = document.createElement('canvas');
+        cropCanvas.width = CROP_VIEWPORT_SIZE;
+        cropCanvas.height = CROP_VIEWPORT_SIZE;
+
+        const cropContext = cropCanvas.getContext('2d');
+        if (!cropContext) {
+          reject(new Error('Canvas context unavailable.'));
+          return;
+        }
+
+        cropContext.beginPath();
+        cropContext.arc(CROP_VIEWPORT_SIZE / 2, CROP_VIEWPORT_SIZE / 2, CROP_VIEWPORT_SIZE / 2, 0, Math.PI * 2);
+        cropContext.clip();
+        cropContext.drawImage(img, drawX, drawY, renderedWidth, renderedHeight);
+
+        const outputCanvas = document.createElement('canvas');
+        outputCanvas.width = outputSize;
+        outputCanvas.height = outputSize;
+        const outputContext = outputCanvas.getContext('2d');
+        if (!outputContext) {
+          reject(new Error('Final canvas context unavailable.'));
+          return;
+        }
+
+        outputContext.beginPath();
+        outputContext.arc(outputSize / 2, outputSize / 2, outputSize / 2, 0, Math.PI * 2);
+        outputContext.clip();
+        outputContext.drawImage(cropCanvas, 0, 0, outputSize, outputSize);
+        outputCanvas.toBlob((blob) => {
+          if (!blob) {
+            reject(new Error('Could not generate cropped photo.'));
+            return;
+          }
+          resolve(new File([blob], fileName || 'cropped-player-photo.png', { type: 'image/png' }));
+        }, 'image/png');
+      };
+      img.onerror = () => reject(new Error('Unable to load image for cropping.'));
+      img.src = source;
+    });
   }
 
   onPaymentProofSelected(event: any) {
@@ -1065,29 +1267,6 @@ export class Players implements OnInit {
     this.editPhotoPreview = null;
     this.editPlayerSubmitted = false;
     this.editDobError = '';
-  }
-
-  onEditPhotoSelected(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      this.isUploadingEditPhoto = true;
-      this.cdr.detectChanges();
-      
-      this.cloudinaryService.uploadImage(file).subscribe({
-        next: (response) => {
-          this.editPlayerForm.photoUrl = response.secure_url;
-          this.editPhotoPreview = this.cloudinaryService.getTransformedUrl(response.secure_url);
-          this.isUploadingEditPhoto = false;
-          this.cdr.detectChanges();
-        },
-        error: (err) => {
-          console.error('Photo upload failed:', err);
-          alert('Failed to upload photo. Please try again.');
-          this.isUploadingEditPhoto = false;
-          this.cdr.detectChanges();
-        },
-      });
-    }
   }
 
   onEditPaymentProofSelected(event: any) {

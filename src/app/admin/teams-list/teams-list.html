@@ -84,15 +84,16 @@
   <div class="modal-overlay" *ngIf="showEditTeamModal" (click)="closeEditTeamModal()">
     <div class="modal-content form-modal" (click)="$event.stopPropagation()">
       <!-- Loading Overlay -->
-      <div class="modal-loading-overlay" *ngIf="isEditingTeam">
+      <div class="modal-loading-overlay" *ngIf="isEditingTeam || isUploadingEditLogo">
         <div class="modal-loader">
           <div class="spinner-dot"></div>
           <div class="spinner-dot"></div>
           <div class="spinner-dot"></div>
         </div>
+        <p class="modal-loading-text">{{ isUploadingEditLogo ? 'Uploading logo...' : 'Saving changes...' }}</p>
       </div>
       
-      <button class="modal-close" (click)="closeEditTeamModal()">✕</button>
+      <button class="modal-close" (click)="closeEditTeamModal()" [disabled]="isEditTeamSubmitDisabled">✕</button>
       <h2>Edit Team</h2>
       <form (ngSubmit)="saveEditTeam()" class="add-team-form">
         <div class="form-group">
@@ -127,8 +128,10 @@
         </div>
 
         <div class="form-actions">
-          <button type="button" class="btn btn-secondary" (click)="closeEditTeamModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save Changes</button>
+          <button type="button" class="btn btn-secondary" (click)="closeEditTeamModal()" [disabled]="isEditTeamSubmitDisabled">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="isEditTeamSubmitDisabled">
+            {{ isUploadingEditLogo ? 'Uploading Logo...' : (isEditingTeam ? 'Saving...' : 'Save Changes') }}
+          </button>
         </div>
       </form>
     </div>
