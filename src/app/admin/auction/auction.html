@@ -107,8 +107,16 @@
     <button class="btn-back-home" (click)="goBack()">← Back to Dashboard</button>
   </div>
 
+  <!-- ═══ AUCTION DATE CLOSED SCREEN ═══ -->
+  <div class="auction-complete-screen" *ngIf="!isLoading && auctionDatePassed">
+    <div class="complete-trophy">⏰</div>
+    <h2>Auction Date Passed</h2>
+    <p>This auction date is in the past and the auction has already been completed. Auction cannot be performed now.</p>
+    <button class="btn-back-home" (click)="goBack()">← Back to Dashboard</button>
+  </div>
+
   <!-- ═══ START AUCTION SCREEN ═══ -->
-  <div class="start-auction-screen" *ngIf="!isLoading && !auctionStarted && !auctionComplete && !noUnsoldAvailable">
+  <div class="start-auction-screen" *ngIf="!isLoading && !auctionDatePassed && !auctionStarted && !auctionComplete && !noUnsoldAvailable">
     <div class="start-auction-content">
       <div class="tournament-logo-glow">
         <div class="logo-glow-circle"></div>
@@ -257,6 +265,7 @@
       >
         <img [src]="team.logoUrl | normalizePhotoUrlCached | async" [alt]="team.name" class="team-btn-logo" />
         <span class="team-btn-abbr">{{ getAbbr(team.name) }}</span>
+        <span class="team-btn-number">{{ getTeamHotkeyLabel(team) }}</span>
       </button>
     </div>
 

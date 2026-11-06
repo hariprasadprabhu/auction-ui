@@ -8,6 +8,7 @@ import { AuthService, UserProfile } from '../../core/services/auth.service';
 import { CloudinaryImageService } from '../../core/services/cloudinary-image.service';
 import { Tournament, TournamentStatus, RegistrationFieldConfig } from '../../models';
 import { EmailVerification } from '../../../app/auth/email-verification/email-verification';
+import { formatDateOnlyLocal, isAuctionDatePast as isPastAuctionDate, parseDateOnly } from '../../core/utils/auction-date';
 
 @Component({
   selector: 'app-dashboard',
@@ -247,14 +248,15 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   getTodayString(): string {
-    return new Date().toISOString().split('T')[0];
+    return formatDateOnlyLocal(new Date());
   }
 
   statusFromDate(date: string): TournamentStatus {
     if (!date) return 'UPCOMING';
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const d = new Date(date);
+    const d = parseDateOnly(date);
+    if (!d) return 'UPCOMING';
     d.setHours(0, 0, 0, 0);
     if (d.getTime() === today.getTime()) return 'ONGOING';
     if (d > today) return 'UPCOMING';
@@ -781,7 +783,16 @@ export class Dashboard implements OnInit, OnDestroy {
     });
   }
 
+  isAuctionDatePast(date: string | null | undefined): boolean {
+    return isPastAuctionDate(date);
+  }
+
   startAuction(tournamentId: number) {
+    const tournament = this.tournaments.find((item) => item.id === tournamentId);
+    if (tournament && this.isAuctionDatePast(tournament.date)) {
+      return;
+    }
+
     this.router.navigate(['/admin/auction', tournamentId]);
   }
 

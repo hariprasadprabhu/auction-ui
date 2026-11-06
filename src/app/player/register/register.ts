@@ -9,6 +9,7 @@ import { PlayerService } from '../../core/services/player.service';
 import { RateLimiterService } from '../../core/services/rate-limiter.service';
 import { CloudinaryImageService } from '../../core/services/cloudinary-image.service';
 import { Tournament, RegistrationFieldConfig } from '../../models';
+import { formatDateOnlyLocal, isAuctionDatePast as isPastAuctionDate } from '../../core/utils/auction-date';
 import { CROP_VIEWPORT_SIZE, clampCropValue, getCropMovementBounds } from './crop-bounds';
 
 @Component({
@@ -31,7 +32,7 @@ export class Register implements OnInit, OnDestroy {
   hasValidTournamentLink = false;
   tournamentLookupFailed = false;
 
-  readonly todayString = new Date().toISOString().split('T')[0];
+  readonly todayString = formatDateOnlyLocal(new Date());
 
   // Rate limiting properties
   rateLimitError = '';
@@ -91,6 +92,10 @@ export class Register implements OnInit, OnDestroy {
   private cloudinaryService = inject(CloudinaryImageService);
   private cdr = inject(ChangeDetectorRef);
 
+  isAuctionDatePast(date?: string | null): boolean {
+    return isPastAuctionDate(date);
+  }
+
   ngOnInit() {
     const routeTournamentId =
       this.route.snapshot.paramMap.get('tournamentId') ??
@@ -111,6 +116,9 @@ export class Register implements OnInit, OnDestroy {
       next: (t) => {
         console.log('Tournament loaded:', t);
         this.tournament = t;
+        if (isPastAuctionDate(t?.date)) {
+          this.serverError = 'The Auction is Over.';
+        }
         this.isCheckingTournament = false;
         this.cdr.detectChanges();
       },
@@ -431,6 +439,11 @@ export class Register implements OnInit, OnDestroy {
   }
 
   submitForm() {
+    if (this.tournament && isPastAuctionDate(this.tournament.date)) {
+      this.serverError = 'The Auction is Over.';
+      return;
+    }
+
     // Check basic validation
     if (!this.form.firstName || !this.form.role || !this.photoUrl || !this.tournamentId || this.isSubmitting) {
       return;

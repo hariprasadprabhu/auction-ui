@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  HostListener,
   OnInit,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -25,6 +26,7 @@ import {
   TeamPurse,
   Sponsor,
 } from '../../models';
+import { isAuctionDatePast as isPastAuctionDate } from '../../core/utils/auction-date';
 
 @Component({
   selector: 'app-auction',
@@ -65,6 +67,7 @@ export class Auction implements OnInit {
   noUnsoldAvailable = false;
   isValidatingBid = false;
   auctionStarted = false;
+  auctionDatePassed = false;
 
   // Processing state for sold/unsold actions
   processingOverlay = false;
@@ -121,6 +124,7 @@ export class Auction implements OnInit {
       this.loadingTournament = true;
       this.tournamentService.getById(id).subscribe((t) => {
         this.tournament = t;
+        this.auctionDatePassed = isPastAuctionDate(t?.date);
         this.loadingTournament = false;
         this.completeRequest();
         this.cdr.markForCheck();
@@ -687,6 +691,78 @@ export class Auction implements OnInit {
     return teamName.split(' ').map(w => w[0]).join('').toUpperCase();
   }
 
+  private readonly teamShortcutSequence = [
+    '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
+    'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p',
+    'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'z',
+    'x', 'c', 'v', 'b', 'n', 'm'
+  ];
+
+  getTeamHotkeyValue(team: Team): string {
+    const index = this.teams.findIndex((item) => item.id === team.id);
+    if (index < 0) return '';
+    return this.teamShortcutSequence[index] ?? '';
+  }
+
+  getTeamHotkeyLabel(team: Team): string {
+    return this.getTeamHotkeyValue(team).toUpperCase();
+  }
+
+  handleTeamShortcut(key: string): void {
+    const normalizedKey = key.toLowerCase();
+    const teamIndex = this.teamShortcutSequence.indexOf(normalizedKey);
+    if (teamIndex === -1) {
+      return;
+    }
+
+    const activeElement = document.activeElement as HTMLElement | null;
+    if (
+      activeElement &&
+      (
+        activeElement.tagName === 'INPUT' ||
+        activeElement.tagName === 'TEXTAREA' ||
+        activeElement.tagName === 'SELECT' ||
+        activeElement.isContentEditable
+      )
+    ) {
+      return;
+    }
+
+    const team = this.teams[teamIndex];
+    if (!team) {
+      return;
+    }
+
+    const isDisabled =
+      !this.auctionStarted ||
+      this.showSoldOverlay ||
+      this.showUnsoldOverlay ||
+      this.isTeamOutOfBudget(team) ||
+      !this.canTeamPlaceNextBid(team) ||
+      this.isValidatingBid;
+
+    if (isDisabled) {
+      return;
+    }
+
+    this.placeBidForTeam(team);
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  onWindowKeydown(event: KeyboardEvent): void {
+    if (event.ctrlKey || event.metaKey || event.altKey) {
+      return;
+    }
+
+    const key = event.key.toLowerCase();
+    if (!this.teamShortcutSequence.includes(key)) {
+      return;
+    }
+
+    event.preventDefault();
+    this.handleTeamShortcut(event.key);
+  }
+
   onTeamHover(event: MouseEvent, name: string): void {
     const btn = event.currentTarget as HTMLElement;
     const footer = btn.closest('.auction-footer') as HTMLElement;
@@ -807,6 +883,12 @@ export class Auction implements OnInit {
   }
 
   startAuction() {
+    if (isPastAuctionDate(this.tournament?.date)) {
+      this.auctionDatePassed = true;
+      this.cdr.markForCheck();
+      return;
+    }
+
     // Only shuffle if this is a fresh start (no players auctioned yet)
     if (!this.hasAnyPlayerBeenAuctioned()) {
       this.shuffleArray(this.players);
