@@ -250,6 +250,7 @@ export interface AuctionPlayer {
   auctionStatus: AuctionStatus;
   soldToTeamId?: number;
   soldToTeamName?: string;
+  playerLocation?: string;
   soldPrice?: number;
   tournamentId: number;
   sortOrder?: number;

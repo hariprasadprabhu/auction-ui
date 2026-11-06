@@ -56,7 +56,7 @@
       </div>
       <h2 class="loading-title">Setting Up Your Auction</h2>
       <p class="loading-subtitle">Preparing your auction data...</p>
-      
+
       <!-- Detailed Loading Steps -->
       <div class="loading-steps">
         <div class="loading-step" [class.completed]="!loadingTournament">
@@ -76,7 +76,7 @@
           <span class="step-text">Loading master view</span>
         </div>
       </div>
-      
+
       <!-- Progress Bar -->
       <div class="loading-bar">
         <div class="loading-progress"></div>
@@ -84,7 +84,7 @@
     </div>
   </div>
 
-  
+
 
   <!-- Progress Bar -->
   <div class="auction-progress">
@@ -170,7 +170,7 @@
             </div>
             <div class="stat-row">
               <span class="stat-icon">📍</span>
-              <span class="stat-val">India</span>
+              <span class="stat-val">{{ currentPlayer.playerLocation }}</span>
             </div>
             <!-- <div class="stat-row">
               <span class="stat-icon">🎯</span>
@@ -321,7 +321,7 @@
         (keydown.escape)="closeSearchPanel()"
         autofocus
       />
-      
+
       <div class="search-results">
         <div *ngIf="searchTerm && filteredPlayers.length === 0" class="search-no-results">
           No players found matching "{{ searchTerm }}"
