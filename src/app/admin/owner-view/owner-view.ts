@@ -39,8 +39,6 @@ export class OwnerView implements OnInit, OnDestroy {
 
   selectedTeam: OwnerViewTeamStats | null = null;
   showTeamDetail = false;
-  selectedTeamPortfolio: TeamPurse[] = [];
-  portfolioError: string | null = null;
 
   private tournamentId = 0;
   private eventSub: Subscription | null = null;
@@ -291,7 +289,6 @@ export class OwnerView implements OnInit, OnDestroy {
   openTeamDetail(stats: OwnerViewTeamStats) {
     this.selectedTeam = stats;
     this.showTeamDetail = true;
-    this.portfolioError = null;
 
     // Populate playerDetails from auctionPlayers that were sold to this team
     const teamPlayers = this.auctionPlayers
@@ -309,24 +306,12 @@ export class OwnerView implements OnInit, OnDestroy {
       this.selectedTeam.playerDetails = teamPlayers;
     }
 
-    this.teamService.getTeamPursesAcrossTournaments(stats.team.id).subscribe({
-      next: (purses) => {
-        this.selectedTeamPortfolio = purses;
-        this.cdr.markForCheck();
-      },
-      error: (err: HttpErrorResponse) => {
-        this.selectedTeamPortfolio = [];
-        this.portfolioError = this.getPortfolioErrorMessage(err);
-        this.cdr.markForCheck();
-      },
-    });
+    this.cdr.markForCheck();
   }
 
   closeTeamDetail() {
     this.showTeamDetail = false;
     this.selectedTeam = null;
-    this.selectedTeamPortfolio = [];
-    this.portfolioError = null;
   }
 
   getTeamLogoUrl(teamId: number): string {
@@ -369,18 +354,5 @@ export class OwnerView implements OnInit, OnDestroy {
   playerStatusLabel(status: string): string {
     if (status === 'AVAILABLE') return 'Available';
     return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
-  }
-
-  private getPortfolioErrorMessage(error: HttpErrorResponse): string {
-    if (error.status === 401) {
-      return 'Unauthorized. Please sign in again to view portfolio purse data.';
-    }
-    if (error.status === 404) {
-      return 'No cross-tournament purse data found for this team.';
-    }
-    if (error.status >= 500) {
-      return 'Server error while loading team portfolio.';
-    }
-    return 'Failed to load team portfolio.';
   }
 }

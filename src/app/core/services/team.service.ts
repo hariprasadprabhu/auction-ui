@@ -43,12 +43,6 @@ export class TeamService {
       .pipe(map((p) => this.mapTeamPurse(p)));
   }
 
-  getTeamPursesAcrossTournaments(teamId: number): Observable<TeamPurse[]> {
-    return this.http
-      .get<TeamPurse[]>(`${this.apiUrl}/teams/${teamId}/purses`)
-      .pipe(map((list) => list.map((p) => this.mapTeamPurse(p))));
-  }
-
   create(tournamentId: number, request: CreateTeamRequest): Observable<Team> {
     const body = this.shouldUseFormData(request)
       ? this.buildFormData(request)
