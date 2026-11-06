@@ -238,6 +238,9 @@ export class TeamsListComponent implements OnInit {
   }
 
   closeEditTeamModal() {
+    if (this.isUploadingEditLogo || this.isEditingTeam) {
+      return;
+    }
     this.showEditTeamModal = false;
     this.editingTeam = null;
     this.editLogoPreview = null;
@@ -274,8 +277,15 @@ export class TeamsListComponent implements OnInit {
     }
   }
 
+  get isEditTeamSubmitDisabled(): boolean {
+    return this.isEditingTeam || this.isUploadingEditLogo;
+  }
+
   saveEditTeam() {
     if (!this.editingTeam) return;
+    if (this.isUploadingEditLogo) {
+      return;
+    }
     if (!this.editTeam.name || !this.editTeam.ownerName || !this.editTeam.mobileNumber) {
       alert('Please fill in all required fields');
       return;

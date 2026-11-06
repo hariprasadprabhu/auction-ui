@@ -1290,10 +1290,12 @@
   background: rgba(255, 255, 255, 0.7);
   border-radius: 16px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   z-index: 2000;
   backdrop-filter: blur(2px);
+  gap: 12px;
 
   .modal-loader {
     display: flex;
@@ -1316,6 +1318,13 @@
         animation-delay: -0.16s;
       }
     }
+  }
+
+  .modal-loading-text {
+    font-size: 0.85rem;
+    color: #4c4c4c;
+    font-weight: 600;
+    letter-spacing: 0.02em;
   }
 }
 

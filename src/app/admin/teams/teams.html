@@ -825,5 +825,56 @@
       </div>
     </div>
   </div>
+
+  </div>
+
+  <div class="team-crop-backdrop" *ngIf="isCropModalOpen">
+    <div class="team-crop-modal" role="dialog" aria-modal="true" aria-label="Crop player photo">
+      <div class="team-crop-header">
+        <h3>Crop player photo</h3>
+        <button type="button" class="team-crop-close" (click)="cancelCropModal()" aria-label="Close crop editor"
+          [disabled]="cropTarget === 'add' ? isUploadingPlayerPhoto : isUploadingEditPhoto">✕</button>
+      </div>
+
+      <div class="team-crop-editor">
+        <div
+          class="team-crop-viewport"
+          (pointerdown)="startCropDrag($event)"
+          (pointermove)="moveCropDrag($event)"
+          (pointerup)="stopCropDrag($event)"
+          (pointercancel)="stopCropDrag($event)"
+          (pointerleave)="stopCropDrag($event)"
+        >
+          <div class="team-crop-image-stage">
+            <img
+              *ngIf="cropImageSource"
+              [src]="cropImageSource"
+              alt="Crop preview"
+              [style.transform]="'translate(' + cropX + 'px, ' + cropY + 'px) scale(' + cropZoom + ')'"
+              [style.transform-origin]="'center center'"
+            />
+          </div>
+          <div class="team-crop-focus-ring"></div>
+        </div>
+      </div>
+
+      <div class="team-crop-controls">
+        <label for="teamCropZoom">Zoom</label>
+        <input id="teamCropZoom" type="range" min="1" max="2.5" step="0.05" [ngModel]="cropZoom"
+          (ngModelChange)="onCropZoomChange($event)" name="teamCropZoom" />
+      </div>
+
+      <div class="team-crop-actions">
+        <button type="button" class="team-crop-cancel" (click)="cancelCropModal()"
+          [disabled]="cropTarget === 'add' ? isUploadingPlayerPhoto : isUploadingEditPhoto">Cancel</button>
+        <button type="button" class="team-crop-confirm" (click)="confirmCroppedPhoto()"
+          [disabled]="cropTarget === 'add' ? isUploadingPlayerPhoto : isUploadingEditPhoto">
+          <span *ngIf="!(cropTarget === 'add' ? isUploadingPlayerPhoto : isUploadingEditPhoto)">Use This Photo</span>
+          <span *ngIf="cropTarget === 'add' ? isUploadingPlayerPhoto : isUploadingEditPhoto" class="team-crop-uploading">
+            <span class="team-crop-spinner"></span> Uploading...
+          </span>
+        </button>
+      </div>
+    </div>
   </div>
 </div>
