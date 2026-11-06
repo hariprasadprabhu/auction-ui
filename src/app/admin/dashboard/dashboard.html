@@ -134,9 +134,14 @@
             <span class="icon">🔗</span>
             <span class="tooltip">Registration Link</span>
           </button>
-          <button class="action-btn" (click)="startAuction(tournament.id)">
+          <button
+            class="action-btn"
+            (click)="startAuction(tournament.id)"
+            [disabled]="isAuctionDatePast(tournament.date)"
+            [title]="isAuctionDatePast(tournament.date) ? 'Auction date has passed. This auction is completed.' : 'Start Auction'"
+          >
             <span class="icon">▶️</span>
-            <span class="tooltip">Start Auction</span>
+            <span class="tooltip">{{ isAuctionDatePast(tournament.date) ? 'Auction Over' : 'Start Auction' }}</span>
           </button>
           <button class="action-btn" (click)="viewConditionalIncrements(tournament.id)">
             <span class="icon">📈</span>

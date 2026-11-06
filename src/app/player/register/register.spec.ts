@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { isAuctionDatePast } from '../../core/utils/auction-date';
 import { clampCropValue, getCropMovementBounds } from './crop-bounds';
 
 describe('Register crop bounds', () => {
@@ -30,5 +31,39 @@ describe('Register crop bounds', () => {
     expect(bounds.minX).toBeLessThan(0);
     expect(Math.abs(bounds.maxY)).toBe(0);
     expect(Math.abs(bounds.minY)).toBe(0);
+  });
+});
+
+describe('auction date gating', () => {
+  it('should treat auction dates older than one buffer day as past', () => {
+    const twoDaysAgo = new Date();
+    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+
+    const dateString = `${twoDaysAgo.getFullYear()}-${String(twoDaysAgo.getMonth() + 1).padStart(2, '0')}-${String(twoDaysAgo.getDate()).padStart(2, '0')}`;
+
+    expect(isAuctionDatePast(dateString)).toBe(true);
+  });
+
+  it('should allow auction date plus one buffer day', () => {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const yesterdayString = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+    const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+    expect(isAuctionDatePast(yesterdayString)).toBe(false);
+    expect(isAuctionDatePast(todayString)).toBe(false);
+  });
+
+  it('should not treat future dates as past', () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const tomorrowString = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
+
+    expect(isAuctionDatePast(tomorrowString)).toBe(false);
   });
 });

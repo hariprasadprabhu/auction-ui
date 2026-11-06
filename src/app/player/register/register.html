@@ -48,8 +48,15 @@
     <p class="not-found-hint">Contact your tournament organiser for more information.</p>
   </div>
 
+  <div class="not-found" *ngIf="!isCheckingTournament && hasValidTournamentLink && !submitted && isAuctionDatePast(tournament?.date)">
+    <div class="not-found-icon">⏰</div>
+    <h2>Auction is Over</h2>
+    <p>The auction date for this tournament has already passed.</p>
+    <p class="not-found-hint">This auction has been completed and registration is no longer available.</p>
+  </div>
+
   <!-- Registration Form -->
-  <div class="form-wrapper" *ngIf="!isCheckingTournament && hasValidTournamentLink && !submitted && tournament?.playerRegistrationOpen !== false">
+  <div class="form-wrapper" *ngIf="!isCheckingTournament && hasValidTournamentLink && !submitted && !isAuctionDatePast(tournament?.date) && tournament?.playerRegistrationOpen !== false">
     <div class="form-card">
       <h2>Player Registration</h2>
       <p class="form-subtitle" *ngIf="!tournamentLookupFailed">Fill in your details below to register for this tournament</p>
