@@ -132,8 +132,23 @@
 
       <div class="player-card">
         <div class="player-photo-col">
-          <div class="photo-glow-ring">
-            <img [src]="currentPlayer.photoUrl | normalizePhotoUrlCached | async" [alt]="currentPlayer.firstName" class="player-big-photo" />
+          <div class="photo-glow-ring" (click)="openPlayerImageModal()">
+            <img
+              [src]="currentPlayerPreviewImageUrl | normalizePhotoUrlCached | async"
+              [alt]="currentPlayer.firstName"
+              class="player-big-photo player-big-photo-preview"
+              [class.player-big-photo-hidden]="playerImageFullyLoaded"
+              (load)="onCurrentPlayerImageLoad()"
+              (error)="onCurrentPlayerImageLoad()"
+            />
+            <img
+              [src]="currentPlayerFullImageUrl | normalizePhotoUrlCached | async"
+              [alt]="currentPlayer.firstName"
+              class="player-big-photo player-big-photo-full"
+              [class.player-big-photo-visible]="playerImageFullyLoaded"
+              (load)="onCurrentPlayerFullImageLoad()"
+              (error)="onCurrentPlayerFullImageLoad()"
+            />
           </div>
           <div class="role-badge">{{ currentPlayer.role }}</div>
         </div>
@@ -214,6 +229,13 @@
     </section>
 
   </main>
+
+  <div class="player-image-modal-overlay" *ngIf="showPlayerImageModal" (click)="closePlayerImageModal()">
+    <div class="player-image-modal-content" (click)="$event.stopPropagation()">
+      <button class="player-image-modal-close" type="button" (click)="closePlayerImageModal()">✕</button>
+      <img [src]="modalImageUrl | normalizePhotoUrlCached | async" [alt]="modalImageTitle || 'Player image'" class="player-image-modal-photo" />
+    </div>
+  </div>
 
   <!-- ═══ FOOTER ═══ -->
   <footer class="auction-footer">

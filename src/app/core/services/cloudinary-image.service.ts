@@ -36,14 +36,16 @@ export class CloudinaryImageService {
   }
 
   /**
-   * Transform a Cloudinary URL with optimization parameters
-   * Adds f_auto (format auto-detection) and q_auto (quality auto-adjustment) for WebP
+   * Transform a Cloudinary URL with optimization parameters.
+   * Adds f_auto (format auto-detection) and q_auto (quality auto-adjustment) for WebP.
+   * When a quality value is provided, it overrides the default auto-quality to create a lighter preview.
    * @param url The Cloudinary image URL
    * @param width Optional width for responsive images
    * @param height Optional height for responsive images
+   * @param quality Optional quality percentage, e.g. 60 for a lighter preview
    * @returns Transformed Cloudinary URL
    */
-  getTransformedUrl(url: string, width?: number, height?: number): string {
+  getTransformedUrl(url: string, width?: number, height?: number, quality?: number): string {
     if (!url) {
       return '';
     }
@@ -64,17 +66,27 @@ export class CloudinaryImageService {
     const basePart = url.substring(0, uploadIndex + 8); // includes /upload/
     const imagePart = url.substring(uploadIndex + 8);
 
-    // Build transformation string
-    let transformation = 'f_auto,q_auto';
+    const effectiveQuality = quality !== undefined && quality >= 1 && quality <= 100 ? quality : undefined;
+    const transformation = effectiveQuality ? `f_auto,q_${effectiveQuality}` : 'f_auto,q_auto';
+
     if (width && height) {
-      transformation = `w_${width},h_${height},c_fill/${transformation}`;
-    } else if (width) {
-      transformation = `w_${width}/${transformation}`;
-    } else if (height) {
-      transformation = `h_${height}/${transformation}`;
+      return `${basePart}w_${width},h_${height},c_fill/${transformation}/${imagePart}`;
+    }
+    if (width) {
+      return `${basePart}w_${width}/${transformation}/${imagePart}`;
+    }
+    if (height) {
+      return `${basePart}h_${height}/${transformation}/${imagePart}`;
     }
 
     return `${basePart}${transformation}/${imagePart}`;
+  }
+
+  /**
+   * Return a lighter compressed version of Cloudinary image for initial list/grid previews.
+   */
+  getLowQualityPreviewUrl(url: string, width = 120, height = 120, quality = 60): string {
+    return this.getTransformedUrl(url, width, height, quality);
   }
 
   /**

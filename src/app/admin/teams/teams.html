@@ -121,16 +121,17 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let player of filteredAndSortedPlayers">
+        <tr *ngFor="let player of paginatedPlayers">
           <td class="checkbox-col">
             <input type="checkbox" [checked]="selectedPlayers.has(player.id)" (change)="onPlayerCheckboxChange(player.id, $any($event).target.checked)" />
           </td>
           <td>{{ player.playerNumber }}</td>
           <td class="photo-cell">
             <img 
-              [src]="getPlayerPhotoUrl(player.photoUrl) | normalizePhotoUrlCached | async" 
+              [src]="getPlayerPhotoPreviewUrl(player.photoUrl) | normalizePhotoUrlCached | async" 
               [alt]="player.firstName" 
               class="player-photo"
+              (click)="openImageModal(getPlayerPhotoUrl(player.photoUrl), player.firstName + ' ' + (player.lastName || ''), player.id)"
               (load)="onImageLoad()"
               (error)="onImageError()"
             />
@@ -140,10 +141,10 @@
           <td>{{ calculateAge(player.dob) }}</td>
           <td class="proof-cell" *ngIf="tournament?.paymentProofRequired">
             <img
-              [src]="getPaymentProofUrl(player.paymentProofUrl) | authImageCached | async"
+              [src]="getPaymentProofPreviewUrl(player.paymentProofUrl) | authImageCached | async"
               [alt]="'Payment Proof for ' + player.firstName"
               class="payment-proof-thumbnail"
-              (click)="openImageModal(player.paymentProofUrl, player.firstName, player.id)"
+              (click)="openImageModal(getPaymentProofUrl(player.paymentProofUrl), player.firstName, player.id)"
               (load)="onImageLoad()"
               (error)="onImageError()"
             />
@@ -186,6 +187,12 @@
         </tr>
       </tbody>
     </table>
+  </div>
+
+  <div class="pagination-bar" *ngIf="filteredAndSortedPlayers.length > pageSize">
+    <button class="pagination-btn" type="button" (click)="previousPage()" [disabled]="currentPage === 1">Prev</button>
+    <span class="pagination-status">Page {{ currentPage }} of {{ totalPages }}</span>
+    <button class="pagination-btn" type="button" (click)="nextPage()" [disabled]="currentPage >= totalPages">Next</button>
   </div>
 
   <!-- Image Modal -->

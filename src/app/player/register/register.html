@@ -89,6 +89,53 @@
           </div>
         </div>
 
+        <div class="crop-modal-backdrop" *ngIf="isCropModalOpen">
+          <div class="crop-modal" role="dialog" aria-modal="true" aria-label="Crop profile photo">
+            <div class="crop-modal-header">
+              <h3>Crop your profile photo</h3>
+              <button type="button" class="crop-close-btn" (click)="cancelCropModal()" aria-label="Close crop editor">✕</button>
+            </div>
+
+            <div class="crop-editor-shell">
+              <div
+                class="crop-viewport"
+                (pointerdown)="startCropDrag($event)"
+                (pointermove)="moveCropDrag($event)"
+                (pointerup)="stopCropDrag($event)"
+                (pointercancel)="stopCropDrag($event)"
+                (pointerleave)="stopCropDrag($event)"
+              >
+                <div class="crop-image-stage">
+                  <img
+                    *ngIf="cropImageSource"
+                    [src]="cropImageSource"
+                    alt="Crop preview"
+                    [style.transform]="'translate(' + cropX + 'px, ' + cropY + 'px) scale(' + cropZoom + ')'"
+                    [style.transform-origin]="'center center'"
+                  />
+                </div>
+                <div class="crop-focus-ring"></div>
+              </div>
+            </div>
+
+            <div class="crop-controls">
+              <label for="cropZoomRange">Zoom</label>
+              <input id="cropZoomRange" type="range" min="1" max="2.5" step="0.05" [ngModel]="cropZoom" (ngModelChange)="onCropZoomChange($event)" name="cropZoom" />
+            </div>
+
+            <div class="crop-modal-actions">
+              <button type="button" class="crop-cancel-btn" (click)="cancelCropModal()" [disabled]="isUploadingPhoto">Cancel</button>
+              <button type="button" class="crop-confirm-btn" (click)="confirmCroppedPhoto()" [disabled]="isUploadingPhoto">
+                <span *ngIf="!isUploadingPhoto">Use This Photo</span>
+                <span *ngIf="isUploadingPhoto" class="crop-uploading-text">
+                  <span class="spinner"></span>
+                  Uploading...
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- Player Details -->
         <div class="form-section">
           <h3 class="section-title">Player Details</h3>

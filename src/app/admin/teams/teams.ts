@@ -28,6 +28,9 @@ export class Players implements OnInit {
     public sortField: 'playerNumber' | 'firstName' | 'lastName' | 'age' | 'status' = 'playerNumber';
     public sortDirection: 'asc' | 'desc' = 'asc';
 
+    readonly pageSize = 10;
+    currentPage = 1;
+
     get filteredAndSortedPlayers(): Player[] {
       let filtered = this.players;
       if (this.searchTerm && this.searchTerm.trim()) {
@@ -72,6 +75,21 @@ export class Players implements OnInit {
       return sorted;
     }
 
+    get totalPages(): number {
+      return Math.max(1, Math.ceil(this.filteredAndSortedPlayers.length / this.pageSize));
+    }
+
+    get paginatedPlayers(): Player[] {
+      if (this.currentPage > this.totalPages) {
+        this.currentPage = this.totalPages;
+      }
+      if (this.currentPage < 1) {
+        this.currentPage = 1;
+      }
+      const startIndex = (this.currentPage - 1) * this.pageSize;
+      return this.filteredAndSortedPlayers.slice(startIndex, startIndex + this.pageSize);
+    }
+
     setSort(field: 'playerNumber' | 'firstName' | 'lastName' | 'age' | 'status') {
       if (this.sortField === field) {
         this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -79,6 +97,23 @@ export class Players implements OnInit {
         this.sortField = field;
         this.sortDirection = 'asc';
       }
+      this.currentPage = 1;
+    }
+
+    goToPage(page: number) {
+      if (!page || page < 1) {
+        this.currentPage = 1;
+        return;
+      }
+      this.currentPage = Math.min(page, this.totalPages);
+    }
+
+    previousPage() {
+      this.goToPage(this.currentPage - 1);
+    }
+
+    nextPage() {
+      this.goToPage(this.currentPage + 1);
     }
 
     get totalPlayers(): number {
@@ -267,11 +302,11 @@ export class Players implements OnInit {
   }
 
   private checkLoadingComplete() {
-    if (this.pendingRequests <= 0 && this.pendingImages <= 0) {
+    if (this.pendingRequests <= 0) {
       this.clearLoadingTimeout();
       const elapsedTime = Date.now() - this.loadingStartTime;
       const remainingTime = Math.max(0, this.minLoadingTime - elapsedTime);
-      
+
       if (remainingTime > 0) {
         setTimeout(() => {
           this.isLoading = false;
@@ -305,58 +340,31 @@ export class Players implements OnInit {
   }
 
   onImageLoad() {
-    this.pendingImages--;
-    this.checkLoadingComplete();
+    if (this.pendingImages > 0) {
+      this.pendingImages--;
+      this.checkLoadingComplete();
+    }
   }
 
   onImageError() {
-    this.pendingImages--;
-    this.checkLoadingComplete();
+    if (this.pendingImages > 0) {
+      this.pendingImages--;
+      this.checkLoadingComplete();
+    }
   }
 
   private loadPlayers() {
     this.playerService.getByTournament(this.tournamentId).subscribe({
       next: (data) => {
         this.players = data;
-        // Count images: photo + payment proof for each player
-        this.pendingImages = data.length * 2;
+        this.pendingImages = 0;
         this.completeRequest();
-        
-        if (this.pendingImages === 0) {
-          // No images to load, loading will complete
-        } else {
-          // Schedule image load checking after DOM update
-          this.cdr.markForCheck();
-          setTimeout(() => this.trackImageLoads(), 100);
-        }
+        this.cdr.markForCheck();
       },
       error: () => {
         this.openErrorModal('Error', 'Failed to load players.');
         this.completeRequest();
       },
-    });
-  }
-
-  private trackImageLoads() {
-    const images = document.querySelectorAll('.grid-container img');
-    
-    if (images.length === 0) {
-      // If no images found in DOM, assume they're not needed or failed
-      // Reset pending images to allow loading to complete
-      this.pendingImages = 0;
-      this.checkLoadingComplete();
-      return;
-    }
-    
-    images.forEach((img: any) => {
-      if (img.complete) {
-        // Image already loaded from cache
-        this.onImageLoad();
-      } else {
-        // Image still loading
-        img.addEventListener('load', () => this.onImageLoad());
-        img.addEventListener('error', () => this.onImageError());
-      }
     });
   }
 
@@ -429,10 +437,19 @@ export class Players implements OnInit {
     return photoUrl || this.DEFAULT_PLAYER_PHOTO;
   }
 
+  /** Low-quality preview used during list loads to reduce bandwidth and render latency */
+  getPlayerPhotoPreviewUrl(photoUrl: string | undefined): string {
+    return this.cloudinaryService.getLowQualityPreviewUrl(this.getPlayerPhotoUrl(photoUrl), 120, 120, 60);
+  }
+
   /** Get payment proof URL with default fallback */
   getPaymentProofUrl(proofUrl: string | undefined): string {
     // For payment proof, we'll use player default if not provided
     return proofUrl || this.DEFAULT_PLAYER_PHOTO;
+  }
+
+  getPaymentProofPreviewUrl(proofUrl: string | undefined): string {
+    return this.cloudinaryService.getLowQualityPreviewUrl(this.getPaymentProofUrl(proofUrl), 100, 100, 60);
   }
 
   deletePlayer(playerId: number) {

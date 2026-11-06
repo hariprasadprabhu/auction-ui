@@ -15,6 +15,7 @@ import { TeamService } from '../../core/services/team.service';
 import { TournamentService } from '../../core/services/tournament.service';
 import { ImageCacheService } from '../../core/services/image-cache.service';
 import { SponsorsService } from '../../core/services/sponsors.service';
+import { CloudinaryImageService } from '../../core/services/cloudinary-image.service';
 import { NormalizePhotoUrlCachedPipe } from '../../core/pipes/normalize-photo-url-cached.pipe';
 import {
   Tournament,
@@ -84,8 +85,14 @@ export class Auction implements OnInit {
   validationError: string | null = null;
   budgetNotification: string | null = null;
 
+  playerImageFullyLoaded = false;
+  showPlayerImageModal = false;
+  modalImageUrl: string | null = null;
+  modalImageTitle = '';
+
   confirmDialog: { message: string; action: () => void } | null = null;
 
+  private playerImageLoadToken = 0;
   private tournamentId!: number;
   private readonly teamPurseByTeamId = new Map<number, TeamPurse>();
 
@@ -101,6 +108,7 @@ export class Auction implements OnInit {
     private imageCacheService: ImageCacheService,
     private cdr: ChangeDetectorRef,
     private sponsorsService: SponsorsService,
+    private cloudinaryService: CloudinaryImageService,
   ) {}
 
   ngOnInit() {
@@ -252,6 +260,68 @@ export class Auction implements OnInit {
     return this.players[this.currentIndex] ?? null;
   }
 
+  get currentPlayerFullImageUrl(): string {
+    return this.currentPlayer?.photoUrl ? this.normalizePhotoUrl(this.currentPlayer.photoUrl) : '';
+  }
+
+  get currentPlayerPreviewImageUrl(): string {
+    const url = this.currentPlayerFullImageUrl;
+    return url ? this.cloudinaryService.getLowQualityPreviewUrl(url, 500, 500, 60) : '';
+  }
+
+  onCurrentPlayerImageLoad() {
+    // Ignore the low-quality preview event so the image does not re-blur after
+    // the current player has already loaded the clear version.
+    return;
+  }
+
+  onCurrentPlayerFullImageLoad() {
+    this.playerImageFullyLoaded = true;
+    this.cdr.markForCheck();
+  }
+
+  private preloadCurrentPlayerImage(): void {
+    const url = this.currentPlayerFullImageUrl;
+    if (!url) {
+      this.playerImageFullyLoaded = true;
+      this.cdr.markForCheck();
+      return;
+    }
+
+    const token = ++this.playerImageLoadToken;
+    const img = new Image();
+    img.decoding = 'async';
+    img.onload = () => {
+      if (token === this.playerImageLoadToken) {
+        this.playerImageFullyLoaded = true;
+        this.cdr.markForCheck();
+      }
+    };
+    img.onerror = () => {
+      if (token === this.playerImageLoadToken) {
+        this.playerImageFullyLoaded = true;
+        this.cdr.markForCheck();
+      }
+    };
+    img.src = url;
+  }
+
+  openPlayerImageModal() {
+    if (!this.currentPlayerFullImageUrl) {
+      return;
+    }
+
+    this.modalImageUrl = this.currentPlayerFullImageUrl;
+    this.modalImageTitle = `${this.currentPlayer?.firstName ?? ''} ${this.currentPlayer?.lastName ?? ''}`.trim();
+    this.showPlayerImageModal = true;
+  }
+
+  closePlayerImageModal() {
+    this.showPlayerImageModal = false;
+    this.modalImageUrl = null;
+    this.modalImageTitle = '';
+  }
+
   get nextIncrement(): number {
     return this.getIncrementForAmount(this.currentBid);
   }
@@ -280,6 +350,8 @@ export class Auction implements OnInit {
     this.currentBiddingTeam = null;
     this.validationError = null;
     this.bidHistory = []; // Reset bid history for new player
+    this.playerImageFullyLoaded = false;
+    this.preloadCurrentPlayerImage();
     this.cdr.markForCheck();
   }
 
