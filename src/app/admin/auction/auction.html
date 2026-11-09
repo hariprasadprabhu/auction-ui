@@ -270,9 +270,12 @@
     </div>
 
     <div class="auction-controls">
-      <button class="ctrl-btn ctrl-exit" (click)="goBack()">
-        ← EXIT
-      </button>
+      <div class="auction-action-group">
+        <button class="ctrl-btn ctrl-exit" (click)="goBack()">
+          ← EXIT
+        </button>
+        <span class="shortcut-label">Esc</span>
+      </div>
       <button class="ctrl-btn ctrl-config" (click)="showConfigModal = true">
         ⚙ CONFIG
       </button>
@@ -283,17 +286,26 @@
         <button class="ctrl-btn ctrl-undo" (click)="undoBid()" [disabled]="!auctionStarted || !canUndoBid() || processingOverlay || showSoldOverlay || showUnsoldOverlay">
           ↶ UNDO
         </button>
-        <button class="ctrl-btn ctrl-sold" (click)="markSold()"
-          [disabled]="!auctionStarted || !currentBiddingTeam || processingOverlay || showSoldOverlay || showUnsoldOverlay">
-          ✓ SOLD
-        </button>
-        <button class="ctrl-btn ctrl-unsold" (click)="markUnsold()"
-          [disabled]="!auctionStarted || processingOverlay || showSoldOverlay || showUnsoldOverlay">
-          ✗ UNSOLD
-        </button>
-        <button class="ctrl-btn ctrl-next" (click)="nextPlayer()" [disabled]="!auctionStarted">
-          NEXT ▶
-        </button>
+        <div class="auction-action-group">
+          <button class="ctrl-btn ctrl-sold" (click)="markSold()"
+            [disabled]="!auctionStarted || !currentBiddingTeam || processingOverlay || showSoldOverlay || showUnsoldOverlay">
+            ✓ SOLD
+          </button>
+          <span class="shortcut-label">Enter</span>
+        </div>
+        <div class="auction-action-group">
+          <button class="ctrl-btn ctrl-unsold" (click)="markUnsold()"
+            [disabled]="!auctionStarted || processingOverlay || showSoldOverlay || showUnsoldOverlay">
+            ✗ UNSOLD
+          </button>
+          <span class="shortcut-label">Shift+Enter</span>
+        </div>
+        <div class="auction-action-group">
+          <button class="ctrl-btn ctrl-next" (click)="nextPlayer()" [disabled]="!auctionStarted">
+            NEXT ▶
+          </button>
+          <span class="shortcut-label">→</span>
+        </div>
       </ng-container>
     </div>
   </footer>

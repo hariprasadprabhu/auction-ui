@@ -728,29 +728,72 @@ export class Auction implements OnInit {
       return;
     }
 
-    const team = this.teams[teamIndex];
-    if (!team) {
+    const teamButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.team-btn'));
+    const targetButton = teamButtons[teamIndex];
+    if (!targetButton || targetButton.disabled) {
       return;
     }
 
-    const isDisabled =
-      !this.auctionStarted ||
-      this.showSoldOverlay ||
-      this.showUnsoldOverlay ||
-      this.isTeamOutOfBudget(team) ||
-      !this.canTeamPlaceNextBid(team) ||
-      this.isValidatingBid;
-
-    if (isDisabled) {
-      return;
-    }
-
-    this.placeBidForTeam(team);
+    targetButton.click();
   }
 
   @HostListener('window:keydown', ['$event'])
   onWindowKeydown(event: KeyboardEvent): void {
-    if (event.ctrlKey || event.metaKey || event.altKey) {
+    if (event.ctrlKey || event.metaKey || event.altKey || event.repeat) {
+      return;
+    }
+
+    const activeElement = document.activeElement as HTMLElement | null;
+    const isTypingTarget =
+      activeElement &&
+      (
+        activeElement.tagName === 'INPUT' ||
+        activeElement.tagName === 'TEXTAREA' ||
+        activeElement.tagName === 'SELECT' ||
+        activeElement.isContentEditable
+      );
+
+    if (isTypingTarget) {
+      return;
+    }
+
+    if (event.key === 'Enter' && !event.shiftKey) {
+      const soldButton = document.querySelector<HTMLButtonElement>('.ctrl-sold');
+      if (!soldButton || soldButton.disabled) {
+        return;
+      }
+      event.preventDefault();
+      soldButton.click();
+      return;
+    }
+
+    if (event.key === 'Enter' && event.shiftKey) {
+      const unsoldButton = document.querySelector<HTMLButtonElement>('.ctrl-unsold');
+      if (!unsoldButton || unsoldButton.disabled) {
+        return;
+      }
+      event.preventDefault();
+      unsoldButton.click();
+      return;
+    }
+
+    if (event.key === 'Escape') {
+      const exitButton = document.querySelector<HTMLButtonElement>('.ctrl-exit');
+      if (!exitButton || exitButton.disabled) {
+        return;
+      }
+      event.preventDefault();
+      exitButton.click();
+      return;
+    }
+
+    if (event.key === 'ArrowRight') {
+      const nextButton = document.querySelector<HTMLButtonElement>('.ctrl-next');
+      if (!nextButton || nextButton.disabled) {
+        return;
+      }
+      event.preventDefault();
+      nextButton.click();
       return;
     }
 
