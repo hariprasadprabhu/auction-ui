@@ -114,4 +114,20 @@ describe('Auction', () => {
     expect(component.getTeamHotkeyValue(component.teams[9])).toBe('0');
     expect(component.getTeamHotkeyValue(component.teams[10])).toBe('q');
   });
+
+  it('should sell on Enter and unsold on Shift+Enter', () => {
+    component.currentBiddingTeam = component.teams[0];
+    component.auctionStarted = true;
+    component.showSoldOverlay = false;
+    component.showUnsoldOverlay = false;
+
+    vi.spyOn(component, 'markSold');
+    vi.spyOn(component, 'markUnsold');
+
+    component.onWindowKeydown({ key: 'Enter', shiftKey: false, ctrlKey: false, metaKey: false, altKey: false, preventDefault: vi.fn() } as any);
+    component.onWindowKeydown({ key: 'Enter', shiftKey: true, ctrlKey: false, metaKey: false, altKey: false, preventDefault: vi.fn() } as any);
+
+    expect(component.markSold).toHaveBeenCalledTimes(1);
+    expect(component.markUnsold).toHaveBeenCalledTimes(1);
+  });
 });

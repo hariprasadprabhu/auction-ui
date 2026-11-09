@@ -869,8 +869,23 @@
 .auction-controls {
   display: flex;
   gap: 8px;
+  align-items: flex-end;
+}
+
+.auction-action-group {
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  flex-shrink: 0;
+  gap: 2px;
+}
+
+.shortcut-label {
+  font-size: 0.56rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1;
+  user-select: none;
 }
 
 .ctrl-btn {
