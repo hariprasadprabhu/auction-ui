@@ -445,8 +445,8 @@ export class Players implements OnInit {
   editDobError = '';
 
   /** Default Cloudinary URLs */
-  readonly DEFAULT_PLAYER_PHOTO = 'https://res.cloudinary.com/drytm0fl7/image/upload/v1774291008/default_player_lzyniw.png';
-  readonly DEFAULT_PAYMENT_PROOF = 'https://res.cloudinary.com/drytm0fl7/image/upload/v1775334478/payment_apq98r.png';
+  readonly DEFAULT_PLAYER_PHOTO = 'https://res.cloudinary.com/drytm0fl7/image/upload/v1794414051/player_d6dvw0.jpg';
+  readonly DEFAULT_PAYMENT_PROOF = 'https://res.cloudinary.com/drytm0fl7/image/upload/v1794414268/payment_fwb1ka.jpg';
 
   /** Get player photo URL with default fallback */
   getPlayerPhotoUrl(photoUrl: string | undefined): string {

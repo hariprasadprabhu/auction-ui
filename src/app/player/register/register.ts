@@ -80,7 +80,7 @@ export class Register implements OnInit, OnDestroy {
   private pendingCropFile: File | null = null;
 
   /** Default Cloudinary URLs */
-  readonly DEFAULT_PLAYER_PHOTO = 'https://res.cloudinary.com/drytm0fl7/image/upload/v1774291007/default_logo_gknxbf.jpg';
+  readonly DEFAULT_PLAYER_PHOTO = 'https://res.cloudinary.com/drytm0fl7/image/upload/v1794414410/team_fmpwea.jpg';
 
   private destroy$ = new Subject<void>();
   private formSubmit$ = new Subject<void>();
