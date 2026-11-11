@@ -149,7 +149,7 @@ export class Dashboard implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
 
   /** Default Cloudinary URLs */
-  readonly DEFAULT_TEAM_LOGO = 'https://res.cloudinary.com/drytm0fl7/image/upload/v1774291008/default_player_lzyniw.png';
+  readonly DEFAULT_TEAM_LOGO = 'https://res.cloudinary.com/drytm0fl7/image/upload/v1794414051/player_d6dvw0.jpg';
 
   private readonly VERIFY_PROMPTED_KEY = 'email_verify_prompted';
 

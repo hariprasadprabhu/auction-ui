@@ -34,7 +34,7 @@ export class Results implements OnInit {
   isLoading = true;
   errorMessage = '';
 
-  readonly DEFAULT_PHOTO = 'https://res.cloudinary.com/drytm0fl7/image/upload/v1774291008/default_player_lzyniw.png';
+  readonly DEFAULT_PHOTO = 'https://res.cloudinary.com/drytm0fl7/image/upload/v1794414051/player_d6dvw0.jpg';
 
   private route = inject(ActivatedRoute);
   private router = inject(Router);
